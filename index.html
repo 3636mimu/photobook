@@ -4299,11 +4299,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     try{
       const url = URL.createObjectURL(f), im = new Image();
       await new Promise((res, rej) => { im.onload = res; im.onerror = rej; im.src = url; });
-      const MAX = 3508, k = Math.min(1, MAX / Math.max(im.naturalWidth, im.naturalHeight));   // いちばん大きいページの解像度（A3 小冊子 2480×3508）に合わせる
-      const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.naturalWidth * k)); c.height = Math.max(1, Math.round(im.naturalHeight * k));
-      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
-      const isJpg = /jpe?g/i.test(f.type);
-      const data = isJpg ? c.toDataURL('image/jpeg', .92) : c.toDataURL('image/png');
+      // 元のファイルをそのまま保存する（縮小・描き直しをしない＝劣化なし）。ブラウザが直接扱えない形式だけ、劣化のない PNG にする
+      let data;
+      if(/^image\/(jpeg|png|webp|gif|avif)$/i.test(f.type)) data = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(f); });
+      else { const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext('2d').drawImage(im, 0, 0); data = c.toDataURL('image/png'); }
+      URL.revokeObjectURL(url);
+      const c = { width: im.naturalWidth, height: im.naturalHeight };
       const g = coverGeom || { W: 2, wa: 1, gapPx: 0, wb: 1 };
       const t = { kind: 'img', img: data, ar: c.width / c.height, name: f.name.replace(/\.[^.]+$/, '').slice(0, 30), text: '',
         x: (g.wa + g.gapPx + g.wb / 2) / g.W, y: .5, size: 18, rot: 0, op: 1, spill: false, flipH: false, flipV: false,
@@ -6242,6 +6243,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     m.hidden = false;
   }
   function gBusyOff(){ $('gBusy').hidden = true; }
+  // 文字列から短い目印（同じ画像を2回上げないため）
+  function strHash(str){ let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for(let i = 0; i < str.length; i++){ const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0') + '-' + str.length.toString(36); }
   async function driveSave(h, from, show){
     try{ return await driveSave0(h, from, show); } finally { if(show) gBusyOff(); }
   }
@@ -6255,7 +6258,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(h.folderId){
       let r = null, gone = false;
       try{ r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(h.folderId)}?fields=name,trashed`); gone = !r || r.trashed; }catch(e){ gone = /404/.test(String(e && e.message)) || (e && e.status === 404); }
-      if(gone){ h.folderId = ''; h.jsonId = ''; h.thumbId = ''; h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.recreated = true; from = null; }
+      if(gone){ h.folderId = ''; h.jsonId = ''; h.thumbId = ''; h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.assetIds = {}; h.recreated = true; from = null; }
       else if(r && r.name && !h.renamed && r.name !== h.name){ h.name = r.name; if(fileHandle === h){ bookFile = r.name; syncAutoUI(); } }
     }
     await ensurePhotosReadable();
@@ -6290,6 +6293,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!h.fontIds[name]){ const r = await fontDbDo('readonly', st => st.get(name)); if(r && r.data) h.fontIds[name] = (await gUpload({ name: 'font-' + name, parents: [h.folderId], appProperties: { pbm: 'font' } }, new Blob([r.data], { type: 'application/octet-stream' }))).id; }
       if(h.fontIds[name]) P.drive.fonts.push({ name, id: h.fontIds[name] });
     }
+    // 装飾の画像：元のファイルのまま、写真と同じように別のファイルで保存（book.json を軽くし、劣化させない）
+    h.assetIds = h.assetIds || {}; P.drive.assets = {};
+    const srcA = from && from.assetIds ? from.assetIds : {}, usedA = new Set();
+    for(const arr of Object.values(P.decos || {})) for(const t of (Array.isArray(arr) ? arr : [])){
+      if(!t || typeof t.img !== 'string' || !t.img.startsWith('data:')) continue;
+      const key = strHash(t.img);
+      if(!h.assetIds[key]){
+        const blob = await (await fetch(t.img)).blob(), ext = ((blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg').replace(/[^a-z0-9]/gi, '') || 'png');
+        const meta = { name: `装飾_${String(t.name || '画像').replace(/[\\/:*?"<>|]/g, '_')}.${ext}`, parents: [h.folderId], appProperties: { pbm: 'asset', key } };
+        h.assetIds[key] = srcA[key] ? (await gCopy(srcA[key], meta)).id : (await gUpload(meta, blob)).id;
+      }
+      usedA.add(key); P.drive.assets[key] = h.assetIds[key]; t.img = 'asset:' + key;
+    }
+    for(const key of Object.keys(h.assetIds)) if(!usedA.has(key)){ try{ await gPatch(h.assetIds[key], { trashed: true }); }catch(e){} delete h.assetIds[key]; }
     if(show) gBusy('', need ? `写真 ${need} / ${need} 枚・仕上げています…` : '変更を保存しています…', need ? need / (need + 1) : null);
     const json = new Blob([JSON.stringify(P)], { type: 'application/json' });
     h.jsonId = (await gUpload(h.jsonId ? {} : { name: 'book.json', parents: [h.folderId], appProperties: { pbm: 'json' } }, json, h.jsonId)).id;
@@ -6311,7 +6328,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       try{ P = JSON.parse(await (await gGet(f.appProperties.json)).text()); if(!P || P.app !== 'PHOTO BOOK MAKER') throw 0; }
       catch(e){ status('このBOOKを開けませんでした。'); return; }
       const ids = (P.drive && P.drive.photos) || {};
-      const h = { drive: true, name: f.name, folderId: f.id, jsonId: f.appProperties.json, thumbId: f.appProperties.thumb || '', photoIds: Object.assign({}, ids), photoNames: {}, fontIds: {} };
+      const h = { drive: true, name: f.name, folderId: f.id, jsonId: f.appProperties.json, thumbId: f.appProperties.thumb || '', photoIds: Object.assign({}, ids), photoNames: {}, fontIds: {}, assetIds: Object.assign({}, (P.drive && P.drive.assets) || {}) };
+      // 装飾の画像を、別のファイルから元のまま戻す
+      const A = (P.drive && P.drive.assets) || {};
+      for(const arr of Object.values(P.decos || {})) for(const t of (Array.isArray(arr) ? arr : [])){
+        if(!t || typeof t.img !== 'string' || !t.img.startsWith('asset:')) continue;
+        const id = A[t.img.slice(6)]; t.img = '';
+        if(id){ try{ const b = await gGet(id); t.img = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(b); }); }catch(e){} }
+      }
       let done = 0; const total = Object.keys(ids).length;
       const r = await finishOpen(P, async uid => { if(!ids[uid]) return null; const b = await gGet(ids[uid]); status(`Google ドライブから写真を読み込んでいます…（${++done}/${total}）`); gBusy('', `写真 ${done} / ${total} 枚`, done / (total + 1)); return b; }, {
         name: f.name, handle: h, fileAt: Date.parse(f.modifiedTime) || P.savedAt || 0,
@@ -6452,7 +6476,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!el || !gValid()) return;
     try{
       let mine = 0;
-      (await gList(`trashed=false and (appProperties has { key='pbm' and value='photo' } or appProperties has { key='pbm' and value='json' } or appProperties has { key='pbm' and value='thumb' } or appProperties has { key='pbm' and value='font' })`, 'files(quotaBytesUsed)')).forEach(f => { mine += Number(f.quotaBytesUsed) || 0; });
+      (await gList(`trashed=false and (appProperties has { key='pbm' and value='photo' } or appProperties has { key='pbm' and value='json' } or appProperties has { key='pbm' and value='thumb' } or appProperties has { key='pbm' and value='font' } or appProperties has { key='pbm' and value='asset' })`, 'files(quotaBytesUsed)')).forEach(f => { mine += Number(f.quotaBytesUsed) || 0; });
       if(!el.isConnected) return;
       el.textContent = gSize(mine); el.title = `このフォルダで使っている容量（写真・設定など）：${gSize(mine)}`; el.hidden = false;
     }catch(e){}
