@@ -23,6 +23,13 @@
     color-scheme:dark;
   }
 }
+/* 上のバーと「Google ドライブとつなぐ」の枠は、ダークモードでも明るい地のまま：中の文字や入力欄は明るいとき用の色に */
+header:has(#modeLine),#modeLine,.ginvite,.sthead2,#stStep2 .stsum{
+  --bg:#F5F5F3; --panel:#FFFFFF; --ink:#1B1C1F; --muted:#6B6B6B; --line:#E3E3E0; --accent:#2D4A73; --accent-ink:#FFFFFF; --drop:#EFEFED;
+  color-scheme:light; color:var(--ink);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .stfoot .sthow{background:var(--panel)} :root:not([data-theme="light"]) .startsheet .stsub{color:var(--muted)} }
+:root[data-theme="dark"] .stfoot .sthow{background:var(--panel)} :root[data-theme="dark"] .startsheet .stsub{color:var(--muted)}
 :root[data-theme="dark"]{
   --bg:#131416; --panel:#1C1D20; --ink:#E9E8E4; --muted:#9A9993; --line:#2E2F33;
   --accent:#8FB0DE; --accent-ink:#101318; --stage:#0C0D0E; --drop:#232428;
@@ -669,8 +676,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .gconn svg{fill:none!important;stroke:currentColor;stroke-width:1.5}
 .gconn.off{color:#9a8a80}
 .gconn em{font-style:normal;color:var(--accent);font-weight:700;margin-left:4px}
-.savename{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;font-size:12.5px;font-weight:600;color:#6b5a4f}
-.savename input{font:inherit;font-size:15px;font-weight:500;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.savename{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.savename input{font:inherit;font-size:15px;font-weight:500;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
 .savename input:focus{outline:none;border-color:var(--accent)}
 .driveacct{margin:-4px 0 12px;font-size:12.5px;color:var(--muted)}
 .drivelist{flex-wrap:wrap;max-height:60vh;overflow-y:auto}
