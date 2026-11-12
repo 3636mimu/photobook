@@ -786,6 +786,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .sdopt:focus-visible{outline:none;border-color:var(--accent)}
 .spread canvas,.spread .slot{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .ghost.touch{transform:translate(-50%,-60%) scale(1.06);box-shadow:0 10px 28px rgba(0,0,0,.35)}
+.ilaymulti{margin-left:auto;border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;cursor:pointer;white-space:nowrap}
+.ilaymulti.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .gswitch{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;margin-left:10px;white-space:nowrap}
 .gswitch:hover{color:var(--accent)}
 .ginvite{border:1.5px solid #E8B4A2;background:#FFF9F6;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -1667,7 +1669,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           </div>
         </details>
         <div class="icard ilayer">
-        <div class="ilayhd"><span>パーツレイヤー</span><small>上にあるほど前面表示</small></div>
+        <div class="ilayhd"><span>パーツレイヤー</span><small>上にあるほど前面表示</small><button type="button" class="ilaymulti" id="tMulti" aria-pressed="false" title="オンにすると、押したパーツを次々に選べます（Shift／Ctrl＋クリックと同じ）">複数選択</button></div>
         <div class="ihead"><div class="iheadbtns"><button class="iadd" id="tAdd" type="button" aria-label="文字を追加">＋ 文字</button><label class="isml" id="tAddImg" title="ロゴなどの画像を追加（PNG の透過もそのまま使えます）">＋ 画像<input type="file" id="tImgFile" accept="image/*" hidden></label><button class="isml" id="tDup" type="button" title="選んでいる文字を複製">複製</button><button class="isml danger" id="tDel" type="button" title="選んでいる文字を削除">削除</button></div></div>
           <div class="ilist" id="tChips"></div>
           <div class="titxt" id="tTextWrap" hidden><textarea id="tText" rows="1" placeholder="文字を入力（改行もできます）"></textarea></div>
@@ -2783,6 +2785,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     window.addEventListener('pointercancel', end);
   }
 
+  // ダブルタップ（指）：ダブルクリックと同じことをする
+  function onDoubleTap(el, fn){
+    let t0 = 0, x0 = 0, y0 = 0;
+    el.addEventListener('touchend', e => {
+      if(e.changedTouches.length !== 1 || e.touches.length) { t0 = 0; return; }
+      const t = e.changedTouches[0], now = Date.now();
+      if(now - t0 < 320 && Math.hypot(t.clientX - x0, t.clientY - y0) < 30){ t0 = 0; e.preventDefault(); fn(e); return; }
+      t0 = now; x0 = t.clientX; y0 = t.clientY;
+    }, { passive: false });
+  }
   // 指での並べ替え：長押し（0.35秒）で持ち上げる。すぐ動かしたときは、ふつうのスクロール
   function startTouchDrag(t0, from){
     if(sample || !slots[from] || isLocked(from)) return;
@@ -3314,24 +3326,37 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const idx = cropIdx;
     cropRaf = requestAnimationFrame(() => { renderPair(p); renderSlot(idx); });
   }
+  // 指1本（またはマウス）で位置を動かす。指2本でピンチして拡大・縮小
+  const cpts = new Map(); let cpan = null, cpinch = null;
+  const panFrom = (it, x, y) => { const [w,h] = baseOf(it), r = cropRect(it); return { sx: x, sy: y, ox0: it.ox, oy0: it.oy, freeX: w - r[2], freeY: h - r[3] }; };
   ccv.addEventListener('pointerdown', e => {
     const it = slots[cropIdx]; if(!it) return;
     e.preventDefault();
-    ccv.setPointerCapture(e.pointerId);
-    const [w,h] = baseOf(it), r = cropRect(it);
-    const sx = e.clientX, sy = e.clientY, ox0 = it.ox, oy0 = it.oy;
-    const freeX = w - r[2], freeY = h - r[3];
-    const mv = ev => {
-      // free < 0 when zoomed out: the photo is smaller than the frame and moves inside it
-      if(Math.abs(freeX) > 0.5) it.ox = Math.min(1, Math.max(0, ox0 - (ev.clientX - sx) / cropScale / freeX));
-      if(Math.abs(freeY) > 0.5) it.oy = Math.min(1, Math.max(0, oy0 - (ev.clientY - sy) / cropScale / freeY));
-      cropChanged();
-    };
-    const up = () => { ccv.removeEventListener('pointermove', mv); ccv.removeEventListener('pointerup', up); ccv.removeEventListener('pointercancel', up); };
-    ccv.addEventListener('pointermove', mv);
-    ccv.addEventListener('pointerup', up);
-    ccv.addEventListener('pointercancel', up);
+    try{ ccv.setPointerCapture(e.pointerId); }catch(err){}
+    cpts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if(cpts.size >= 2){ const [a, b] = [...cpts.values()]; cpinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, z0: it.z || 1 }; cpan = null; return; }
+    cpan = panFrom(it, e.clientX, e.clientY);
   });
+  ccv.addEventListener('pointermove', ev => {
+    if(!cpts.has(ev.pointerId)) return;
+    cpts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    const it = slots[cropIdx]; if(!it) return;
+    if(cpinch && cpts.size >= 2){ const [a, b] = [...cpts.values()]; setZoom(cpinch.z0 * Math.hypot(a.x - b.x, a.y - b.y) / cpinch.d0); return; }
+    if(!cpan) return;
+    // free < 0 when zoomed out: the photo is smaller than the frame and moves inside it
+    if(Math.abs(cpan.freeX) > 0.5) it.ox = Math.min(1, Math.max(0, cpan.ox0 - (ev.clientX - cpan.sx) / cropScale / cpan.freeX));
+    if(Math.abs(cpan.freeY) > 0.5) it.oy = Math.min(1, Math.max(0, cpan.oy0 - (ev.clientY - cpan.sy) / cropScale / cpan.freeY));
+    cropChanged();
+  });
+  const cropUp = ev => {
+    cpts.delete(ev.pointerId);
+    if(cpts.size < 2) cpinch = null;
+    const it = slots[cropIdx];
+    if(!cpts.size) cpan = null;
+    else if(cpts.size === 1 && it){ const q = [...cpts.values()][0]; cpan = panFrom(it, q.x, q.y); }   // ピンチのあと、残った指でそのまま動かせる
+  };
+  ccv.addEventListener('pointerup', cropUp);
+  ccv.addEventListener('pointercancel', cropUp);
   $('cropReset').addEventListener('click', () => { const it = slots[cropIdx]; if(it){ it.ox = it.oy = .5; it.z = 1; it.rot = 0; it.tilt = 0; it.flipH = it.flipV = false; makeView(it); syncZoom(); cropChanged(); } });
   $('cropDone').addEventListener('click', closeCrop);
   // 調整画面から、その写真の見開きへ（調整はそのまま残る）
@@ -4132,7 +4157,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       else { const ty = document.createElement('span'); ty.className = 'ltype'; ty.textContent = 'T'; ty.style.fontFamily = fontStack(t.font); ty.style.color = t.color || '#fff'; b.insertBefore(ty, tx); }
       b.setAttribute('aria-pressed', i === tSel ? 'true' : 'false');
       // clicking the chosen row again folds its text box away (and opens it again)
-      b.addEventListener('click', e => { if(layerDragged){ layerDragged = false; return; } if(e.shiftKey || e.ctrlKey || e.metaKey){ tToggle(i, e.altKey); return; } if(e.altKey){ tTextOpen = true; tSelect(i, true); return; } if(i === tSel && !tExtra.size){ tTextOpen = !tTextOpen; tChips(); if(tTextOpen) $('tText').focus(); return; } tTextOpen = true; tSelect(i); });
+      b.addEventListener('click', e => { if(layerDragged){ layerDragged = false; return; } if(e.shiftKey || e.ctrlKey || e.metaKey || tMultiOn){ tToggle(i, e.altKey); return; } if(e.altKey){ tTextOpen = true; tSelect(i, true); return; } if(i === tSel && !tExtra.size){ tTextOpen = !tTextOpen; tChips(); if(tTextOpen) $('tText').focus(); return; } tTextOpen = true; tSelect(i); });
       box.appendChild(b);
       if(i === tSel && !isImg(t) && tTextOpen){ b.after(wrap); wrap.hidden = false; requestAnimationFrame(fitText); }
     });
@@ -4576,7 +4601,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!tGeo) return;
     const [px, py] = tPt(e), t = tCur(), near = (q, r) => Math.hypot(px - q[0], py - q[1]) <= r * tGeo.dpr;
     tcv.focus();
-    const mod = e.shiftKey || e.ctrlKey || e.metaKey;
+    const mod = e.shiftKey || e.ctrlKey || e.metaKey || tMultiOn;
     if(t && hasBody(t) && !mod){
       const b = tBox(t);
       const h = tHandle(t, px, py);
@@ -4628,7 +4653,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   });
   const tEnd = () => { const d = tDrag; tDrag = null; if(d && d.mode === 'move' && !d.moved && d.untoggle >= 0) tToggle(d.untoggle); };
   tcv.addEventListener('pointerup', tEnd); tcv.addEventListener('pointercancel', tEnd);
+  // 複数選択（キーボードのない iPad 向け。パソコンでも使える）
+  let tMultiOn = false;
+  $('tMulti').addEventListener('click', () => { tMultiOn = !tMultiOn; $('tMulti').setAttribute('aria-pressed', String(tMultiOn)); $('tMulti').classList.toggle('on', tMultiOn); });
   tcv.addEventListener('dblclick', () => { if(tCur()){ $('tText').focus(); $('tText').select(); } });
+  onDoubleTap(tcv, () => { if(tCur()){ $('tText').focus(); $('tText').select(); } });
   // ---------- マイスタイル: favourite text looks (one text) and whole cover layouts, kept in this browser ----------
   const STY_KEY = 'mihiraki-text-styles-v1';
   let myStyles = [];
@@ -5044,6 +5073,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
   }
 
+  // iPad・スマホ：書き出したJPGを、共有画面から「写真」に保存（ZIPにしない）
+  async function shareImages(files){
+    if(canPickDir || !navigator.canShare || !navigator.share) return false;
+    let fl; try{ fl = files.map(f => new File([f.blob], f.name.split('/').pop(), { type: f.blob.type || 'image/jpeg' })); if(!navigator.canShare({ files: fl })) return false; }catch(e){ return false; }
+    status(`${fl.length}枚の書き出しができました。`);
+    askYesNo('書き出しができました', `<p>${fl.length}枚の JPG ができました。<br>「写真に保存」を押して、出てきた画面で<b>「${fl.length > 1 ? fl.length + '枚の画像を保存' : '画像を保存'}」</b>を選ぶと、写真アプリに入ります。</p>`, async () => {
+      try{ await navigator.share({ files: fl }); status(`${fl.length}枚を共有しました。`); }
+      catch(e){ status(e && e.name === 'AbortError' ? '保存をキャンセルしました。' : '保存できませんでした。'); }
+    }, '写真に保存', '閉じる');
+    return true;
+  }
   // minimal ZIP (stored, no compression: JPG is already compressed)
   const CRC = (() => { const t = new Uint32Array(256); for(let n=0;n<256;n++){ let c = n; for(let k=0;k<8;k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
   function crc32(u8){ let c = 0xFFFFFFFF; for(let i=0;i<u8.length;i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
@@ -5129,6 +5169,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         await new Promise(r => setTimeout(r, 1200));
       }
     }
+    if(await shareImages(files)) return;
     status('ZIP にまとめています…');
     const zip = await makeZip(files);
     try{
@@ -5228,6 +5269,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         return;
       }catch(e){ console.warn(e); status(`フォルダに書き込めませんでした（${e && e.name || 'Error'}）。ZIP にまとめて保存します…`); await new Promise(r => setTimeout(r, 1200)); }
     }
+    if(await shareImages(files)) return;
     status('ZIP にまとめています…');
     const zip = await makeZip(files), zname = `photos_${st}.zip`;
     try{
@@ -5482,11 +5524,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     rg.addEventListener('mouseenter', () => tipShow(rg));
     rg.addEventListener('mouseleave', tipHide);
     rg.addEventListener('pointerdown', tipHide);
-    rg.addEventListener('dblclick', () => {
+    const rgReset = () => {
       rg.value = def;
       rg.dispatchEvent(new Event('input', { bubbles: true }));
       rg.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    };
+    rg.addEventListener('dblclick', rgReset);
+    onDoubleTap(rg, rgReset);   // iPad：スライダーをダブルタップで元に戻す
   });
   $('resetSettings').addEventListener('click', () => askYesNo('設定を初期値に戻しますか？', '<p>画面上部の設定・グリッド・ノドの影・詳細設定などが、最初の状態に戻ります。<br>入れた写真と装飾はそのまま残ります。</p>', () => {
     applySettings(defaults);
