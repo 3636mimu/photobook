@@ -778,6 +778,12 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #stDrive .strhead .gwhere{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #workOpen{display:none !important}   /* BOOKは最初の画面から開く（上のバーを1行に保つ） */
 .ghidlink{display:block;margin:2px 0 0 auto;font-size:11.5px}
+.savelead{margin:-4px 0 10px;font-size:12.5px;color:var(--muted)}
+.savedest{display:flex;flex-direction:column;gap:8px;margin:2px 0 4px}
+.sdopt b{display:flex;align-items:center;gap:7px}
+.sdopt b svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round;flex:none}
+.sdopt .sdnow{font-style:normal;font-size:10.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-left:4px}
+.sdopt:focus-visible{outline:none;border-color:var(--accent)}
 .gswitch{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;margin-left:10px;white-space:nowrap}
 .gswitch:hover{color:var(--accent)}
 .ginvite{border:1.5px solid #E8B4A2;background:#FFF9F6;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -1536,15 +1542,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
 </div>
 <div class="modal" id="saveModal" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle">
   <div class="sheet" style="max-width:480px">
-    <h3 id="saveTitle">BOOKを保存しますか？</h3>
-    <p id="saveLead" style="margin:0 0 12px;font-size:14px;line-height:1.8">写真・設定・装飾を、まるごと1つのファイルにします。<br>このファイルを開けば、どのパソコンでも、ほかの人でも、続きから編集できます。</p>
-    <label class="savename" id="saveNameRow" hidden><span>BOOKの名前</span><input type="text" id="saveName" maxlength="60" autocomplete="off"></label>
+    <h3 id="saveTitle">BOOKを保存</h3>
+    <p id="saveLead" class="savelead" hidden></p>
+    <label class="savename" id="saveNameRow"><span>BOOKの名前</span><input type="text" id="saveName" maxlength="60" autocomplete="off"></label>
     <p class="savesize" id="saveSize"></p>
+    <div class="savedest">
+      <button type="button" class="bdopt sdopt" id="saveToDrive"><b><img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">Google ドライブに保存<i class="sdnow" hidden>いまの保存先</i></b><small>どの端末からでも、続きから編集できます。</small></button>
+      <button type="button" class="bdopt sdopt" id="saveToPc"><b><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 3.8h9.6v6.9H3.2z"/><path d="M1.5 12.6h13"/></svg><span><span class="devn">パソコン</span>に保存</span><i class="sdnow" hidden>いまの保存先</i></b><small>写真ごと、BOOKファイル（.pbmk）1つにまとめて保存します。</small></button>
+    </div>
     <div class="actions" style="justify-content:flex-end">
-      <button type="button" class="saveas" id="saveAsBtn" hidden>別の名前で保存…</button>
-      <button type="button" class="saveas" id="saveLocal" hidden title="BOOKファイル（.pbmk）として、この端末に保存します"><span class="devn">パソコン</span>に保存…</button>
-      <button class="outline" id="saveNo" type="button" style="min-width:90px">NO</button>
-      <button class="primary" id="saveYes" type="button" style="min-width:90px">YES</button>
+      <button type="button" class="saveas" id="saveAsBtn" hidden></button><button type="button" class="saveas" id="saveLocal" hidden></button><button class="primary" id="saveYes" type="button" hidden></button>
+      <button class="outline" id="saveNo" type="button" style="min-width:90px">キャンセル</button>
     </div>
   </div>
 </div>
@@ -5855,18 +5863,18 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   $('workSave').addEventListener('click', () => {
     if(!hasWork()){ status('写真を入れると、BOOKを保存できます。'); return; }
-    saveAsMode = !!(fileHandle && bookFile && (!WD() || fileHandle.drive));
-    $('saveTitle').textContent = saveAsMode ? '別の名前で保存しますか？' : 'BOOKを保存しますか？';
-    $('saveLead').innerHTML = saveAsMode ? `いまの内容を、別の名前の新しいBOOKファイルにします。<br>元の「${bookFile.replace(/[<>&]/g, '')}」は、そのまま残ります。` : '写真・設定・装飾を、まるごと1つのファイルにします。<br>このファイルを開けば、どのパソコンでも、ほかの人でも、続きから編集できます。';
-    $('saveAsBtn').hidden = true;
-    if(WD()){
-      $('saveTitle').textContent = saveAsMode ? '別の名前で保存しますか？' : 'Google ドライブに保存しますか？';
-      $('saveLead').innerHTML = saveAsMode ? `いまの内容を、別の名前の新しいBOOKとして保存します。<br>元の「${bookFile.replace(/[<>&]/g, '')}」は、そのまま残ります。` : '写真・設定・装飾を、Google ドライブの「PHOTO BOOK MAKER」フォルダにまとめて保存します。<br>どの端末からでも、続きから編集できます。';
-      $('saveNameRow').hidden = false; $('saveName').value = saveAsMode ? bookFile + 'のコピー' : (bookFile || fileName()).replace(/\.pbmk$/i, '');
-      $('saveLocal').hidden = MOBILE;
-    } else { $('saveNameRow').hidden = true; $('saveLocal').hidden = true; }
+    // 保存先を選んで保存（Google ドライブ／パソコン）。BOOKがあるときは「別名で保存」
+    const cur = fileHandle && bookFile ? (fileHandle.drive ? 'drive' : 'pc') : '';
+    saveAsMode = !!cur;
+    $('saveTitle').textContent = cur ? '別名で保存' : 'BOOKを保存';
+    const stem = (bookFile || fileName()).replace(/\.pbmk$/i, '');
+    $('saveName').value = cur === 'drive' ? stem + 'のコピー' : stem;
+    $('saveLead').hidden = !cur; $('saveLead').textContent = cur ? `元の「${bookFile}」は、そのまま残ります。` : '';
+    $('saveToDrive').hidden = !WEB; $('saveToPc').hidden = MOBILE;
+    $('saveToDrive').querySelector('.sdnow').hidden = cur !== 'drive'; $('saveToPc').querySelector('.sdnow').hidden = cur !== 'pc';
     syncSaveMeta();
-    $('saveModal').hidden = false; $('saveYes').focus();
+    $('saveModal').hidden = false;
+    (cur === 'pc' || !WEB ? $('saveToPc') : (MOBILE || WD() ? $('saveToDrive') : $('saveToPc'))).focus();
   });
   const closeSave = () => { $('saveModal').hidden = true; };
   const cancelSave = () => { closeAfterSave = false; closeSave(); };
@@ -5874,24 +5882,27 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   $('saveModal').addEventListener('keydown', e => { if(e.key === 'Escape') cancelSave(); });
   let saveAsMode = false;
   $('saveYes').addEventListener('click', () => doSave(saveAsMode));
+  $('saveToDrive').addEventListener('click', () => doSave(saveAsMode, false, true));
+  $('saveToPc').addEventListener('click', () => doSave(saveAsMode, true));
   // 上書き保存：ポップアップなしで、すぐBOOKファイルへ
   $('workOver').addEventListener('click', () => { if(!hasWork() || !fileHandle) return; doSave(false); });
   $('saveAsBtn').addEventListener('click', () => doSave(true));
   $('saveLocal').addEventListener('click', () => doSave(true, true));
-  $('saveName').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); $('saveYes').click(); } });
+  $('saveName').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); const cur = fileHandle && bookFile ? (fileHandle.drive ? 'drive' : 'pc') : ''; (cur === 'pc' || !WEB || (!MOBILE && !WD()) ? $('saveToPc') : $('saveToDrive')).click(); } });
   // 書き込みの許可（ブラウザを開き直したあとは、もう一度たずねられることがある）
   async function canWrite(h){ if(h && h.drive) return gEnsure(true); try{ if(!h.queryPermission) return true; if((await h.queryPermission({ mode: 'readwrite' })) === 'granted') return true; return (await h.requestPermission({ mode: 'readwrite' })) === 'granted'; }catch(e){ return false; } }
   async function writeTo(h, blob){ const w = await h.createWritable(); await w.write(blob); await w.close(); }
-  async function doSave(forceAs, local){
+  async function doSave(forceAs, local, toDrive){
     const withPhotos = true;
-    const typed = WD() ? ($('saveName').value || '').trim().replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) : '';
+    // 保存の画面から：入力したBOOKの名前を、どちらの保存先でも使う
+    const typed = (local || toDrive) && !$('saveModal').hidden ? ($('saveName').value || '').trim().replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) : '';
     closeSave();
-    const name = bookFile && !(WEB && fileHandle && fileHandle.drive && local) ? bookFile.replace(/\.pbmk?$/i, '') + '.pbmk' : fileName();   // 同じBOOKは同じファイル名で（上書き保存）
+    const name = typed && local ? typed + '.pbmk' : bookFile && !(WEB && fileHandle && fileHandle.drive && local) ? bookFile.replace(/\.pbmk?$/i, '') + '.pbmk' : fileName();   // 同じBOOKは同じファイル名で（上書き保存）
     let handle = null;
     // BOOKファイル（Web版はGoogle ドライブのBOOK）があるときは、そこにそのまま上書き
-    if(!forceAs && !local && fileHandle && bookFile && (!WD() || fileHandle.drive) && await canWrite(fileHandle)) handle = fileHandle;
+    if(!forceAs && !local && !toDrive && fileHandle && bookFile && await canWrite(fileHandle)) handle = fileHandle;
     // Web版：Google ドライブに新しいBOOKとして
-    else if(WD() && !local) handle = { drive: true, isNew: true, name: typed || fileName().replace(/\.pbmk$/, '') };
+    else if(toDrive || (WD() && !local)) handle = { drive: true, isNew: true, name: typed || (bookFile || fileName()).replace(/\.pbmk$/i, '') };
     // Chrome・Edge：保存先を選んでもらう（このファイルにあとで上書き・自動保存できる）。選べない環境ではダウンロード
     else if(window.showSaveFilePicker && !inArtifact){
       try{ handle = await showSaveFilePicker({ suggestedName: name, types: [{ description: 'PHOTO BOOK MAKER BOOKファイル', accept: { 'application/x-photo-book-maker': ['.pbmk'] } }] }); }
@@ -5923,11 +5934,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         }catch(e){}
       }
       if(recreated){ status(`「${newName}」は Google ドライブで削除されていたので、新しいBOOKとして保存し直しました。`); toast('新しいBOOKとして保存しました'); }
-      else status(`${handle && !newHandle ? '上書き保存しました' : 'BOOKを保存しました'}（${newName}）。` + (saveAs ? (handle && handle.drive ? `元の「${prevName}」も、${prevHandle && prevHandle.drive ? 'Google ドライブ' : 'パソコン'}にそのまま残っています。` : `元の「${prevName}」は、「続きから作る」に別のBOOKとして残しています。`) : ''));
+      else status(`${handle && !newHandle ? '上書き保存しました' : 'BOOKを保存しました'}（${newName}）。` + (saveAs ? (handle && handle.drive ? `元の「${prevName}」も、${prevHandle && prevHandle.drive ? 'Google ドライブ' : 'パソコン'}にそのまま残っています。` : (WEB ? `元の「${prevName}」も、そのまま残っています。` : `元の「${prevName}」は、「続きから作る」に別のBOOKとして残しています。`)) : ''));
       if(closeAfterSave){ closeAfterSave = false; toast('BOOKファイルに保存しました'); await new Promise(r => setTimeout(r, 400)); closeEditor(); }
       else if(handle) showSaved(!newHandle);
       else toast('BOOKファイルに保存しました');
-      if(WEB && local && prevHandle && prevHandle.drive){ fileHandle = prevHandle; bookFile = prevName; syncAutoUI(); }
     }catch(e){
       closeAfterSave = false; if(saveAs){ workId = prevId; }
       console.error('BOOK save failed', e);
@@ -5942,7 +5952,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // 保存した時刻：今日なら「5:04」、それより前なら「11/7 5:04」
   function whenText(t){ const d = new Date(t), n = new Date(), hm = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; return d.toDateString() === n.toDateString() ? `${hm} ` : `${d.getMonth() + 1}/${d.getDate()} ${hm} `; }
   function syncAutoUI(){
-    const on = !!(fileHandle && bookFile && (!WD() || fileHandle.drive));   // Web版で上書きできるのはドライブのBOOKだけ
+    const on = !!(fileHandle && bookFile);   // Web版で上書きできるのはドライブのBOOKだけ
     $('autoOn').checked = on && autoOn;
     $('workName').hidden = !bookFile; $('workName').innerHTML = bookFile ? `${fileHandle && fileHandle.drive ? '<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">' : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.5 5v9.2H4z"/><path d="M9 1.8V5.3h3.5"/></svg>'}<span class="wfn"><b>${bookFile.replace(/[<>&]/g, '')}</b>${fileAt ? `<small>${whenText(fileAt)}に${fileAtAuto ? '自動' : ''}保存${fileChanged ? '<em>・変更あり</em>' : ''}</small>` : ''}</span>` : ''; $('workName').title = bookFile ? `編集中のBOOKファイル：${bookFile}${fileChanged ? '（保存したあとに変更があります）' : ''}` : ''; $('workName').classList.toggle('chg', !!(bookFile && fileChanged));
     $('workOver').hidden = !on; $('workSaveLbl').textContent = on ? '別名で保存' : 'BOOKを保存';
@@ -5968,7 +5978,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     dirty = true; clearTimeout(autoT); autoT = setTimeout(autoSave, 300); syncAutoUI();
   });
   setInterval(async () => {
-    if(!autoOn || !fileHandle || (WD() && !fileHandle.drive) || !hasWork() || (fileSig && sigOf(buildProject()) === fileSig)) return;
+    if(!autoOn || !fileHandle || !hasWork() || (fileSig && sigOf(buildProject()) === fileSig)) return;
     // Web版：Googleとの接続が切れていたら、つなぎ直すまで待つ（自動保存はONのまま）
     if(fileHandle.drive && !gValid()){ gSync(); status('Google ドライブとの接続が切れたので、自動保存を待っています。右上の「つなぐ」を押すと再開します。'); return; }
     try{
@@ -6055,10 +6065,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     try{ list = await worksAll(); }catch(e){ list = []; }
     // Web版で Google ドライブにつないでいるとき：ドライブに保存済み（変更なし）のBOOKは上の段だけに。ここは「まだ保存していない作業」
     const driveMode = WEB && (gValid() || !!GD.email);
-    if(driveMode) list = list.filter(w => w.fileState !== 'synced');
-    $('stRecentTitle').textContent = driveMode ? 'まだ保存していない作業' : '続きから作る';
-    $('stRecentSub').textContent = driveMode ? 'このブラウザだけに一時保存' : 'このブラウザに一時保存（最近の8件まで）';
-    $('stRecentNote').textContent = driveMode ? '一時保存なので、消えることがあります。「BOOKを保存」で Google ドライブに保存すると、上の段に移ります。' : '一時保存なので、消えることがあります。大切なBOOKは「BOOKを保存」でファイルにしておくと安心です。';
+    // ドライブに保存済み（変更なし）は上の段だけに。パソコンに保存したBOOKと、まだ保存していない作業はこちら
+    if(driveMode) list = list.filter(w => !(w.fileState === 'synced' && w.handle && w.handle.drive));
+    $('stRecentTitle').textContent = driveMode ? 'このパソコン' : '続きから作る';
+    $('stRecentSub').textContent = driveMode ? 'パソコンに保存したBOOKと、まだ保存していない作業（最近の8件まで）' : 'このブラウザに一時保存（最近の8件まで）';
+    $('stRecentNote').textContent = driveMode ? 'Google ドライブに保存すると、上の段に移ります。パソコンに保存したBOOKは、ここに出ていなくても「パソコンのBOOKファイルを開く」から開けます。' : '一時保存なので、消えることがあります。大切なBOOKは「BOOKを保存」でファイルにしておくと安心です。';
     const box = $('stRecent'), row = $('stRecentList');
     if(list.length) photosBytes().then(b => { $('stRecentSize').textContent = b ? `・写真 約${b >= 1e9 ? (b / 1e9).toFixed(1) + 'GB' : Math.max(1, Math.round(b / 1e6)) + 'MB'}` : ''; });
     box.hidden = !list.length; row.innerHTML = '';
@@ -6069,7 +6080,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       card.className = 'strcard ' + (KIND_CLS[w.kind] || 'c1'); if(w.handle && w.handle.drive && w.handle.folderId) card.dataset.fid = w.handle.folderId;
       const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       card.innerHTML = `<div class="strkind"><i class="strdot"></i>${esc(KIND_NAME[w.kind] || 'BOOK')}</div><button type="button" class="strthumb" title="続きから編集する">${w.thumb ? `<img src="${w.thumb}" alt="">` : '<span class="strnoimg">写真なし</span>'}</button>`
-        + `<div class="strmeta">${w.bookFile ? `<small class="strfname" title="${esc(w.bookFile)}">${esc(w.bookFile).replace(/_/g, '_<wbr>')}</small>` : ''}<small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${w.pages}ページ・写真${w.photos}枚・${((w.project.settings || {}).fmt || 'jpg').toUpperCase()}</small>${w.fileState && w.bookFile ? `<small class="strfile${w.fileState === 'synced' ? ' ok' : ''}" title="${esc(w.bookFile || '')}">${w.fileState === 'synced' ? '✓ BOOKに保存済み' : (w.handle && w.handle.drive ? 'Google ドライブに保存後、変更あり' : 'BOOKに保存後、変更あり')}</small>` : ''}</div>`
+        + `<div class="strmeta">${w.bookFile ? `<small class="strfname" title="${esc(w.bookFile)}">${esc(w.bookFile).replace(/_/g, '_<wbr>')}</small>` : ''}<small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${w.pages}ページ・写真${w.photos}枚・${((w.project.settings || {}).fmt || 'jpg').toUpperCase()}</small>${w.fileState && w.bookFile ? `<small class="strfile${w.fileState === 'synced' ? ' ok' : ''}" title="${esc(w.bookFile || '')}">${w.fileState === 'synced' ? (WEB ? '✓ パソコンに保存済み' : '✓ BOOKに保存済み') : (w.handle && w.handle.drive ? 'Google ドライブに保存後、変更あり' : (WEB ? 'パソコンに保存後、変更あり' : 'BOOKに保存後、変更あり'))}</small>` : ''}</div>`
         + `<button type="button" class="stredit">✎ 続きから編集</button><button type="button" class="strdel" title="このBOOKを削除" aria-label="このBOOKを削除">×</button>`;
       const open = async () => {
         try{ await openWork(w.id); stClose(); }catch(e){ status('このBOOKを開けませんでした。'); }
@@ -6126,7 +6137,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!hasFiles(e) || e.defaultPrevented) return;
     e.preventDefault();
     const f = [...e.dataTransfer.files].find(isProjectFile);
-    if(f) openProjectFile(f);
+    // Chrome・Edge：ドロップしたファイルにも、あとで上書き保存できるように（ファイルの場所を受け取る）
+    let hp = null;
+    try{ const it = [...e.dataTransfer.items].find(x => x.kind === 'file' && x.getAsFile() && isProjectFile(x.getAsFile())); if(it && it.getAsFileSystemHandle && !inArtifact) hp = it.getAsFileSystemHandle(); }catch(err){}
+    if(f) (hp ? hp.then(h => openProjectFile(f, h && h.kind === 'file' ? h : undefined), () => openProjectFile(f)) : openProjectFile(f));
     else if(!$('startModal').hidden) status('この画面には、BOOKファイル（.pbmk）をドロップできます。');
   });
   // ---------- Web版：Google ドライブ連携（ローカル版では何もしない） ----------
