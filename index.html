@@ -741,7 +741,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .strhid{opacity:.6}.strhid:hover{opacity:1}
 .strback{position:absolute;right:6px;top:6px;border:0;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:inherit;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer}
 .strback:hover{background:rgba(0,0,0,.75)}
-.gquota{order:9;margin-left:0;padding-left:8px;flex:none;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);white-space:nowrap}
+.gmine{margin-left:6px;color:var(--muted);flex:none}
+.gquota{order:9;margin-left:2px;padding-left:12px;border-left:1px solid var(--line);flex:none;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);white-space:nowrap}
 .gquota small{font-size:11px}
 .gqbar{position:relative;display:inline-block;width:44px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
 .gqbar i{position:absolute;inset:0 auto 0 0;background:#2E9C8F;border-radius:2px}
@@ -6353,11 +6354,21 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       el.hidden = false;
     }catch(e){}
   }
+  // 「PHOTO BOOK MAKER」フォルダで使っている容量（このツールで保存した写真・設定・サムネイル）
+  async function gMine(el){
+    if(!el || !gValid()) return;
+    try{
+      let mine = 0;
+      (await gList(`trashed=false and (appProperties has { key='pbm' and value='photo' } or appProperties has { key='pbm' and value='json' } or appProperties has { key='pbm' and value='thumb' } or appProperties has { key='pbm' and value='font' })`, 'files(quotaBytesUsed)')).forEach(f => { mine += Number(f.quotaBytesUsed) || 0; });
+      if(!el.isConnected) return;
+      el.textContent = gSize(mine); el.title = `このフォルダで使っている容量（写真・設定など）：${gSize(mine)}`; el.hidden = false;
+    }catch(e){}
+  }
   async function renderDriveStart(){
     if(!WEB) return;
     const box = $('stDrive'); box.hidden = false; if(!gValid()) $('stDriveQuota').hidden = true;
     const cloud = '<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">';
-    $('stDriveAcct').innerHTML = GD.email ? `<span class="gwhere">${esc2(GD.email)} の「PHOTO BOOK MAKER」フォルダ</span>` : '';
+    $('stDriveAcct').innerHTML = GD.email ? `<span class="gwhere">${esc2(GD.email)} の「PHOTO BOOK MAKER」フォルダ</span><span class="gmine" id="stDriveMine" hidden></span>` : '';
     $('stDriveSwitch').hidden = !GD.email;
     if(!$('stDriveSwitch').dataset.on){ $('stDriveSwitch').dataset.on = '1'; $('stDriveSwitch').addEventListener('click', async () => { if(await gSwitch()) renderRecent(); }); }
     const connect = async () => { if(await gEnsure(true)){ renderRecent(); status(`「${GD.email}」のGoogle ドライブと連携しました。`); } };
@@ -6381,6 +6392,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     await driveCards($('stDriveList'), f => openDriveBook(f), 'fit');
     gFolderLink($('stDriveAcct').querySelector('.gwhere'));
     gQuota($('stDriveQuota'));
+    gMine($('stDriveMine'));
   }
   // 「BOOKを開く」（Web版）：ドライブのBOOK一覧。パソコンのBOOKファイルも開ける
   async function openDriveModal(){
