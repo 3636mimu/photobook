@@ -729,6 +729,11 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .glink:hover{color:var(--accent);text-decoration-color:currentColor}
 .glink svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 #stDriveList .strcard,#stRecentList .strcard{flex-basis:var(--cw,172px)}
+.gcar{position:relative}
+.gcar #stDriveList{scrollbar-width:none;padding-right:52px;scroll-padding-left:2px}
+.gcar #stDriveList::-webkit-scrollbar{display:none}
+.strmore.carL,.strmore.carR{position:absolute;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.strmore.carR{right:0}.strmore.carL{left:-6px}
 .strmore{flex:none;align-self:center;width:40px;height:40px;border:1.5px solid var(--line);border-radius:50%;background:var(--panel);font:inherit;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:border-color .15s,color .15s,transform .15s}
 .strmore span{font-size:24px;line-height:1;margin:-3px 0 0 2px}
 .strmore:hover{border-color:var(--accent);color:var(--accent);transform:translateX(2px)}
@@ -5858,12 +5863,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
     status('BOOKを保存しています…');
     // 別の名前で保存したら、別のBOOKにする：元のBOOKのカードは、元のファイルに保存したときの中身で残す
-    const newName = handle ? handle.name : name, prevName = bookFile, prevId = workId, prevSnap = fileSnap, prevHandle = fileHandle;
+    let newName = handle ? handle.name : name; const prevName = bookFile, prevId = workId, prevSnap = fileSnap, prevHandle = fileHandle;
     const baseOf = n => n.replace(/\.pbmk?$/i, '').toLowerCase();
     const saveAs = !!(prevName && prevId && baseOf(newName) !== baseOf(prevName));
     if(saveAs){ workId = newId(); baseSavedAt = 0; }
     try{
       if(handle && handle.drive) await driveSave(handle, saveAs && prevHandle && prevHandle.drive ? prevHandle : null, true);
+      if(handle && handle.drive && handle.name) newName = handle.name;   // ドライブ側で名前が変わっていたら、その名前で
       else {
         const blob = await projectBlob(withPhotos);
         if(handle) await writeTo(handle, blob);
@@ -6020,7 +6026,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const z = n => String(n).padStart(2, '0');
     list.forEach(w => {
       const d = new Date(w.savedAt), card = document.createElement('div');
-      card.className = 'strcard ' + (KIND_CLS[w.kind] || 'c1');
+      card.className = 'strcard ' + (KIND_CLS[w.kind] || 'c1'); if(w.handle && w.handle.drive && w.handle.folderId) card.dataset.fid = w.handle.folderId;
       const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       card.innerHTML = `<div class="strkind"><i class="strdot"></i>${esc(KIND_NAME[w.kind] || 'BOOK')}</div><button type="button" class="strthumb" title="続きから編集する">${w.thumb ? `<img src="${w.thumb}" alt="">` : '<span class="strnoimg">写真なし</span>'}</button>`
         + `<div class="strmeta">${w.bookFile ? `<small class="strfname" title="${esc(w.bookFile)}">${esc(w.bookFile).replace(/_/g, '_<wbr>')}</small>` : ''}<small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${w.pages}ページ・写真${w.photos}枚・${((w.project.settings || {}).fmt || 'jpg').toUpperCase()}</small>${w.fileState && w.bookFile ? `<small class="strfile${w.fileState === 'synced' ? ' ok' : ''}" title="${esc(w.bookFile || '')}">${w.fileState === 'synced' ? '✓ BOOKに保存済み' : (w.handle && w.handle.drive ? 'Google ドライブに保存後、変更あり' : 'BOOKに保存後、変更あり')}</small>` : ''}</div>`
@@ -6194,6 +6200,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!(await gEnsure(true))){ const e = new Error('auth'); e.auth = true; throw e; }
     if(!workId) workId = newId();
     if(show) gBusy('Google ドライブに保存しています', '準備しています…', null);
+    // ドライブ側でBOOKのフォルダ名が変わっていたら、その名前に合わせる（上書きで戻さない）
+    if(h.folderId && !h.renamed){ try{ const r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(h.folderId)}?fields=name,trashed`); if(r && r.name && !r.trashed && r.name !== h.name){ h.name = r.name; if(fileHandle === h){ bookFile = r.name; syncAutoUI(); } } }catch(e){} }
     await ensurePhotosReadable();
     const P = buildProject(); P.withPhotos = true; P.drive = { photos: {}, fonts: [] };
     if(!h.folderId){
@@ -6296,11 +6304,31 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const b = $('driveShowHid'); b.hidden = !n && !GD.showHid;
     b.textContent = GD.showHid ? '一覧から外したBOOKを隠す' : `一覧から外したBOOK（${n}冊）も表示`;
   }
+  // 起動画面のドライブの段：５冊ずつ、左右の矢印で横に送る（画面は切り替えない）
+  function setupCarousel(row){
+    const box = row.parentElement; box.classList.add('gcar');
+    let L = box.querySelector('.carL'), Rt = box.querySelector('.carR');
+    if(!L){
+      L = document.createElement('button'); L.type = 'button'; L.className = 'strmore carL'; L.innerHTML = '<span>‹</span>'; L.title = L.ariaLabel = '前へ';
+      Rt = document.createElement('button'); Rt.type = 'button'; Rt.className = 'strmore carR'; Rt.innerHTML = '<span>›</span>'; Rt.title = Rt.ariaLabel = '次へ';
+      const page = d => row.scrollBy({ left: d * Math.max(200, row.clientWidth - 52), behavior: 'smooth' });
+      L.addEventListener('click', () => page(-1)); Rt.addEventListener('click', () => page(1));
+      row.addEventListener('scroll', () => sync(), { passive: true });
+      box.append(L, Rt);
+    }
+    const sync = () => {
+      const top = row.offsetTop + row.offsetHeight / 2 - 20; L.style.top = Rt.style.top = top + 'px';
+      L.hidden = row.scrollLeft < 4; Rt.hidden = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
+    };
+    row.scrollLeft = 0; requestAnimationFrame(sync);
+    box._carSync = sync;
+  }
   // ドライブのBOOKをカードで並べる（最初の画面と「BOOKを開く」で共通）
   async function driveCards(row, onOpen, limit){
     row.innerHTML = '<p class="strnote">読み込んでいます…</p>';
     let list = [];
     try{ list = await gBooks(); }catch(e){ row.innerHTML = '<p class="strnote">Google ドライブから読み込めませんでした。</p>'; return 0; }
+    const full = list;
     // 「一覧から外す」にしたBOOK（データはドライブに残っている）。「すべて見る」で表示を切り替えられる
     const isHid = f => (f.appProperties || {}).hidden === '1';
     const nHid = list.filter(isHid).length; if(row.id === 'driveList') syncHidToggle(nHid);
@@ -6308,8 +6336,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     row.innerHTML = list.length ? '' : `<p class="strnote">${nHid ? 'ここに表示するBOOKはありません。' : 'まだGoogle ドライブに保存したBOOKはありません。'}</p>`;
     const z = n => String(n).padStart(2, '0');
     // 起動画面：横スクロールしないで並ぶ数だけ（入りきらない分は「すべて見る」）
-    if(limit === 'fit'){ const w = row.clientWidth || 860, cw = Math.max(140, Math.min(172, Math.floor((w - 52 - 12 * 5) / 5))), card = cw + 12, fitAll = Math.max(1, Math.floor((w + 12) / card)); $('startModal').style.setProperty('--cw', cw + 'px'); limit = list.length <= fitAll && !nHid ? 0 : Math.max(1, Math.floor((w + 12 - 52) / card)); }
+    const carousel = limit === 'fit'; if(carousel){ const w = row.clientWidth || 860, cw = Math.max(140, Math.min(172, Math.floor((w - 52 - 12 * 4) / 5))); $('startModal').style.setProperty('--cw', cw + 'px'); limit = 0; }
     const all = list.length; if(limit && all > limit) list = list.slice(0, limit);
+    // 「まだ保存していない作業」のカードも、ドライブ側の今の名前に合わせる
+    if(row.id === 'stDriveList'){ const nm = {}; full.forEach(f => { nm[f.id] = f.name; }); document.querySelectorAll('#stRecentList .strcard[data-fid]').forEach(c => { const n = nm[c.dataset.fid], el = c.querySelector('.strfname'); if(n && el && el.textContent !== n){ el.textContent = n; el.title = n; } }); }
     list.forEach(f => {
       const a = f.appProperties || {}, d = new Date(f.modifiedTime), card = document.createElement('div');
       const hid = isHid(f);
@@ -6328,17 +6358,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(a.thumb) gGet(a.thumb).then(b => { card.querySelector('.strthumb').innerHTML = `<img src="${URL.createObjectURL(b)}" alt="">`; }).catch(() => {});
       row.appendChild(card);
     });
-    if(limit && (all > limit || nHid)){
-      const more = document.createElement('button'); more.type = 'button'; more.className = 'strmore';
-      more.innerHTML = '<span>›</span>'; more.title = `すべて見る（全${all + nHid}冊）`; more.setAttribute('aria-label', more.title);
-      more.addEventListener('click', () => openDriveModal()); row.appendChild(more);
-    }
+    if(carousel) setupCarousel(row);
     return all;
   }
   // 「〇〇 の「PHOTO BOOK MAKER」フォルダ」を、Google ドライブのそのフォルダへのリンクに
   async function gFolderLink(el){
     if(!el || !gValid()) return;
     try{ const id = await gRoot(); if(!id || !el.isConnected) return;
+      // ドライブ側でフォルダ名を変えていても、実際の名前で表示する
+      try{ const r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(id)}?fields=name`); if(r && r.name) el.textContent = `${GD.email} の「${r.name}」フォルダ`; }catch(e){}
+      if(!el.isConnected) return;
       const a = document.createElement('a'); a.className = 'gwhere glink'; a.target = '_blank'; a.rel = 'noopener';
       a.href = `https://drive.google.com/drive/folders/${encodeURIComponent(id)}?authuser=${encodeURIComponent(GD.email)}`;
       a.title = 'Google ドライブで、このフォルダを開きます'; a.innerHTML = el.innerHTML + '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v4H2.5V4h4"/></svg>'; el.replaceWith(a);
