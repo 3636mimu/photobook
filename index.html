@@ -741,6 +741,13 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .strhid{opacity:.6}.strhid:hover{opacity:1}
 .strback{position:absolute;right:6px;top:6px;border:0;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:inherit;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer}
 .strback:hover{background:rgba(0,0,0,.75)}
+.gquota{order:9;margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);white-space:nowrap}
+.gquota small{font-size:11px}
+.gqbar{position:relative;display:inline-block;width:64px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.gqbar i{position:absolute;inset:0 auto 0 0;background:#2E9C8F;border-radius:2px}
+.gqbar.full i{background:#C0392B}
+.howopt{display:block;margin-top:4px}.howopt em{font-style:normal;font-weight:700;margin-right:8px}
+.howopt em::before{content:'・'}
 .gswitch{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;margin-left:10px;white-space:nowrap}
 .gswitch:hover{color:var(--accent)}
 .ginvite{border:1.5px solid #E8B4A2;background:#FFF9F6;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -949,6 +956,19 @@ header .howto summary{background:rgba(255,255,255,.75);border-color:transparent}
 #stStep1 .stchoices{gap:16px;margin-top:0}
 #stStep1 .stcard{padding:18px 16px}
 #stStep1 .stfoot{margin-top:26px}
+/* 高さの低い画面：縦にスクロールしないで収まるように詰める */
+@media (max-height:900px){
+  #stStep1 .sthero{height:100px}
+  #stStep1 .sthero h3{font-size:23px}
+  #stStep1 .stsub{margin:16px 0 12px}
+  #stStep1 .stcard{padding:11px 16px}
+  #stStep1 .stchoices{gap:12px}
+  #stStep1 .stfoot{margin-top:16px}
+  #stStep1.ststep{padding-bottom:18px}
+  #startModal .strecent{margin-top:14px}
+  #startModal .strthumb{aspect-ratio:16/9}
+  #startModal .strhead{margin-bottom:6px}
+}
 #stPages{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;flex:1 1 auto;min-width:0;width:100%}
 #stPages button{width:100%;padding:6px 4px}
 #stPages button small{white-space:nowrap;letter-spacing:-.01em}
@@ -1456,12 +1476,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         <button type="button" class="stcard c3" data-k="life"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="20" y="4" width="26" height="40" rx="2" fill="#fff"/><rect x="18" y="4" width="4" height="40" rx="1.5" fill="currentColor" opacity=".7"/><circle cx="34" cy="20" r="7" fill="currentColor" opacity=".55"/><rect x="27" y="32" width="14" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback LIFE</b><span>編集・装飾・確認が手軽に出来ます。<br>ページごとに JPG を書き出して簡単入稿。</span></button>
         <button type="button" class="stcard c4" data-k="graph"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="3" width="36" height="42" rx="2" fill="#fff"/><rect x="12" y="3" width="4.5" height="42" rx="1.5" fill="currentColor" opacity=".7"/><rect x="20" y="8" width="26" height="26" rx="1" fill="currentColor" opacity=".55"/><rect x="20" y="38" width="16" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback GRAPH</b><span>編集・装飾・確認が手軽に出来ます。<br>ページごとに JPG を書き出して簡単入稿。</span></button>
       </div>
-      <div class="strecent" id="stDrive" hidden><div class="strhead"><b class="ghead"><img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">Google ドライブ</b><small id="stDriveAcct"></small></div><div class="strlist" id="stDriveList"></div></div>
-      <div class="strecent" id="stRecent" hidden><div class="strhead"><b>続きから作る</b><small>このブラウザに一時保存（最近の8件まで）<span id="stRecentSize"></span></small></div><div class="strlist" id="stRecentList"></div><p class="strnote">一時保存なので、消えることがあります。大切なBOOKは「BOOKを保存」でファイルにしておくと安心です。</p></div>
+      <div class="strecent" id="stDrive" hidden><div class="strhead"><span class="gquota" id="stDriveQuota" hidden></span><b class="ghead"><img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">Google ドライブ</b><small id="stDriveAcct"></small></div><div class="strlist" id="stDriveList"></div></div>
+      <div class="strecent" id="stRecent" hidden><div class="strhead"><b id="stRecentTitle">続きから作る</b><small><span id="stRecentSub">このブラウザに一時保存（最近の8件まで）</span><span id="stRecentSize"></span></small></div><div class="strlist" id="stRecentList"></div><p class="strnote" id="stRecentNote">一時保存なので、消えることがあります。大切なBOOKは「BOOKを保存」でファイルにしておくと安心です。</p></div>
       <div class="sthowbox" id="stHowBox" hidden><ol>
         <li><b>作りたいものを選ぶ</b>4つのカードから、いちばん近いものを押します。<br>見開きコラージュは画面で楽しむ用、PDF写真集と Photoback は一冊にまとめる用です。</li>
-        <li><b>ページ数などを選ぶ</b>次の画面で、保存形式・ページ数・仕上がりサイズ・ページの解像度を選びます。<br>はじめからおすすめが選ばれているので、そのままでも大丈夫です。</li>
-        <li><b>「この設定ではじめる」を押す</b>編集画面に移ります。<br>設定は、あとから画面上部でいつでも変えられます。</li>
+        <li><b>ページ数などを選ぶ</b>次の画面（STEP 2）で、ページ数や仕上がりサイズなどを選びます。Photoback はページ数だけです。<br>はじめからおすすめが選ばれているので、そのままでも大丈夫です。</li>
+        <li><b>「この設定ではじめる」を押す</b>STEP 2 の画面の右下にあるボタンです。押すと編集画面に移ります。<br>設定は、あとから画面上部でいつでも変えられます。</li>
         <li><b>前と同じでいいときは</b>右下の「前回の設定のまま始める」を押すと、この質問をとばして始められます。</li>
         <li id="stHowCont"><b>続きから作るときは</b>BOOKは自動で保存され、「続きから作る」に並びます。<br>保存したBOOKファイル（.pbmk）は、右下の「<span class="devn">パソコン</span>のBOOKファイルを開く」から開けます。</li>
       </ol></div>
@@ -1851,11 +1871,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const PBM_WEB = window.PBM_WEB || {}, WEB = !!window.PBM_WEB;
   // この端末の呼び名（「パソコンのBOOKファイルを開く」など。iPad・スマホではその名前で）
   const DEVN = (/iPad/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) ? 'iPad' : /iPhone|Android.+Mobile/.test(navigator.userAgent) ? 'スマホ' : 'パソコン';
-  if(WEB){ const li = document.getElementById('stHowCont'); if(li) li.innerHTML = '<b>続きから作るときは</b>Google ドライブにつないでいると、BOOKはドライブに保存され、「Google ドライブ」に並びます。パソコンでも iPad でもスマホでも、続きから編集できます。<br>つながずに使うときは、このブラウザに自動で一時保存され、「続きから作る」に並びます。<br>保存したBOOKファイル（.pbmk）は、右下の「<span class="devn"></span>のBOOKファイルを開く」から開けます。'; }
   document.querySelectorAll('.devn').forEach(e => { e.textContent = DEVN; });
   // Web版のスマホ・iPad は Google ドライブにつないで使う（ローカルのファイル保存は出さない）
   const MOBILE = WEB && DEVN !== 'パソコン';
   if(MOBILE){ const of = document.getElementById('stOpenFile'); if(of) of.hidden = true; const dl = document.getElementById('driveLocal'); if(dl) dl.textContent = 'ファイルから開く…'; }
+  if(WEB){ const li = document.getElementById('stHowCont'); if(li) li.innerHTML = MOBILE
+    ? '<b>保存先は Google ドライブ</b>BOOKは自分の Google ドライブに保存され、「Google ドライブ」に並びます。<br>パソコンでも iPad でもスマホでも、どの端末からでも続きから編集できます。'
+    : '<b>保存先を選べます</b><span class="howopt"><em>Google ドライブにつなぐ</em>BOOKは自分の Google ドライブに保存され、「Google ドライブ」に並びます。パソコンでも iPad でもスマホでも、どの端末からでも続きから編集できます。</span>'
+    + '<span class="howopt"><em>つながずに使う</em>このパソコンだけで使います。作業はこのブラウザに自動で一時保存され、「続きから作る」に並びます。BOOKファイル（.pbmk）に保存したものは、右下の「パソコンのBOOKファイルを開く」から開けます。</span>'; }
   // iPhone・iPad では .pbmk が選べない（灰色になる）ことがあるので、種類をしぼらずに選べるようにする（中身は開くときに確かめる）
   if(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)){ const wf = document.getElementById('workFile'); if(wf) wf.removeAttribute('accept'); }
   { const ic = document.querySelector('#stOpenFile svg'); if(ic && DEVN !== 'パソコン') ic.innerHTML = DEVN === 'iPad' ? '<rect x="3" y="1.8" width="10" height="12.4" rx="1.4"/><path d="M7 12.2h2"/>' : '<rect x="4.5" y="1.5" width="7" height="13" rx="1.4"/><path d="M7.2 12.4h1.6"/>'; }
@@ -5971,6 +5994,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   async function renderRecent(){
     let list = [];
     try{ list = await worksAll(); }catch(e){ list = []; }
+    // Web版で Google ドライブにつないでいるとき：ドライブに保存済み（変更なし）のBOOKは上の段だけに。ここは「まだ保存していない作業」
+    const driveMode = WEB && (gValid() || !!GD.email);
+    if(driveMode) list = list.filter(w => !(w.fileState === 'synced' && w.handle && w.handle.drive));
+    $('stRecentTitle').textContent = driveMode ? 'まだ保存していない作業' : '続きから作る';
+    $('stRecentSub').textContent = driveMode ? 'このブラウザだけに一時保存' : 'このブラウザに一時保存（最近の8件まで）';
+    $('stRecentNote').textContent = driveMode ? '一時保存なので、消えることがあります。「BOOKを保存」で Google ドライブに保存すると、上の段に移ります。' : '一時保存なので、消えることがあります。大切なBOOKは「BOOKを保存」でファイルにしておくと安心です。';
     const box = $('stRecent'), row = $('stRecentList');
     if(list.length) photosBytes().then(b => { $('stRecentSize').textContent = b ? `・写真 約${b >= 1e9 ? (b / 1e9).toFixed(1) + 'GB' : Math.max(1, Math.round(b / 1e6)) + 'MB'}` : ''; });
     box.hidden = !list.length; row.innerHTML = '';
@@ -5981,7 +6010,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       card.className = 'strcard ' + (KIND_CLS[w.kind] || 'c1');
       const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       card.innerHTML = `<button type="button" class="strthumb" title="続きから編集する">${w.thumb ? `<img src="${w.thumb}" alt="">` : '<span class="strnoimg">写真なし</span>'}</button>`
-        + `<div class="strmeta"><b><i class="strdot"></i>${esc(KIND_NAME[w.kind] || 'BOOK')}</b><small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${w.pages}ページ・写真${w.photos}枚・${((w.project.settings || {}).fmt || 'jpg').toUpperCase()}</small>${w.fileState && w.bookFile ? `<small class="strfile${w.fileState === 'synced' ? ' ok' : ''}" title="${esc(w.bookFile || '')}">${w.fileState === 'synced' ? '✓ BOOKに保存済み' : 'BOOKに保存後、変更あり'}</small>${w.bookFile ? `<small class="strfname" title="${esc(w.bookFile)}">${esc(w.bookFile).replace(/_/g, '_<wbr>')}</small>` : ''}` : ''}</div>`
+        + `<div class="strmeta"><b><i class="strdot"></i>${esc(KIND_NAME[w.kind] || 'BOOK')}</b><small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${w.pages}ページ・写真${w.photos}枚・${((w.project.settings || {}).fmt || 'jpg').toUpperCase()}</small>${w.fileState && w.bookFile ? `<small class="strfile${w.fileState === 'synced' ? ' ok' : ''}" title="${esc(w.bookFile || '')}">${w.fileState === 'synced' ? '✓ BOOKに保存済み' : (w.handle && w.handle.drive ? 'Google ドライブに保存後、変更あり' : 'BOOKに保存後、変更あり')}</small>${w.bookFile ? `<small class="strfname" title="${esc(w.bookFile)}">${esc(w.bookFile).replace(/_/g, '_<wbr>')}</small>` : ''}` : ''}</div>`
         + `<button type="button" class="stredit">✎ 続きから編集</button><button type="button" class="strdel" title="このBOOKを削除" aria-label="このBOOKを削除">×</button>`;
       const open = async () => {
         try{ await openWork(w.id); stClose(); }catch(e){ status('このBOOKを開けませんでした。'); }
@@ -6302,13 +6331,27 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       a.title = 'Google ドライブで、このフォルダを開きます'; a.innerHTML = el.innerHTML + '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v4H2.5V4h4"/></svg>'; el.replaceWith(a);
     }catch(e){}
   }
+  // Google ドライブの保存容量（全体）と、このツールで使っている分
+  const gSize = n => { const G = 1024 ** 3, f = v => String(Number(v.toFixed(v >= 100 ? 0 : v >= 10 ? 1 : 2))); return n >= 1024 * G ? f(n / 1024 / G) + ' TB' : n >= G ? f(n / G) + ' GB' : Math.max(1, Math.round(n / 1024 ** 2)) + ' MB'; };   // Google と同じ数え方（15 GB など）
+  async function gQuota(el){
+    if(!el || !gValid()) return;
+    try{
+      const q = ((await gJson(`${GAPI}/drive/v3/about?fields=storageQuota(limit,usage)`)) || {}).storageQuota || {};
+      const used = Number(q.usage) || 0, limit = Number(q.limit) || 0;
+      let mine = 0; try{ (await gList(`trashed=false and (appProperties has { key='pbm' and value='photo' } or appProperties has { key='pbm' and value='json' } or appProperties has { key='pbm' and value='thumb' } or appProperties has { key='pbm' and value='font' })`, 'files(quotaBytesUsed)')).forEach(f => { mine += Number(f.quotaBytesUsed) || 0; }); }catch(e){}
+      const pct = limit ? Math.min(100, used / limit * 100) : 0;
+      el.innerHTML = `<span class="gqtext">${limit ? `${gSize(limit)} 中 ${gSize(used)} を使用` : `${gSize(used)} を使用`}${mine ? `<small>（このツール ${gSize(mine)}）</small>` : ''}</span>${limit ? `<i class="gqbar${pct >= 90 ? ' full' : ''}"><i style="width:${pct.toFixed(1)}%"></i></i>` : ''}`;
+      el.title = `Google アカウントの保存容量（ドライブ・Gmail・Google フォトで共有）：${limit ? `${gSize(limit)} 中 ${gSize(used)}（${Math.round(pct)}%）` : gSize(used)} を使用。${mine ? `そのうち、このツールのBOOK（写真・設定）は ${gSize(mine)} です。` : ''}`;
+      el.hidden = false;
+    }catch(e){}
+  }
   async function renderDriveStart(){
     if(!WEB) return;
-    const box = $('stDrive'); box.hidden = false;
+    const box = $('stDrive'); box.hidden = false; if(!gValid()) $('stDriveQuota').hidden = true;
     const cloud = '<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">';
     $('stDriveAcct').innerHTML = GD.email ? `<span class="gwhere">${esc2(GD.email)} のマイドライブ「PHOTO BOOK MAKER」フォルダ</span><button type="button" class="gswitch" id="stDriveSwitch">アカウントを切り替え</button>` : '';
     if(GD.email) $('stDriveSwitch').addEventListener('click', async () => { if(await gSwitch()) renderDriveStart(); });
-    const connect = async () => { if(await gEnsure(true)){ renderDriveStart(); status(`「${GD.email}」のGoogle ドライブと連携しました。`); } };
+    const connect = async () => { if(await gEnsure(true)){ renderRecent(); status(`「${GD.email}」のGoogle ドライブと連携しました。`); } };
     // はじめて：Google ドライブをおすすめ（つながずに使うこともできる）
     if(!gValid() && !GD.email && (!gSkipped() || MOBILE)){
       $('stDriveList').innerHTML = `<div class="ginvite"><p><b>${MOBILE ? 'Google ドライブとつないで使います' : 'Google ドライブとつなぐのがおすすめです'}</b>作ったBOOKを、自分のGoogle ドライブに保存します。<br>パソコンでも iPad でもスマホでも、続きから編集できます。<br><small>写真やBOOKは、あなたのドライブにだけ保存されます。ほかの人や、このツールの作者が見ることはありません。</small></p><div class="gbtns"><button type="button" class="stopen" id="stDriveConn">${cloud}Google ドライブとつなぐ</button>${MOBILE ? '' : '<button type="button" class="stopen" id="stDriveSkip">つながずに使う</button>'}</div></div>`;
@@ -6328,6 +6371,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
     await driveCards($('stDriveList'), f => openDriveBook(f), 'fit');
     gFolderLink($('stDriveAcct').querySelector('.gwhere'));
+    gQuota($('stDriveQuota'));
   }
   // 「BOOKを開く」（Web版）：ドライブのBOOK一覧。パソコンのBOOKファイルも開ける
   async function openDriveModal(){
