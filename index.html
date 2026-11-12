@@ -1392,7 +1392,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <li>「文字・画像の調整」の <b>反転</b> で、文字を左右（鏡文字）・上下に反転できます。影や縁取りのずれの向きは反転しても変わりません。</li>
       <li>このツールのスライダーはすべて、つまみ（またはスライダー）をダブルクリックすると初期値に戻ります（設定の影の幅・画質、写真の調整の傾き補正・拡大縮小、文字の編集画面の各項目など）。</li>
       <li>文字の編集画面のスライダーには、右側に数値の入力欄があります。数値を直接入力（Enter で確定）するか、入力欄で ↑↓ キーを押して細かく調整できます。</li>
-      <li><b>マイスタイル</b>（文字の編集画面の「＋ 文字」の下）：お気に入りの文字を保存しておけます。<span class="btn">パーツを保存</span> は選んでいる文字や画像1つ（内容・見た目・位置）を、<span class="btn">ページ一式を保存</span> はその見開きの文字・画像ぜんぶを一式で保存します（別の見開きでも読み込めます）。保存した文字1つは <span class="btn">追加</span> でそのまま入れたり、<span class="btn">適用</span> で選んでいる文字に見た目（フォント・色・大きさ・縁取り・影など）だけを当てはめたりできます。一式は <span class="btn">読み込む</span> で今の文字と入れ替わります。名前は自由に付けられ、いくつでも保存できます。保存先はこのブラウザですが、<span class="btn">ファイルに書き出す</span> で JSON ファイルにしておけば、バックアップや別のパソコン・ブラウザへの持ち出しができます。<span class="btn">ファイルから読み込む</span> でそのファイルを選ぶと、今のマイスタイルに追加されます（同じものは重複しません）。</li>
+      <li><b>マイスタイル</b>（文字の編集画面の「＋ 文字」の下）：お気に入りの文字を保存しておけます。<span class="btn">パーツを保存</span> は選んでいる文字や画像1つ（内容・見た目・位置）を、<span class="btn">ページ一式を保存</span> はその見開きの文字・画像ぜんぶを一式で保存します（別の見開きでも読み込めます）。保存した文字1つは <span class="btn">追加</span> でそのまま入れたり、<span class="btn">適用</span> で選んでいる文字に見た目（フォント・色・大きさ・縁取り・影など）だけを当てはめたりできます。一式は <span class="btn">読み込む</span> で今の文字と入れ替わります。名前は自由に付けられ、いくつでも保存できます。保存先はこのブラウザです（Web版で Google ドライブにつないでいるときは、ドライブにも保存され、どの端末でも同じマイスタイルになります）。また、<span class="btn">ファイルに書き出す</span> で JSON ファイルにしておけば、バックアップや別のパソコン・ブラウザへの持ち出しができます。<span class="btn">ファイルから読み込む</span> でそのファイルを選ぶと、今のマイスタイルに追加されます（同じものは重複しません）。</li>
     </ul>
     <p><b>横の表示</b>（ノドの影のスイッチの下）：画面に横に並べる写真の枚数を、4枚（2見開き）・8枚（4見開き）・10枚（5見開き）から選べます。保存する画像には影響しません。画面の幅が狭いときは 4枚になります。選んだ表示は記憶されます。（初期値：4枚）</p>
     <p><b>テンプレート</b>（横の表示の下。押すと開きます。右の ON / OFF スイッチで、写真の下の値の表示をまとめて出したり消したりできます。OFF にしても選んだテンプレートは残ります）：上の行から順番に写真が割り当てられます。①〜③は8枚ぶん、④距離は6枚ぶんで、行の見出し（例：1〜6枚目）は自動で変わります。ページ数に足りないときは行が自動で増え、増えた行は上の行と同じテンプレートから始まります。選ぶと、各写真の下に値と構図（例：<span class="tv"><b>後0.5</b> 全身</span>、<span class="tv"><b>右2</b> 胸上</span>）が出ます。構図は数値で決まります（5 顎上／4 鎖骨上／3・2 胸上／1.5 膝上／0.5 全身／0.2 風景）。画面に表示するだけで、保存画像には入りません。（初期値：すべて「なし」）</p>
@@ -4562,7 +4562,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const STY_KEY = 'mihiraki-text-styles-v1';
   let myStyles = [];
   try{ const v = JSON.parse(localStorage.getItem(STY_KEY) || '[]'); if(Array.isArray(v)) myStyles = v.filter(x => x && (x.item || x.items)); }catch(e){}
-  const saveStyles = () => { try{ localStorage.setItem(STY_KEY, JSON.stringify(myStyles)); return true; }catch(e){ return false; } };
+  const STY_AT = 'mihiraki-text-styles-at';   // マイスタイルを最後に変えた時刻（Google ドライブと、新しいほうに合わせる）
+  let stylesHook = null;                        // Web版：変えたら Google ドライブにも保存する
+  const saveStyles = () => { try{ localStorage.setItem(STY_KEY, JSON.stringify(myStyles)); localStorage.setItem(STY_AT, String(Date.now())); }catch(e){ return false; } if(stylesHook) stylesHook(); return true; };
   const STYLE_KEYS = ['spill','font','bold','italic','flipH','flipV','sx','sy','size','color','op','rot','ls','lh','align','valign','vert','shadow','shC','shA','shB','shD','shS','shX','shY','strokeOn','stroke','stA','stB','stD','stG','stX','stY','stJ','stLJ','stShape','sc','scLink','shLink','ilOn','ilC','ilLink','ilW'];
   const clone = o => JSON.parse(JSON.stringify(o));
   function styMsg(t){ $('tStyMsg').textContent = t; clearTimeout(styMsg.t); styMsg.t = setTimeout(() => { $('tStyMsg').textContent = ''; }, 4000); }
@@ -6122,7 +6124,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         GD.tok = r.access_token; GD.exp = Date.now() + (Number(r.expires_in) || 3600) * 1000 - 60000;
         try{ sessionStorage.setItem('pbm-gtok', JSON.stringify({ tok: GD.tok, exp: GD.exp })); }catch(e){}
         try{ const a = await gJson(`${GAPI}/drive/v3/about?fields=user(emailAddress)`); if(a && a.user && a.user.emailAddress){ GD.email = a.user.emailAddress; try{ localStorage.setItem('pbm-gacct', GD.email); }catch(e){} } }catch(e){}
-        gSync(); done && done(true);
+        gSync(); done && done(true); gStylesPull();
       },
       error_callback: () => { const done = GD.wait; GD.wait = null; done && done(false); } });
     return true;
@@ -6144,7 +6146,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // アカウントの切り替え（いまの連携は解除しない。戻すときも、選び直すだけ）
   async function gSwitch(){
     const keep = { tok: GD.tok, exp: GD.exp, email: GD.email };
-    GD.tok = ''; GD.exp = 0; GD.root = ''; try{ sessionStorage.removeItem('pbm-gtok'); }catch(e){}
+    GD.tok = ''; GD.exp = 0; GD.root = ''; styFileId = ''; try{ sessionStorage.removeItem('pbm-gtok'); }catch(e){}
     if(await gEnsure(true, true)){
       // 前のアカウントのBOOKを編集中なら、次の保存は新しいアカウントに新しいBOOKとして
       const moved = GD.email !== keep.email && fileHandle && fileHandle.drive;
@@ -6179,6 +6181,40 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const gPatch = (id, meta) => gJson(`${GAPI}/drive/v3/files/${id}?fields=id,name`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(meta) });
   const gCopy = (id, meta) => gJson(`${GAPI}/drive/v3/files/${id}/copy?fields=id,name`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(meta) });
   const gGet = async id => (await gFetch(`${GAPI}/drive/v3/files/${id}?alt=media`)).blob();
+  // マイスタイルを Google ドライブで共有（「PHOTO BOOK MAKER」フォルダの mystyles.json）。どの端末でも同じマイスタイルに
+  let styFileId = '', styBusy = false, styT = 0;
+  async function gStylesFile(){
+    if(styFileId) return styFileId;
+    const f = await gList(`appProperties has { key='pbm' and value='styles' } and trashed=false`, 'files(id,modifiedTime)');
+    styFileId = f.length ? f[0].id : ''; return styFileId;
+  }
+  async function gStylesPush(){
+    if(!gValid()) return;
+    try{
+      const at = Number(localStorage.getItem(STY_AT)) || Date.now(), id = await gStylesFile();
+      const blob = new Blob([JSON.stringify({ app: 'mihiraki-mystyles', version: 1, at, styles: myStyles })], { type: 'application/json' });
+      styFileId = (await gUpload(id ? {} : { name: 'mystyles.json', parents: [await gRoot()], appProperties: { pbm: 'styles' } }, blob, id || undefined)).id;
+    }catch(e){ styFileId = ''; }
+  }
+  async function gStylesPull(){
+    if(!WEB || !gValid() || styBusy) return; styBusy = true;
+    try{
+      const id = await gStylesFile(), localAt = Number(localStorage.getItem(STY_AT)) || 0;
+      let D = null; if(id){ try{ D = JSON.parse(await (await gGet(id)).text()); }catch(e){ D = null; } }
+      const remote = D && Array.isArray(D.styles) ? D.styles.filter(x => x && (x.item || x.items)) : null, rAt = D ? Number(D.at) || 0 : 0;
+      if(!remote){ if(myStyles.length) await gStylesPush(); return; }
+      if(!localAt && myStyles.length && remote.length){
+        // はじめてつないだとき：両方にあれば合わせる（同じものは1つに）
+        const have = new Set(myStyles.map(x => JSON.stringify(x))); remote.forEach(x => { if(!have.has(JSON.stringify(x))) myStyles.push(x); });
+        try{ localStorage.setItem(STY_KEY, JSON.stringify(myStyles)); localStorage.setItem(STY_AT, String(Date.now())); }catch(e){}
+        renderStyles(); await gStylesPush();
+      } else if(rAt > localAt){
+        myStyles = remote; try{ localStorage.setItem(STY_KEY, JSON.stringify(myStyles)); localStorage.setItem(STY_AT, String(rAt)); }catch(e){}
+        renderStyles();
+      } else if(localAt > rAt) await gStylesPush();
+    }catch(e){} finally{ styBusy = false; }
+  }
+  if(WEB) stylesHook = () => { clearTimeout(styT); styT = setTimeout(gStylesPush, 800); };
   // アップロード（大きな写真も途切れにくい「再開可能アップロード」）。id があれば中身を差し替え
   async function gUpload(meta, blob, id){
     const r = await gFetch(`${GAPI}/upload/drive/v3/files${id ? '/' + id : ''}?uploadType=resumable&fields=id,name`, { method: id ? 'PATCH' : 'POST',
@@ -6449,6 +6485,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     await driveCards($('stDriveList'), f => openDriveBook(f), 'fit');
     gFolderLink($('stDriveAcct').querySelector('.gwhere'));
     gQuota($('stDriveQuota'));
+    gStylesPull();
     gMine($('stDriveMine'));
   }
   // 「BOOKを開く」（Web版）：ドライブのBOOK一覧。パソコンのBOOKファイルも開ける
