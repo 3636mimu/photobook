@@ -4594,7 +4594,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(stylesHook) stylesHook(); return true;
   };
   // 読み込み：IndexedDB にあればそれを。前の版（localStorage）のものは IndexedDB に移す
-  (async () => {
+  const stylesReady = (async () => {
     try{
       const db = await styDb(), v = await new Promise((res, rej) => { const r = db.transaction('kv').objectStore('kv').get('styles'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
       if(Array.isArray(v)){ myStyles = v.filter(x => x && (x.item || x.items)); renderStyles(); }
@@ -6161,7 +6161,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const done = GD.wait; GD.wait = null;
         if(!r || !r.access_token){ done && done(false); return; }
         try{ localStorage.removeItem('pbm-gskip'); }catch(e){}
-        GD.tok = r.access_token; GD.exp = Date.now() + (Number(r.expires_in) || 3600) * 1000 - 60000;
+        GD.tok = r.access_token; GD.exp = Date.now() + (Number(r.expires_in) || 3600) * 1000 - 60000; gExpTimer();
         try{ sessionStorage.setItem('pbm-gtok', JSON.stringify({ tok: GD.tok, exp: GD.exp })); }catch(e){}
         try{ const a = await gJson(`${GAPI}/drive/v3/about?fields=user(emailAddress)`); if(a && a.user && a.user.emailAddress){ GD.email = a.user.emailAddress; try{ localStorage.setItem('pbm-gacct', GD.email); }catch(e){} } }catch(e){}
         gSync(); done && done(true); gStylesPull();
@@ -6173,8 +6173,24 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.onload = () => { gInit(); gSync(); }; document.head.appendChild(s);
   }
   // 接続：期限内ならそのまま。切れていたら（押したときだけ）Googleの小さな窓で確認
-  function gEnsure(interactive, pick){
-    if(gValid() && !pick) return Promise.resolve(true);
+  // つながりを切らさない：鍵（1時間）が切れる少し前に、画面を触ったタイミングで、だまって更新する
+  // （Google の小さな窓が一瞬だけ開いて閉じます。ブラウザは、操作のない自動の窓を止めてしまうため）
+  let gExpT = 0, gRenewing = false;
+  function gExpTimer(){ clearTimeout(gExpT); if(GD.exp) gExpT = setTimeout(() => { gSync(); }, Math.max(1000, GD.exp - Date.now() - 30000 + 500)); }
+  if(WEB){
+    document.addEventListener('pointerdown', () => {
+      if(!GD.email || !GD.client || GD.wait || gRenewing || !GD.tok && !GD.exp) return;
+      const left = GD.exp - Date.now();
+      if(left > 10 * 60000) return;                       // まだ10分以上ある
+      if(!(fileHandle && fileHandle.drive) && $('startModal').hidden) return;   // ドライブのBOOKを編集中か、最初の画面のときだけ
+      gRenewing = true;
+      gEnsure(true, false, true).finally(() => { gRenewing = false; });
+    }, true);
+    gExpTimer();
+  }
+  function gEnsure(interactive, pick, force){
+    if(gValid() && !pick && !force) return Promise.resolve(true);
+    if(GD.wait) return new Promise(res => { const prev = GD.wait; GD.wait = ok => { prev(ok); res(ok); }; });   // 更新中なら、それを待つ
     if(!interactive || !gInit()) return Promise.resolve(false);
     return new Promise(res => {
       GD.wait = res;
@@ -6239,11 +6255,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   async function gStylesPull(){
     if(!WEB || !gValid() || styBusy) return; styBusy = true;
     try{
+      await stylesReady;   // このブラウザのマイスタイルを読み終えてから合わせる
       const id = await gStylesFile(), localAt = Number(localStorage.getItem(STY_AT)) || 0;
       let D = null; if(id){ try{ D = JSON.parse(await (await gGet(id)).text()); }catch(e){ D = null; } }
       const remote = D && Array.isArray(D.styles) ? D.styles.filter(x => x && (x.item || x.items)) : null, rAt = D ? Number(D.at) || 0 : 0;
-      if(!remote){ if(myStyles.length) await gStylesPush(); return; }
-      if(!localAt && myStyles.length && remote.length){
+      if(!remote){ if(myStyles.length) await gStylesPush(); try{ localStorage.setItem('pbm-sty-synced', '1'); }catch(e){} return; }
+      const synced = (() => { try{ return localStorage.getItem('pbm-sty-synced') === '1'; }catch(e){ return false; } })();
+      try{ localStorage.setItem('pbm-sty-synced', '1'); }catch(e){}
+      if(!synced && myStyles.length && remote.length){
         // はじめてつないだとき：両方にあれば合わせる（同じものは1つに）
         const have = new Set(myStyles.map(x => JSON.stringify(x))); remote.forEach(x => { if(!have.has(JSON.stringify(x))) myStyles.push(x); });
         await styStore(myStyles); try{ localStorage.setItem(STY_AT, String(Date.now())); }catch(e){}
