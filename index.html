@@ -19,6 +19,8 @@
   --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
+/* iPad・iPhone を横向きにしたとき、ブラウザが勝手に文字を大きくしないように（縦でも横でも、パソコンと同じ大きさ） */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#131416; --panel:#1C1D20; --ink:#E9E8E4; --muted:#9A9993; --line:#2E2F33;
@@ -136,6 +138,7 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 .spread{container-type:inline-size}
 @container (max-width:420px){.vals{gap:4px}.vals b,.vals small{font-size:11px}.vals span{gap:3px}.meta{font-size:10px}}
 @container (max-width:330px){.vals small{display:none}.meta{visibility:hidden;width:0;overflow:hidden}}
+@container (max-width:400px){.vals small{display:none}.bar .num{max-width:5.5em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 .spreads.cols4 .bar{gap:4px}
 .spreads .spine{padding:7px 18px}
 .spreads .spine .bars{width:22px;height:12px;background:linear-gradient(currentColor 0 0) top/100% 2px no-repeat,linear-gradient(currentColor 0 0) center/100% 2px no-repeat,linear-gradient(currentColor 0 0) bottom/100% 2px no-repeat}
