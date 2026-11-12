@@ -725,6 +725,22 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .strhead{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px}
 .glogo{width:16px;height:16px;object-fit:contain;flex:none;vertical-align:-3px}
 .ghead{display:inline-flex;align-items:center;gap:6px}
+.glink{color:inherit;text-decoration:underline;text-decoration-color:rgba(0,0,0,.25);text-underline-offset:3px;display:inline-flex;align-items:center;gap:3px}
+.glink:hover{color:var(--accent);text-decoration-color:currentColor}
+.glink svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.strmore{flex:none;width:120px;border:1.5px dashed var(--line);border-radius:10px;background:none;font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:border-color .15s,color .15s}
+.strmore b{font-size:13px}.strmore small{font-size:11.5px;color:var(--muted)}
+.strmore:hover{border-color:var(--accent);color:var(--accent)}
+#bookDelModal{z-index:55}
+.bdname{margin:-4px 0 4px;font-size:13px;color:var(--muted);word-break:break-all}
+.bdopt{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font:inherit;padding:12px 14px;cursor:pointer;transition:border-color .15s,background .15s}
+.bdopt b{font-size:14px}.bdopt small{font-size:12px;line-height:1.7;color:var(--muted)}
+.bdopt:hover{border-color:var(--accent)}
+.bdopt.danger b{color:#B23A3A}.bdopt.danger:hover{border-color:#B23A3A;background:rgba(178,58,58,.04)}
+.drivehid{margin:-4px 0 0}.drivehid .saveas{margin:0}
+.strhid{opacity:.6}.strhid:hover{opacity:1}
+.strback{position:absolute;right:6px;top:6px;border:0;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:inherit;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer}
+.strback:hover{background:rgba(0,0,0,.75)}
 .gswitch{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;margin-left:10px;white-space:nowrap}
 .gswitch:hover{color:var(--accent)}
 .ginvite{border:1.5px solid #E8B4A2;background:#FFF9F6;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -1489,10 +1505,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <h3 id="driveTitle">Google ドライブから開く</h3>
     <p class="driveacct" id="driveAcct"></p>
     <div class="strlist drivelist" id="driveList"></div>
+    <p class="drivehid"><button type="button" class="saveas" id="driveShowHid" hidden></button></p>
     <div class="actions" style="justify-content:flex-end">
       <button type="button" class="saveas" id="driveLocal"><span class="devn">パソコン</span>のBOOKファイル（.pbmk）を開く…</button>
       <button class="outline" id="driveClose" type="button" style="min-width:90px">閉じる</button>
     </div>
+  </div>
+</div>
+<div class="modal" id="bookDelModal" hidden role="dialog" aria-modal="true" aria-labelledby="bookDelTitle">
+  <div class="sheet" style="max-width:440px">
+    <h3 id="bookDelTitle">このBOOKをどうしますか？</h3>
+    <p class="bdname" id="bookDelName"></p>
+    <button type="button" class="bdopt" id="bookDelHide"><b>一覧から外す</b><small>表示だけを消します。Google ドライブのデータはそのまま残り、「すべて見る」からいつでも戻せます。</small></button>
+    <button type="button" class="bdopt danger" id="bookDelTrash"><b>Google ドライブから削除</b><small>写真ごと Google ドライブのゴミ箱に移します。30日のあいだは、ドライブのゴミ箱から戻せます。</small></button>
+    <div class="actions" style="justify-content:flex-end"><button class="outline" id="bookDelCancel" type="button" style="min-width:90px">キャンセル</button></div>
   </div>
 </div>
 <div class="modal" id="savedModal" hidden role="dialog" aria-modal="true" aria-labelledby="savedTitle">
@@ -6163,7 +6189,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     h.jsonId = (await gUpload(h.jsonId ? {} : { name: 'book.json', parents: [h.folderId], appProperties: { pbm: 'json' } }, json, h.jsonId)).id;
     const th = workThumb();
     if(th){ const tb = await (await fetch(th)).blob(); h.thumbId = (await gUpload(h.thumbId ? {} : { name: 'thumb.jpg', parents: [h.folderId], appProperties: { pbm: 'thumb' } }, tb, h.thumbId)).id; }
-    await gPatch(h.folderId, { appProperties: { pbm: 'book', json: h.jsonId, thumb: h.thumbId || '', kind: P.kind, pages: String(P.pages), photos: String(slots.filter(Boolean).length), fmt: (P.settings && P.settings.fmt) || 'jpg' } });
+    await gPatch(h.folderId, { appProperties: { hidden: null, pbm: 'book', json: h.jsonId, thumb: h.thumbId || '', kind: P.kind, pages: String(P.pages), photos: String(slots.filter(Boolean).length), fmt: (P.settings && P.settings.fmt) || 'jpg' } });
     h.drive = true; delete h.isNew;
     return h;
   }
@@ -6206,31 +6232,81 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     });
     gSync();
   }
+  // カードの × ：一覧から外す（データは残す）か、ゴミ箱に移すか
+  function askBookRemove(f, done){
+    const m = $('bookDelModal'); $('bookDelName').textContent = `「${f.name}」`; m.hidden = false; $('bookDelCancel').focus();
+    const close = () => { m.hidden = true; $('bookDelHide').onclick = $('bookDelTrash').onclick = $('bookDelCancel').onclick = null; document.removeEventListener('keydown', esc); };
+    const esc = e => { if(e.key === 'Escape') close(); };
+    document.addEventListener('keydown', esc);
+    $('bookDelCancel').onclick = close;
+    $('bookDelHide').onclick = async () => { close();
+      try{ await gPatch(f.id, { appProperties: { hidden: '1' } }); }catch(e){ status('一覧から外せませんでした。もう一度お試しください。'); return; }
+      status(`「${f.name}」を一覧から外しました。データは Google ドライブに残っています（「すべて見る」から戻せます）。`); done(); };
+    $('bookDelTrash').onclick = () => { close();
+      askYesNo('本当に削除しますか？', `<p>「${esc2(f.name)}」を、写真ごと Google ドライブのゴミ箱に移します。<br>ゴミ箱からは <b>30日のあいだ</b> 戻せます。30日たつと、自動で完全に消えます。</p>`, async () => {
+        try{ await gPatch(f.id, { trashed: true }); }catch(e){ status('削除できませんでした。もう一度お試しください。'); return; }
+        if(fileHandle && fileHandle.drive && fileHandle.folderId === f.id){ fileHandle = null; autoOn = false; syncAutoUI(); }
+        status(`「${f.name}」を Google ドライブのゴミ箱に移しました。30日のあいだは、ドライブのゴミ箱から戻せます。`); done();
+      });
+    };
+  }
+  function syncHidToggle(n){
+    const b = $('driveShowHid'); b.hidden = !n && !GD.showHid;
+    b.textContent = GD.showHid ? '一覧から外したBOOKを隠す' : `一覧から外したBOOK（${n}冊）も表示`;
+  }
   // ドライブのBOOKをカードで並べる（最初の画面と「BOOKを開く」で共通）
-  async function driveCards(row, onOpen){
+  async function driveCards(row, onOpen, limit){
     row.innerHTML = '<p class="strnote">読み込んでいます…</p>';
     let list = [];
     try{ list = await gBooks(); }catch(e){ row.innerHTML = '<p class="strnote">Google ドライブから読み込めませんでした。</p>'; return 0; }
-    row.innerHTML = list.length ? '' : '<p class="strnote">まだGoogle ドライブに保存したBOOKはありません。</p>';
+    // 「一覧から外す」にしたBOOK（データはドライブに残っている）。「すべて見る」で表示を切り替えられる
+    const isHid = f => (f.appProperties || {}).hidden === '1';
+    const nHid = list.filter(isHid).length; if(row.id === 'driveList') syncHidToggle(nHid);
+    if(!(row.id === 'driveList' && GD.showHid)) list = list.filter(f => !isHid(f));
+    row.innerHTML = list.length ? '' : `<p class="strnote">${nHid ? 'ここに表示するBOOKはありません。' : 'まだGoogle ドライブに保存したBOOKはありません。'}</p>`;
     const z = n => String(n).padStart(2, '0');
+    // 起動画面：横スクロールしないで並ぶ数だけ（入りきらない分は「すべて見る」）
+    if(limit === 'fit'){ const w = row.clientWidth || 860, card = 184, fitAll = Math.max(1, Math.floor((w + 12) / card)); limit = list.length <= fitAll && !nHid ? 0 : Math.max(1, Math.floor((w + 12 - 132) / card)); }
+    const all = list.length; if(limit && all > limit) list = list.slice(0, limit);
     list.forEach(f => {
       const a = f.appProperties || {}, d = new Date(f.modifiedTime), card = document.createElement('div');
-      card.className = 'strcard ' + (KIND_CLS[a.kind] || 'c1');
+      const hid = isHid(f);
+      card.className = 'strcard ' + (KIND_CLS[a.kind] || 'c1') + (hid ? ' strhid' : '');
       card.innerHTML = `<button type="button" class="strthumb" title="続きから編集する"><span class="strnoimg">…</span></button>`
         + `<div class="strmeta"><b><i class="strdot"></i>${esc2(KIND_NAME[a.kind] || 'BOOK')}</b><small class="strfname" title="${esc2(f.name)}">${esc2(f.name).replace(/_/g, '_<wbr>')}</small><small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${a.pages || '?'}ページ・写真${a.photos || 0}枚・${(a.fmt || 'jpg').toUpperCase()}</small></div>`
-        + `<button type="button" class="stredit">✎ 続きから編集</button>`;
+        + `<button type="button" class="stredit">✎ 続きから編集</button>${hid ? '<button type="button" class="strback" title="一覧に戻す">一覧に戻す</button>' : '<button type="button" class="strdel" title="一覧から外す・削除" aria-label="一覧から外す・削除">×</button>'}`;
       card.querySelector('.strthumb').addEventListener('click', () => onOpen(f));
+      const refresh = () => { if(!$('driveModal').hidden) openDriveModal(); if(!$('startModal').hidden) renderDriveStart(); };
+      if(hid) card.querySelector('.strback').addEventListener('click', async () => {
+        try{ await gPatch(f.id, { appProperties: { hidden: null } }); }catch(e){ status('戻せませんでした。もう一度お試しください。'); return; }
+        status(`「${f.name}」を一覧に戻しました。`); refresh();
+      });
+      else card.querySelector('.strdel').addEventListener('click', () => askBookRemove(f, refresh));
       card.querySelector('.stredit').addEventListener('click', () => onOpen(f));
       if(a.thumb) gGet(a.thumb).then(b => { card.querySelector('.strthumb').innerHTML = `<img src="${URL.createObjectURL(b)}" alt="">`; }).catch(() => {});
       row.appendChild(card);
     });
-    return list.length;
+    if(limit && (all > limit || nHid)){
+      const more = document.createElement('button'); more.type = 'button'; more.className = 'strmore';
+      more.innerHTML = `<b>すべて見る</b><small>全${all + nHid}冊</small>`;
+      more.addEventListener('click', () => openDriveModal()); row.appendChild(more);
+    }
+    return all;
+  }
+  // 「〇〇 のマイドライブ「PHOTO BOOK MAKER」フォルダ」を、Google ドライブのそのフォルダへのリンクに
+  async function gFolderLink(el){
+    if(!el || !gValid()) return;
+    try{ const id = await gRoot(); if(!id || !el.isConnected) return;
+      const a = document.createElement('a'); a.className = 'gwhere glink'; a.target = '_blank'; a.rel = 'noopener';
+      a.href = `https://drive.google.com/drive/folders/${encodeURIComponent(id)}?authuser=${encodeURIComponent(GD.email)}`;
+      a.title = 'Google ドライブで、このフォルダを開きます'; a.innerHTML = el.innerHTML + '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v4H2.5V4h4"/></svg>'; el.replaceWith(a);
+    }catch(e){}
   }
   async function renderDriveStart(){
     if(!WEB) return;
     const box = $('stDrive'); box.hidden = false;
     const cloud = '<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">';
-    $('stDriveAcct').innerHTML = GD.email ? `${esc2(GD.email)} のマイドライブ「PHOTO BOOK MAKER」フォルダ<button type="button" class="gswitch" id="stDriveSwitch">アカウントを切り替え</button>` : '';
+    $('stDriveAcct').innerHTML = GD.email ? `<span class="gwhere">${esc2(GD.email)} のマイドライブ「PHOTO BOOK MAKER」フォルダ</span><button type="button" class="gswitch" id="stDriveSwitch">アカウントを切り替え</button>` : '';
     if(GD.email) $('stDriveSwitch').addEventListener('click', async () => { if(await gSwitch()) renderDriveStart(); });
     const connect = async () => { if(await gEnsure(true)){ renderDriveStart(); status(`「${GD.email}」のGoogle ドライブと連携しました。`); } };
     // はじめて：Google ドライブをおすすめ（つながずに使うこともできる）
@@ -6250,17 +6326,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       $('stDriveConn').addEventListener('click', connect);
       return;
     }
-    await driveCards($('stDriveList'), f => openDriveBook(f));
+    await driveCards($('stDriveList'), f => openDriveBook(f), 'fit');
+    gFolderLink($('stDriveAcct').querySelector('.gwhere'));
   }
   // 「BOOKを開く」（Web版）：ドライブのBOOK一覧。パソコンのBOOKファイルも開ける
   async function openDriveModal(){
     if(!(await gEnsure(true))){ status('Google ドライブにつながりませんでした。パソコンのBOOKファイルを開くこともできます。'); pickBookFile(); return; }
-    $('driveAcct').textContent = GD.email ? `${GD.email} のマイドライブ「PHOTO BOOK MAKER」フォルダ` : '';
+    $('driveAcct').innerHTML = GD.email ? `<span class="gwhere">${esc2(GD.email)} のマイドライブ「PHOTO BOOK MAKER」フォルダ</span>` : '';
+    gFolderLink($('driveAcct').querySelector('.gwhere'));
     $('driveModal').hidden = false;
     await driveCards($('driveList'), f => { $('driveModal').hidden = true; openDriveBook(f); });
   }
   if(WEB){
-    $('driveClose').addEventListener('click', () => { $('driveModal').hidden = true; });
+    $('driveClose').addEventListener('click', () => { $('driveModal').hidden = true; GD.showHid = false; });
+    $('driveShowHid').addEventListener('click', () => { GD.showHid = !GD.showHid; driveCards($('driveList'), f => { $('driveModal').hidden = true; GD.showHid = false; openDriveBook(f); }); });
     $('driveModal').addEventListener('keydown', e => { if(e.key === 'Escape') $('driveModal').hidden = true; });
     $('driveLocal').addEventListener('click', () => { $('driveModal').hidden = true; pickBookFile(); });
   }
