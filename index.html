@@ -655,10 +655,16 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #startModal.dropping .startsheet{outline:3px dashed var(--accent);outline-offset:-10px}
 .modeline{flex:1 1 auto!important;column-gap:5px!important}
 .modeline .mctl{gap:4px}
-.workbtns{display:flex;gap:4px;margin-left:auto;flex:none}
+.workbtns{display:flex;gap:4px;margin-left:auto;flex:1 1 0;min-width:330px;justify-content:flex-end}
+.workbtns .wfile{flex:0 1 auto;min-width:60px;overflow:hidden}
+.workbtns .wfile .wfn{min-width:0;overflow:hidden}
+.workbtns .wfile .wfn b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.workbtns .wbtn{flex:none}
 .wbtn{display:inline-flex;align-items:center;gap:3px;height:30px;padding:0 8px 0 6px;font:inherit;font-size:12px;letter-spacing:-.01em;font-weight:600;color:#6b5a4f;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:10px;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s,background .15s}
-.wfile{align-self:center;display:inline-flex;align-items:center;gap:5px;max-width:260px;font-size:12px;font-weight:600;color:#6b5a4f;margin-right:4px;min-width:0}
+.wfile{align-self:center;display:inline-flex;align-items:center;gap:5px;max-width:230px;font-size:12px;font-weight:600;color:#6b5a4f;margin-right:4px;min-width:0}
 .gconn{max-width:240px}
+.gconn:not(.off) img.glogo{margin:0 2px}
+@media (max-width:1800px){ #pages,#outH{max-width:210px} #size{max-width:170px} }
 .gconn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gconn svg{fill:none!important;stroke:currentColor;stroke-width:1.5}
 .gconn.off{color:#9a8a80}
@@ -760,6 +766,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 @media(max-width:700px){#stDrive .strhead{flex-wrap:wrap}#stDrive .strhead small{white-space:normal}#stDrive .strhead .gwhere{white-space:normal}.gquota{margin-left:0;padding-left:0}}
 #stDrive .strhead small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center}
 #stDrive .strhead .gwhere{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#workOpen{display:none !important}   /* BOOKは最初の画面から開く（上のバーを1行に保つ） */
+.ghidlink{display:block;margin:2px 0 0 auto;font-size:11.5px}
 .gswitch{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;margin-left:10px;white-space:nowrap}
 .gswitch:hover{color:var(--accent)}
 .ginvite{border:1.5px solid #E8B4A2;background:#FFF9F6;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -1041,7 +1049,7 @@ header .howto summary{background:rgba(255,255,255,.75);border-color:transparent}
             <option value="jpg" selected>JPG</option>
             <option value="pdf">PDF</option>
           </select></div>
-          <div class="workbtns"><button class="wbtn gconn" id="gConn" type="button" hidden></button><span class="wfile" id="workName" hidden></span><small class="wautotime" id="autoTime" hidden></small><button class="wbtn" id="workOver" type="button" hidden title="BOOKファイルに、いまの内容をすぐ上書き保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h8l2 2v9H3z"/><path d="M5.5 2.5v3.2h4.5V2.5M5.5 13.5V9.5h5v4"/></svg>上書き保存</button><button class="wbtn" id="workSave" type="button" title="BOOKの続きができるファイル（.pbmk）に保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.2-3.2L8 10l3.2-3.2M3 12.5h10"/></svg><span id="workSaveLbl">BOOKを保存</span></button><button class="wbtn" id="workOpen" type="button" title="保存したBOOKファイル（.pbmk）を開いて続きから"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h4l1.2 1.4h5.8v6.6h-11z"/></svg>BOOKを開く</button></div>
+          <div class="workbtns"><button class="wbtn gconn" id="gConn" type="button" hidden></button><span class="wfile" id="workName" hidden></span><small class="wautotime" id="autoTime" hidden></small><button class="wbtn" id="workOver" type="button" hidden title="BOOKファイルに、いまの内容をすぐ上書き保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h8l2 2v9H3z"/><path d="M5.5 2.5v3.2h4.5V2.5M5.5 13.5V9.5h5v4"/></svg>上書き保存</button><button class="wbtn" id="workSave" type="button" title="BOOKの続きができるファイル（.pbmk）に保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.2-3.2L8 10l3.2-3.2M3 12.5h10"/></svg><span id="workSaveLbl">BOOKを保存</span></button><button class="wbtn" id="workOpen" type="button" hidden title="保存したBOOKファイル（.pbmk）を開いて続きから"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h4l1.2 1.4h5.8v6.6h-11z"/></svg>BOOKを開く</button></div>
           
 
         </div>
@@ -5863,13 +5871,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
     status('BOOKを保存しています…');
     // 別の名前で保存したら、別のBOOKにする：元のBOOKのカードは、元のファイルに保存したときの中身で残す
-    let newName = handle ? handle.name : name; const prevName = bookFile, prevId = workId, prevSnap = fileSnap, prevHandle = fileHandle;
+    let newName = handle ? handle.name : name, recreated = false; const prevName = bookFile, prevId = workId, prevSnap = fileSnap, prevHandle = fileHandle;
     const baseOf = n => n.replace(/\.pbmk?$/i, '').toLowerCase();
     const saveAs = !!(prevName && prevId && baseOf(newName) !== baseOf(prevName));
     if(saveAs){ workId = newId(); baseSavedAt = 0; }
     try{
-      if(handle && handle.drive) await driveSave(handle, saveAs && prevHandle && prevHandle.drive ? prevHandle : null, true);
-      if(handle && handle.drive && handle.name) newName = handle.name;   // ドライブ側で名前が変わっていたら、その名前で
+      if(handle && handle.drive){
+        await driveSave(handle, saveAs && prevHandle && prevHandle.drive ? prevHandle : null, true);
+        if(handle.name) newName = handle.name;   // ドライブ側で名前が変わっていたら、その名前で
+        recreated = !!handle.recreated;          // ドライブ側で削除されていたら、新しいBOOKとして保存し直した
+      }
       else {
         const blob = await projectBlob(withPhotos);
         if(handle) await writeTo(handle, blob);
@@ -5883,7 +5894,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           await txDone(tx);
         }catch(e){}
       }
-      status(`${handle && !newHandle ? '上書き保存しました' : 'BOOKを保存しました'}（${newName}）。` + (saveAs ? (handle && handle.drive ? `元の「${prevName}」も、${prevHandle && prevHandle.drive ? 'Google ドライブ' : 'パソコン'}にそのまま残っています。` : `元の「${prevName}」は、「続きから作る」に別のBOOKとして残しています。`) : ''));
+      if(recreated){ status(`「${newName}」は Google ドライブで削除されていたので、新しいBOOKとして保存し直しました。`); toast('新しいBOOKとして保存しました'); }
+      else status(`${handle && !newHandle ? '上書き保存しました' : 'BOOKを保存しました'}（${newName}）。` + (saveAs ? (handle && handle.drive ? `元の「${prevName}」も、${prevHandle && prevHandle.drive ? 'Google ドライブ' : 'パソコン'}にそのまま残っています。` : `元の「${prevName}」は、「続きから作る」に別のBOOKとして残しています。`) : ''));
       if(closeAfterSave){ closeAfterSave = false; toast('BOOKファイルに保存しました'); await new Promise(r => setTimeout(r, 400)); closeEditor(); }
       else if(handle) showSaved(!newHandle);
       else toast('BOOKファイルに保存しました');
@@ -6178,7 +6190,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // マイドライブの「PHOTO BOOK MAKER」フォルダ（なければ作る）
   async function gRoot(){
-    if(GD.root) return GD.root;
+    // 覚えているフォルダが、ドライブ側で削除されていないか確かめる（削除されていたら、新しく作る）
+    if(GD.root){ try{ const r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(GD.root)}?fields=trashed`); if(r && !r.trashed) return GD.root; }catch(e){} GD.root = ''; }
     const f = await gList(`appProperties has { key='pbm' and value='root' } and trashed=false`, 'files(id,name)');
     GD.root = f.length ? f[0].id : (await gCreate({ name: 'PHOTO BOOK MAKER', mimeType: 'application/vnd.google-apps.folder', appProperties: { pbm: 'root' } })).id;
     return GD.root;
@@ -6201,7 +6214,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!workId) workId = newId();
     if(show) gBusy('Google ドライブに保存しています', '準備しています…', null);
     // ドライブ側でBOOKのフォルダ名が変わっていたら、その名前に合わせる（上書きで戻さない）
-    if(h.folderId && !h.renamed){ try{ const r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(h.folderId)}?fields=name,trashed`); if(r && r.name && !r.trashed && r.name !== h.name){ h.name = r.name; if(fileHandle === h){ bookFile = r.name; syncAutoUI(); } } }catch(e){} }
+    // ドライブ側でBOOKのフォルダが削除（ゴミ箱・完全に削除）されていたら、新しいBOOKとして保存し直す
+    h.recreated = false;
+    if(h.folderId){
+      let r = null, gone = false;
+      try{ r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(h.folderId)}?fields=name,trashed`); gone = !r || r.trashed; }catch(e){ gone = /404/.test(String(e && e.message)) || (e && e.status === 404); }
+      if(gone){ h.folderId = ''; h.jsonId = ''; h.thumbId = ''; h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.recreated = true; from = null; }
+      else if(r && r.name && !h.renamed && r.name !== h.name){ h.name = r.name; if(fileHandle === h){ bookFile = r.name; syncAutoUI(); } }
+    }
     await ensurePhotosReadable();
     const P = buildProject(); P.withPhotos = true; P.drive = { photos: {}, fonts: [] };
     if(!h.folderId){
@@ -6271,7 +6291,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function gSync(){
     if(!WEB) return;
     const b = $('gConn'); b.hidden = false;
-    b.innerHTML = `<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">` + (gValid() ? `<span>${esc2(GD.email || 'Google ドライブ')}</span>` : GD.email ? `<span>${esc2(GD.email)}</span><em>つなぐ</em>` : '<span>Google ドライブとつなぐ</span>');
+    b.innerHTML = `<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">` + (gValid() ? '' : GD.email ? '<em>つなぐ</em>' : '<span>Google ドライブとつなぐ</span>');   // つないでいるときはロゴだけ（アカウントはマウスを乗せると出る）
     b.classList.toggle('off', !gValid());
     b.title = gValid() ? `Google ドライブ（${GD.email}）と連携中。押すと、アカウントの切り替えができます` : 'Google ドライブとつなぐ（ログインして、保存先のアカウントを選びます）';
   }
@@ -6359,6 +6379,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       row.appendChild(card);
     });
     if(carousel) setupCarousel(row);
+    if(row.id === 'stDriveList'){
+      let hl = $('stDriveHid'); if(!hl){ hl = document.createElement('button'); hl.type = 'button'; hl.className = 'saveas ghidlink'; hl.id = 'stDriveHid'; row.parentElement.appendChild(hl);
+        hl.addEventListener('click', () => { GD.showHid = true; openDriveModal(); }); }
+      hl.hidden = !nHid; hl.textContent = `一覧から外したBOOK（${nHid}冊）`;
+    }
     return all;
   }
   // 「〇〇 の「PHOTO BOOK MAKER」フォルダ」を、Google ドライブのそのフォルダへのリンクに
