@@ -4565,7 +4565,24 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   try{ const v = JSON.parse(localStorage.getItem(STY_KEY) || '[]'); if(Array.isArray(v)) myStyles = v.filter(x => x && (x.item || x.items)); }catch(e){}
   const STY_AT = 'mihiraki-text-styles-at';   // マイスタイルを最後に変えた時刻（Google ドライブと、新しいほうに合わせる）
   let stylesHook = null;                        // Web版：変えたら Google ドライブにも保存する
-  const saveStyles = () => { try{ localStorage.setItem(STY_KEY, JSON.stringify(myStyles)); localStorage.setItem(STY_AT, String(Date.now())); }catch(e){ return false; } if(stylesHook) stylesHook(); return true; };
+  // マイスタイルは IndexedDB に保存する（画像入りでも入るように。localStorage は数MBまでしか入らない）
+  const styDb = () => new Promise((res, rej) => { const r = indexedDB.open('pbm-styles', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  async function styStore(list){
+    try{ const db = await styDb(); await new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(list, 'styles'); tx.oncomplete = res; tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); }); return true; }catch(e){ return false; }
+  }
+  const saveStyles = async () => {
+    const ok = await styStore(myStyles); if(!ok) return false;
+    try{ localStorage.setItem(STY_AT, String(Date.now())); localStorage.removeItem(STY_KEY); }catch(e){}
+    if(stylesHook) stylesHook(); return true;
+  };
+  // 読み込み：IndexedDB にあればそれを。前の版（localStorage）のものは IndexedDB に移す
+  (async () => {
+    try{
+      const db = await styDb(), v = await new Promise((res, rej) => { const r = db.transaction('kv').objectStore('kv').get('styles'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+      if(Array.isArray(v)){ myStyles = v.filter(x => x && (x.item || x.items)); renderStyles(); }
+      else if(myStyles.length && await styStore(myStyles)){ try{ localStorage.removeItem(STY_KEY); }catch(e){} }
+    }catch(e){}
+  })();
   const STYLE_KEYS = ['spill','font','bold','italic','flipH','flipV','sx','sy','size','color','op','rot','ls','lh','align','valign','vert','shadow','shC','shA','shB','shD','shS','shX','shY','strokeOn','stroke','stA','stB','stD','stG','stX','stY','stJ','stLJ','stShape','sc','scLink','shLink','ilOn','ilC','ilLink','ilW'];
   const clone = o => JSON.parse(JSON.stringify(o));
   function styMsg(t){ $('tStyMsg').textContent = t; clearTimeout(styMsg.t); styMsg.t = setTimeout(() => { $('tStyMsg').textContent = ''; }, 4000); }
@@ -4658,17 +4675,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   $('tStySave').addEventListener('click', () => {
     const t = tCur(); if(!t || !hasBody(t)){ styMsg('保存する文字を選んでください。'); return; }
     const name = $('tStyName').value.trim() || labelOf(t).slice(0, 20) || 'スタイル';
-    myStyles.unshift({ name, item: clone(t) }); 
-    if(!saveStyles()){ myStyles.shift(); styMsg('このブラウザでは保存できませんでした。'); return; }
-    $('tStyName').value = ''; renderStyles(); styMsg(`「${name}」を保存しました。`);
+    myStyles.unshift({ name, item: clone(t) });
+    saveStyles().then(ok => { if(!ok){ myStyles.shift(); renderStyles(); styMsg('このブラウザでは保存できませんでした。'); return; } $('tStyName').value = ''; renderStyles(); styMsg(`「${name}」を保存しました。`); });
   });
   $('tSetSave').addEventListener('click', () => {
     const items = coverTexts.filter(hasBody);
     if(!items.length){ styMsg('保存する文字がありません。'); return; }
     const name = $('tStyName').value.trim() || `ページ一式 ${new Date().toLocaleDateString('ja-JP')}`;
     myStyles.unshift({ name, items: clone(items) });
-    if(!saveStyles()){ myStyles.shift(); styMsg('このブラウザでは保存できませんでした。'); return; }
-    $('tStyName').value = ''; renderStyles(); styMsg(`「${name}」（${items.length}件）を保存しました。`);
+    saveStyles().then(ok => { if(!ok){ myStyles.shift(); renderStyles(); styMsg('このブラウザでは保存できませんでした。'); return; } $('tStyName').value = ''; renderStyles(); styMsg(`「${name}」（${items.length}件）を保存しました。`); });
   });
   $('tStyExport').addEventListener('click', async () => {
     if(!myStyles.length){ styMsg('書き出すマイスタイルがありません。'); return; }
@@ -6207,10 +6222,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!localAt && myStyles.length && remote.length){
         // はじめてつないだとき：両方にあれば合わせる（同じものは1つに）
         const have = new Set(myStyles.map(x => JSON.stringify(x))); remote.forEach(x => { if(!have.has(JSON.stringify(x))) myStyles.push(x); });
-        try{ localStorage.setItem(STY_KEY, JSON.stringify(myStyles)); localStorage.setItem(STY_AT, String(Date.now())); }catch(e){}
+        await styStore(myStyles); try{ localStorage.setItem(STY_AT, String(Date.now())); }catch(e){}
         renderStyles(); await gStylesPush();
       } else if(rAt > localAt){
-        myStyles = remote; try{ localStorage.setItem(STY_KEY, JSON.stringify(myStyles)); localStorage.setItem(STY_AT, String(rAt)); }catch(e){}
+        myStyles = remote; await styStore(myStyles); try{ localStorage.setItem(STY_AT, String(rAt)); }catch(e){}
         renderStyles();
       } else if(localAt > rAt) await gStylesPush();
     }catch(e){} finally{ styBusy = false; }
