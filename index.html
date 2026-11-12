@@ -784,6 +784,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .sdopt b svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round;flex:none}
 .sdopt .sdnow{font-style:normal;font-size:10.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-left:4px}
 .sdopt:focus-visible{outline:none;border-color:var(--accent)}
+.spread canvas,.spread .slot{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.ghost.touch{transform:translate(-50%,-60%) scale(1.06);box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .gswitch{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;margin-left:10px;white-space:nowrap}
 .gswitch:hover{color:var(--accent)}
 .ginvite{border:1.5px solid #E8B4A2;background:#FFF9F6;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -1965,6 +1967,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const r = ui.cv.getBoundingClientRect();
       startDrag(e, p*2 + (wide.has(p) || (e.clientX - r.left) / r.width < ui.seam ? 0 : 1), ui.cv);
     });
+    // iPad・スマホ：写真を長押しすると持ち上がって、そのまま指で動かして並べ替え
+    ui.cv.addEventListener('touchstart', e => {
+      if(e.touches.length !== 1) return;
+      const t = e.touches[0], r = ui.cv.getBoundingClientRect();
+      startTouchDrag(t, p*2 + (wide.has(p) || (t.clientX - r.left) / r.width < ui.seam ? 0 : 1));
+    }, { passive: true });
     card.querySelector('.spine').addEventListener('pointerdown', e => { if(e.button === 0 && !isEnd(p)) startPairDrag(e, p); });
     ui.cv.addEventListener('click', e => {
       if(justDragged){ justDragged = false; return; }
@@ -1977,9 +1985,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const idx = p*2+k;
       el.dataset.idx = idx;
       el.addEventListener('pointerdown', e => {
-        if(e.button !== 0 || e.target.closest('.clear,.trim')) return;
+        if(e.pointerType === 'touch' || e.button !== 0 || e.target.closest('.clear,.trim')) return;
         startDrag(e, idx, el);
       });
+      el.addEventListener('touchstart', e => { if(e.touches.length === 1 && !e.target.closest('.clear,.trim')) startTouchDrag(e.touches[0], idx); }, { passive: true });
       el.addEventListener('click', () => { if(justDragged){ justDragged = false; return; } openOne(idx); });
       el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openOne(idx); }});
       el.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); el.classList.add('dragover'); });
@@ -2774,6 +2783,49 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     window.addEventListener('pointercancel', end);
   }
 
+  // 指での並べ替え：長押し（0.35秒）で持ち上げる。すぐ動かしたときは、ふつうのスクロール
+  function startTouchDrag(t0, from){
+    if(sample || !slots[from] || isLocked(from)) return;
+    const x0 = t0.clientX, y0 = t0.clientY, id = t0.identifier;
+    let active = false, ghost = null, cur = null, timer = 0;
+    const clearTarget = () => { if(cur){ cur.el.classList.remove('target'); cur.card && cur.card.classList.remove('target'); } };
+    const touchOf = ev => [...ev.changedTouches].find(x => x.identifier === id);
+    const place = (x, y) => {
+      ghost.style.left = x + 'px'; ghost.style.top = y + 'px';
+      const t = targetAt(x, y);
+      if(!t || !cur || t.idx !== cur.idx || t.card !== cur.card){ clearTarget(); cur = t; if(cur){ cur.el.classList.add('target'); cur.card && cur.card.classList.add('target'); } }
+      // 画面の端に来たら、少しずつスクロール
+      const edge = 70; if(y < edge) window.scrollBy(0, -12); else if(y > innerHeight - edge) window.scrollBy(0, 12);
+    };
+    const activate = () => {
+      active = true;
+      ghost = document.createElement('img'); ghost.className = 'ghost touch'; ghost.src = slots[from].thumb || slots[from].baseThumb || slots[from].url; ghost.alt = '';
+      document.body.appendChild(ghost); document.body.classList.add('moving');
+      pairUI[from>>1].slots[from&1].classList.add('dragging-src');
+      place(x0, y0);
+    };
+    const move = ev => {
+      const t = touchOf(ev); if(!t) return;
+      if(!active){ if(Math.hypot(t.clientX - x0, t.clientY - y0) > 10){ cleanup(); } return; }
+      ev.preventDefault(); place(t.clientX, t.clientY);
+    };
+    const end = ev => {
+      const t = touchOf(ev); if(!t) return;
+      const ok = active && ev.type === 'touchend' && cur;
+      if(active){ ev.preventDefault(); justDragged = true; setTimeout(() => { justDragged = false; }, 350); }
+      const to = cur && cur.idx; cleanup();
+      if(ok) swapSlots(from, to);
+    };
+    const cleanup = () => {
+      clearTimeout(timer);
+      window.removeEventListener('touchmove', move); window.removeEventListener('touchend', end); window.removeEventListener('touchcancel', end);
+      if(ghost){ ghost.remove(); ghost = null; document.body.classList.remove('moving'); pairUI[from>>1].slots[from&1].classList.remove('dragging-src'); }
+      clearTarget();
+    };
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', end, { passive: false }); window.addEventListener('touchcancel', end);
+    timer = setTimeout(activate, 350);
+  }
   function swapPairs(a, b){
     if(a === b || isEnd(a) || isEnd(b)) return;
     for(let k=0;k<2;k++){ [slots[a*2+k], slots[b*2+k]] = [slots[b*2+k], slots[a*2+k]]; [lost[a*2+k], lost[b*2+k]] = [lost[b*2+k], lost[a*2+k]]; }
