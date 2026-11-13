@@ -1136,6 +1136,24 @@ header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
 .stcard{border-radius:var(--r-lg)}
 .modal > .sheet{border-radius:var(--r-lg)}
 .mctl select,.setsh-body select{border-radius:var(--r-sm)}
+
+/* iPad・スマホのプレビュー：主役は写真。上のボタン・矢印・ページ番号は小さく、写真を大きく */
+@media (pointer:coarse){
+  .vbar{padding:6px 12px;gap:8px}
+  .vbar .vt{font-size:15px}
+  .vbar .vt small{font-size:11px;margin-left:8px}
+  .vbtns{gap:6px}
+  .vclose,#vClose,#vGridBtn{min-height:30px;min-width:0;padding:4px 12px;font-size:13px;font-weight:600;letter-spacing:.04em;border-radius:6px}
+  .vstage{padding:2px 4px}
+  .varrow,.viewer .varrow{top:50%;bottom:auto;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;font-size:20px;line-height:1;background:rgba(0,0,0,.38);color:#fff;z-index:2;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .varrow.prev{left:8px}.varrow.next{right:8px}
+  .varrow:disabled{opacity:0;pointer-events:none}
+  .viewer.vlight .varrow{background:rgba(255,255,255,.55);color:#1B1C1F}
+  .vstrip{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;gap:4px;padding:6px 10px 8px;-webkit-overflow-scrolling:touch}
+  .vstrip::-webkit-scrollbar{display:none}
+  .vstrip button{flex:none;min-width:30px;height:24px;font-size:11px;padding:0 7px;border-radius:5px}
+  .vstrip > :first-child{margin-left:auto}.vstrip > :last-child{margin-right:auto}
+}
 </style>
 </head>
 <body>
@@ -3169,6 +3187,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('vTitle').innerHTML = `見開き<small>${k+1} / ${vList.length}</small>`;
     $('vPrev').disabled = k === 0; $('vNext').disabled = k === vList.length - 1;
     [...$('vStrip').children].forEach((b,i) => b.setAttribute('aria-current', i === k ? 'true' : 'false'));
+    { const cb = $('vStrip').children[k]; if(cb && matchMedia('(pointer:coarse)').matches){ const st = $('vStrip'); st.scrollTo({ left: cb.offsetLeft - (st.clientWidth - cb.offsetWidth) / 2, behavior: 'smooth' }); } }
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const prevK = showSpread.last ?? k, dir = Math.sign(k - prevK);
     showSpread.last = k;
