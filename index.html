@@ -797,11 +797,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 /* iPad・スマホ：上の設定の行を1行に。設定は横にスワイプ、保存のボタンは右に固定 */
 @media (pointer:coarse){
   header:has(#modeLine){flex-wrap:nowrap !important;align-items:center}
-  header:has(#modeLine) .closeed{font-size:0;flex:none;width:30px;height:30px;padding:0;border-radius:50%;background:rgba(255,255,255,.7)}
-  header:has(#modeLine) .closeed::before{content:'×';font-size:19px;line-height:30px;color:#6b5a4f}
   /* 縦をできるだけ詰める：上のバーと、一覧・見開き・プレビューの行 */
   header:has(#modeLine){padding-top:5px !important;padding-bottom:5px !important}
-  header:has(#modeLine) .closeed{width:30px !important;height:30px !important}
   #modeLine{padding:0 !important}
   #setBtn.setbtn{padding:5px 12px 5px 10px;font-size:12.5px}
   #modeLine .wbtn{height:28px}
@@ -817,6 +814,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 }
 @media (pointer:coarse) and (max-width:600px){
   #gConn span{font-size:0}
+  header:has(#modeLine) .closeed{font-size:0}
+  header:has(#modeLine) .closeed::before{content:'× 閉じる';font-size:12px}
   #gConn span::after{content:'つなぐ';font-size:12px}
   #modeLine .workbtns{padding-left:8px;background:none}
   #modeLine{overflow:hidden}
