@@ -1216,9 +1216,11 @@ html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgr
 
 /* スマホ・タブレット：画面が横にずれないように（画面の外にあるものまで横スクロールで見えてしまうのを防ぐ）。2回タップでの拡大もしない */
 @media (pointer:coarse){
-  html,body{overflow-x:hidden;max-width:100%}
+  /* hidden だと上のバーが固定されなくなる（body がスクロールの箱になる）ので clip を使う */
+  html,body{overflow-x:clip;max-width:100%}
   html{touch-action:manipulation}
 }
+@supports not (overflow:clip){ @media (pointer:coarse){ html,body{overflow-x:visible} html{overflow-x:hidden} } }
 
 /* パーツレイヤー：見出しを押すと、一覧を閉じたり開いたりできる（＋文字・＋画像などのボタンはいつも出す） */
 .ilaytog{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;margin:0;font:inherit;font-weight:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -2449,7 +2451,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const page = viewMode === 'page', list = allPairs();
     pagePos = Math.max(0, Math.min(list.length - 1, pagePos));
     spreadsEl.classList.toggle('pagemode', page);
-    pairUI.forEach((ui, p) => ui.card.classList.toggle('pgoff', page && p !== list[pagePos]));
+    pairUI.forEach((ui, p) => { ui.card.classList.toggle('pgoff', page && p !== list[pagePos]); if(!page){ ui.card.style.marginTop = ''; const st = ui.card.querySelector('.stage'); if(st.style.height) st.style.height = ''; } });
     $('pageNav').hidden = !page;
     if(page){ $('pgLabel').textContent = `${pagePos + 1} / ${list.length}`; $('pgPrev').disabled = pagePos === 0; $('pgNext').disabled = pagePos >= list.length - 1; }
     else ['pgPrev', 'pgNext'].forEach(id => $(id).hidden = true);
@@ -3005,6 +3007,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const {W,H} = fitCompose(p, ui.cv, stg);
     // スマホ・タブレットの見開き表示：縦向きで写真の上下に余った空きは詰める（横向きは高さいっぱいを使う）
     if(pgFit){ const cs = getComputedStyle(stg), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom), want = ui.cv.offsetHeight + pad; if(want < stg.clientHeight - 6) stg.style.height = Math.ceil(want) + 'px'; }
+    // 見開き表示では、見開き（とページ番号）を画面の残りの高さの真ん中に置く（プレビューと同じように）
+    ui.card.style.marginTop = '';
+    if(pgFit){ const nav = $('pageNav'), navH = nav && !nav.hidden && nav.offsetParent ? nav.offsetHeight + 8 : 0;
+      const top = spreadsEl.getBoundingClientRect().top + window.scrollY, avail = window.innerHeight - top - 8;
+      const free = avail - ui.card.offsetHeight - navH; if(free > 8) ui.card.style.marginTop = Math.floor(free / 2) + 'px'; }
     ui.meta.textContent = `${W}×${H}`;
     ui.save.disabled = !pairReady(p);
     const cov = isCover(p); ui.card.classList.toggle('cover', cov); ui.txt.classList.toggle('on', hasDeco(p)); ui.card.querySelector('.vopen').textContent = pairLabel(p);
@@ -3473,7 +3480,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     cast.style.left = (fwd ? snC : 0) + 'px'; cast.style.width = (fwd ? W - snC : snC) + 'px';
     wrap.append(baseL, baseR, under, cast);
     const leafW = fwd ? W - soC : soC;
-    const n = FLIP_STRIPS;
+    // スマホ・タブレット（iPhone・iPad のブラウザ）は、細い短冊を重ねた3Dがすき間やちらつきになるので、1枚の紙としてめくる
+    const n = COARSE ? 1 : FLIP_STRIPS;
     // whole-pixel strip widths: nested layers are snapped to pixels, so fractional widths add up to a visible shift
     const base = Math.floor(leafW / n), ws = Array(n).fill(base);
     ws[n-1] = leafW - base * (n - 1);
