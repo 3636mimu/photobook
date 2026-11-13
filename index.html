@@ -1436,7 +1436,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <li>文字の編集画面のスライダーには、右側に数値の入力欄があります。数値を直接入力（Enter で確定）するか、入力欄で ↑↓ キーを押して細かく調整できます。</li>
       <li><b>マイスタイル</b>（文字の編集画面の「＋ 文字」の下）：お気に入りの文字を保存しておけます。<span class="btn">パーツを保存</span> は選んでいる文字や画像1つ（内容・見た目・位置）を、<span class="btn">ページ一式を保存</span> はその見開きの文字・画像ぜんぶを一式で保存します（別の見開きでも読み込めます）。保存した文字1つは <span class="btn">追加</span> でそのまま入れたり、<span class="btn">適用</span> で選んでいる文字に見た目（フォント・色・大きさ・縁取り・影など）だけを当てはめたりできます。一式は <span class="btn">読み込む</span> で今の文字と入れ替わります。名前は自由に付けられ、いくつでも保存できます。保存先はこのブラウザです（Web版で Google ドライブにつないでいるときは、ドライブにも保存され、どの端末でも同じマイスタイルになります）。また、<span class="btn">ファイルに書き出す</span> で JSON ファイルにしておけば、バックアップや別のパソコン・ブラウザへの持ち出しができます。<span class="btn">ファイルから読み込む</span> でそのファイルを選ぶと、今のマイスタイルに追加されます（同じものは重複しません）。</li>
     </ul>
-    <p><b>横の表示</b>（ノドの影のスイッチの下）：画面に横に並べる写真の枚数を、4枚（2見開き）・8枚（4見開き）・10枚（5見開き）から選べます。保存する画像には影響しません。画面の幅が狭いときは 4枚になります。選んだ表示は記憶されます。（初期値：4枚）</p>
+    <p><b>横の表示</b>（ノドの影のスイッチの下）：画面に横に並べる写真の枚数を、4枚（2見開き）・8枚（4見開き）・10枚（5見開き、パソコンのみ）から選べます。保存する画像には影響しません。画面の幅が狭いときは 4枚になります。選んだ表示は記憶されます。（初期値：4枚）</p>
     <p><b>テンプレート</b>（横の表示の下。押すと開きます。右の ON / OFF スイッチで、写真の下の値の表示をまとめて出したり消したりできます。OFF にしても選んだテンプレートは残ります）：上の行から順番に写真が割り当てられます。①〜③は8枚ぶん、④距離は6枚ぶんで、行の見出し（例：1〜6枚目）は自動で変わります。ページ数に足りないときは行が自動で増え、増えた行は上の行と同じテンプレートから始まります。選ぶと、各写真の下に値と構図（例：<span class="tv"><b>後0.5</b> 全身</span>、<span class="tv"><b>右2</b> 胸上</span>）が出ます。構図は数値で決まります（5 顎上／4 鎖骨上／3・2 胸上／1.5 膝上／0.5 全身／0.2 風景）。画面に表示するだけで、保存画像には入りません。（初期値：すべて「なし」）</p>
     <div class="tbl"><table>
       <tr><th>①階段</th><td class="tvs"><span class="tv"><b>後0.5</b> 全身</span><span class="tv"><b>右2</b> 胸上</span><span class="tv"><b>前4</b> 鎖骨上</span><span class="tv"><b>左0.2</b> 風景</span><span class="tv"><b>右5</b> 顎上</span><span class="tv"><b>前1.5</b> 膝上</span><span class="tv"><b>左2</b> 胸上</span><span class="tv"><b>右0.2</b> 風景</span></td></tr>
@@ -2291,8 +2291,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(/^(INPUT|SELECT|TEXTAREA)$/.test((e.target && e.target.tagName) || '') || (e.target && e.target.isContentEditable)) return;
     if(e.key === 'ArrowLeft'){ e.preventDefault(); pageStep(-1); } else if(e.key === 'ArrowRight'){ e.preventDefault(); pageStep(1); }
   });
+  // iPad・スマホは画面が小さいので、横は8枚まで（10枚は出さない）
+  const COARSE = matchMedia('(pointer:coarse)').matches;
+  if(COARSE) $('cols5').hidden = true;
   function setCols(n){
     n = n === 5 ? 5 : n === 4 ? 4 : 2;
+    if(n === 5 && COARSE) n = 4;
     spreadsEl.classList.toggle('cols4', n >= 4); spreadsEl.classList.toggle('cols5', n === 5);
     [2, 4, 5].forEach(k => $('cols' + k).setAttribute('aria-pressed', n === k ? 'true' : 'false'));
   }
