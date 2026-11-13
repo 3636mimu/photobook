@@ -6628,7 +6628,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   let gExpT = 0, gRenewing = false;
   function gExpTimer(){ clearTimeout(gExpT); if(GD.exp) gExpT = setTimeout(() => { gSync(); }, Math.max(1000, GD.exp - Date.now() - 30000 + 500)); }
   if(WEB){
-    document.addEventListener('pointerdown', () => {
+    // 「押した」と数えられるのは click（指を離したとき）。pointerdown（触れた瞬間）で窓を開くと、スマホでは「ポップアップをブロック」になる
+    document.addEventListener('click', () => {
       if(!GD.email || !GD.client || GD.wait || gRenewing || !GD.tok && !GD.exp) return;
       const left = GD.exp - Date.now();
       if(left > 10 * 60000) return;                       // まだ10分以上ある
