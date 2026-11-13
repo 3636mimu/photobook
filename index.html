@@ -834,6 +834,14 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .setbtn .setsum{overflow:hidden;text-overflow:ellipsis}
 .setsheet{position:fixed;inset:0;z-index:45;background:rgba(20,20,22,.28);display:flex;align-items:flex-start;justify-content:flex-start;padding:calc(var(--hdrH,60px) + 6px) 14px 14px}
 .setsheet[hidden]{display:none}
+.selpop{position:fixed;z-index:47;overflow-y:auto;overscroll-behavior:contain;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 36px rgba(0,0,0,.22);padding:4px}
+.selpop[hidden]{display:none}
+.selpop button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-size:14px;line-height:1.35;padding:10px 12px 10px 30px;border-radius:8px;position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.selpop button:active{background:rgba(127,127,127,.14)}
+.selpop button.on{color:var(--accent);font-weight:700}
+.selpop button.on::before{content:'';position:absolute;left:11px;top:50%;width:9px;height:5px;margin-top:-4px;border:solid currentColor;border-width:0 0 2px 2px;transform:rotate(-45deg)}
+select.selopen{border-color:var(--accent) !important;box-shadow:0 0 0 1px var(--accent)}
+
 /* スマホ・タブレット：右のメニューはしまっておき、右端の「メニュー」から写真の上に重ねて出す */
 body.sidedrawer .grid{grid-template-columns:minmax(0,1fr) !important;grid-template-rows:none !important;padding-right:26px}
 body.sidedrawer .grid>main{grid-column:1 !important;grid-row:auto !important}
@@ -2396,6 +2404,41 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     document.addEventListener('keydown', e => { if(e.key === 'Escape' && !sheet.hidden) close(); });
     body.addEventListener('change', sum); body.addEventListener('click', () => setTimeout(sum, 0));
     setInterval(() => { if(sheet.hidden) sum(); }, 1500);   // BOOKを開いたときなど、ほかの所で設定が変わったとき
+    sum();
+    // 選択肢は、端末のプルダウンではなく、この枠の中に1つだけ出す（iPad で2重に出ないように。選べないものは出さない）
+    const pop = document.createElement('div'); pop.className = 'selpop'; pop.hidden = true; pop.setAttribute('role', 'listbox');
+    sheet.appendChild(pop);
+    let popSel = null;
+    const popClose = () => { pop.hidden = true; if(popSel) popSel.classList.remove('selopen'); popSel = null; };
+    const popOpen = sel => {
+      popSel = sel; sel.classList.add('selopen');
+      const opts = [...sel.options].filter(o => !o.hidden && !o.disabled);
+      pop.innerHTML = opts.map(o => `<button type="button" role="option" data-v="${o.value.replace(/"/g, '&quot;')}" aria-selected="${o.selected}"${o.selected ? ' class="on"' : ''}>${o.textContent.replace(/[<>&]/g, '')}</button>`).join('');
+      const r = sel.getBoundingClientRect(), below = innerHeight - r.bottom - 12, above = r.top - 12;
+      pop.style.left = r.left + 'px'; pop.style.width = r.width + 'px'; pop.hidden = false;
+      const h = pop.scrollHeight, down = below >= Math.min(h, 240) || below >= above;
+      pop.style.maxHeight = Math.max(160, down ? below : above) + 'px';
+      pop.style.top = (down ? r.bottom + 4 : Math.max(12, r.top - 4 - Math.min(h, above))) + 'px';
+      const on = pop.querySelector('.on'); if(on) on.scrollIntoView({ block: 'center' });
+    };
+    pop.addEventListener('click', e => {
+      const b = e.target.closest('button'); if(!b || !popSel) return;
+      const sel = popSel; popClose();
+      if(sel.value !== b.dataset.v){ sel.value = b.dataset.v; sel.dispatchEvent(new Event('input', { bubbles: true })); sel.dispatchEvent(new Event('change', { bubbles: true })); }
+      sum();
+    });
+    body.querySelectorAll('select').forEach(sel => {
+      // 端末のプルダウンを出さずに、こちらの一覧を出す
+      sel.addEventListener('mousedown', e => e.preventDefault());
+      sel.addEventListener('touchend', e => { e.preventDefault(); popSel === sel ? popClose() : popOpen(sel); }, { passive: false });
+      sel.addEventListener('click', e => { e.preventDefault(); });
+      sel.addEventListener('keydown', e => { if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); popOpen(sel); } });
+    });
+    sheet.addEventListener('pointerdown', e => { if(!pop.hidden && !pop.contains(e.target) && e.target !== popSel) popClose(); }, true);
+    sheet.querySelector('.setsh-in').addEventListener('scroll', popClose);
+    sheet.querySelector('.setsh-ok').addEventListener('click', popClose);
+    sheet.addEventListener('click', e => { if(e.target === sheet) popClose(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') popClose(); });
     sum();
   }
   function setCols(n){
