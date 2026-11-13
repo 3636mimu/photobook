@@ -1243,6 +1243,22 @@ html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgr
   .cropacts2 #cropDelete{flex-grow:1.35}
   .cropacts2 #cropDone{flex-grow:1.15}
 }
+
+/* スマホ・タブレットの見開き表示：左右の余白は ‹ › の要不要に合わせ、縦向き・横向きそれぞれで写真をできるだけ大きく */
+@media (pointer:coarse){
+  .spreads.pagemode .stage{padding:4px;min-height:0;height:calc(100dvh - var(--hdrH,48px) - var(--dropH,40px) - 96px)}
+  .spreads.pagemode .spread .bar{padding:8px 12px}
+  .spreads.pagemode .spread .bar .icon-btn{height:32px}
+  .pagenav{margin:4px 0 0}
+  .spreads.pagemode .pgarrow.over{width:32px;height:32px;border:0;background:rgba(0,0,0,.4);color:#fff;box-shadow:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .spreads.pagemode .pgarrow.over svg{width:17px;height:17px}
+  .spreads.pagemode .pgarrow.over:disabled{opacity:0;pointer-events:none}
+}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:500px){
+  .spreads.pagemode .stage{height:calc(100dvh - var(--hdrH,48px) - var(--dropH,40px) - 48px)}
+  .spreads.pagemode .spread .bar{padding:4px 12px}
+  .pagenav{display:none}
+}
 </style>
 </head>
 <body>
@@ -2452,7 +2468,23 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(a.parentNode !== st){ st.appendChild(a); st.appendChild(b); }
     const top = cv.offsetTop + cv.offsetHeight / 2 - 19;
     a.style.top = b.style.top = top + 'px';
-    a.style.left = (cv.offsetLeft - 46) + 'px'; b.style.left = (cv.offsetLeft + cv.offsetWidth + 8) + 'px';
+    const over = PG_OVER(); a.classList.toggle('over', over); b.classList.toggle('over', over);
+    if(over){ a.style.top = b.style.top = (cv.offsetTop + cv.offsetHeight / 2 - 16) + 'px'; a.style.left = (cv.offsetLeft + 6) + 'px'; b.style.left = (cv.offsetLeft + cv.offsetWidth - 38) + 'px'; }   // 写真の上に小さく重ねる
+    else { a.style.left = (cv.offsetLeft - 46) + 'px'; b.style.left = (cv.offsetLeft + cv.offsetWidth + 8) + 'px'; }
+  }
+  // スマホ（せまい画面）の見開き表示：‹ › は写真の上に重ねて、左右の余白をなくす。指で左右にスワイプしてもめくれる
+  // 写真の横に ‹ › を置く余白がなければ（スマホの縦向きなど）、写真の上に重ねる
+  function PG_OVER(){ const ui = pairUI[allPairs()[pagePos]]; if(!ui) return false; const st = ui.card.querySelector('.stage'); return (st.clientWidth - ui.cv.offsetWidth) / 2 < 50; }
+  { let sx = null, sy = 0;
+    spreadsEl.addEventListener('touchstart', e => { if(viewMode !== 'page' || e.touches.length !== 1 || !e.target.closest('.stage')){ sx = null; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    spreadsEl.addEventListener('touchend', e => {
+      if(sx === null || viewMode !== 'page') return;
+      const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; sx = null;
+      if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && !document.body.classList.contains('moving')){
+        const n = allPairs().length, to = pagePos + (dx < 0 ? 1 : -1);
+        if(to >= 0 && to < n) pageStep(dx < 0 ? 1 : -1);
+      }
+    }, { passive: true });
   }
   function setViewMode(m){
     if(m === viewMode) return;
@@ -2968,7 +3000,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function renderPair(p){
     markDirty();
     const ui = pairUI[p];
-    const {W,H} = fitCompose(p, ui.cv, ui.card.querySelector('.stage'));
+    const stg = ui.card.querySelector('.stage'), pgFit = COARSE && viewMode === 'page' && allPairs()[pagePos] === p;
+    if(stg.style.height) stg.style.height = '';   // いったん画面いっぱいの高さで描いてから
+    const {W,H} = fitCompose(p, ui.cv, stg);
+    // スマホ・タブレットの見開き表示：縦向きで写真の上下に余った空きは詰める（横向きは高さいっぱいを使う）
+    if(pgFit){ const cs = getComputedStyle(stg), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom), want = ui.cv.offsetHeight + pad; if(want < stg.clientHeight - 6) stg.style.height = Math.ceil(want) + 'px'; }
     ui.meta.textContent = `${W}×${H}`;
     ui.save.disabled = !pairReady(p);
     const cov = isCover(p); ui.card.classList.toggle('cover', cov); ui.txt.classList.toggle('on', hasDeco(p)); ui.card.querySelector('.vopen').textContent = pairLabel(p);
