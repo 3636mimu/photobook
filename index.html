@@ -1275,6 +1275,32 @@ html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgr
   .spreads.cols4.cols5{grid-template-columns:repeat(5,minmax(0,1fr)) !important}
 }
 .spreads.pagemode{grid-template-columns:minmax(0,1fr) !important}
+
+/* 見開きの下の行：左端に左ページの番号、右端に右ページの番号、真ん中に 見開き・装飾（aA）・保存（フロッピー） */
+.spread .bar{display:grid !important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) !important;align-items:center;gap:6px;position:relative}
+.spread .bar .vals{display:none}
+.spread .bar .bside{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}
+.spread .bar .bside.r{justify-content:flex-end}
+.spread .bar .bside .pn{max-width:none;flex:none;padding:2px 4px;white-space:nowrap}
+.spread .bar .bside .val{display:flex;align-items:baseline;gap:4px;min-width:0;white-space:nowrap;overflow:hidden}
+.spread .bar .bside .val b{font-size:12px;color:#C0392B;letter-spacing:.03em}
+.spread .bar .bside .val small{font-size:11px;color:#C0392B;font-weight:500}
+.spread .bar .ctr{position:static !important;transform:none !important;display:flex;align-items:center;gap:6px;grid-column:2}
+.spread .bar .ctr .icon-btn{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:30px;padding:0 9px}
+.spread .bar .txtbtn .aa{font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:700;letter-spacing:.01em;line-height:1}
+.spread .bar .save .ico{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.spreads.cols4 .bar .ctr .icon-btn{min-width:30px;height:28px;padding:0 6px}
+.spreads.cols4 .bar .bside .val small{display:none}
+@container (max-width:330px){ .spread .bar .bside .val{display:none} }
+
+.spreads.cols4 .bar{padding:4px 6px;gap:4px}
+.spreads.cols4 .bar .ctr{gap:4px}
+.spreads.cols4 .bar .ctr .icon-btn{min-width:28px;height:26px;padding:0 5px}
+.spreads.cols4 .bar .txtbtn .aa{font-size:13px}
+.spreads.cols4 .bar .save .ico{width:13px;height:13px}
+.spreads.cols4 .bar .lay svg{width:15px;height:11px}
+/* せまいカードでは、表紙の番号を1文字に（裏表紙→裏、表紙→表） */
+@container (max-width:300px){ .spread .bar .pn[data-s]{font-size:0} .spread .bar .pn[data-s]::after{content:attr(data-s);font-size:13px} }
 </style>
 </head>
 <body>
@@ -2138,6 +2164,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const allPairs = () => { const a = [...Array(PAIRS).keys()]; return booklet ? [PAIRS, ...a] : a; };
   const bodyLen = () => booklet ? slots.length - 2 : slots.length;
   const pairLabel = p => isCover(p) ? '表紙・裏表紙' : !booklet ? `${p*2+1}-${p*2+2}` : p === 0 ? (tobiraLayout ? '扉' : '1') : p === PAIRS - 1 ? (tobiraLayout ? '奥付' : String(p*2)) : `${p*2}-${p*2+1}`;
+  // 見開きの下の、左ページ・右ページそれぞれの番号（表紙の裏など、番号のない側は空）
+  const sideLabels = p => isCover(p) ? ['裏表紙', '表紙'] : !booklet ? [String(p*2+1), String(p*2+2)] : p === 0 ? ['', tobiraLayout ? '扉' : '1'] : p === PAIRS - 1 ? [tobiraLayout ? '奥付' : String(p*2), ''] : [String(p*2), String(p*2+1)];
   const slotLabel = i => !booklet ? `${i+1}枚目` : i >= bodyLen() ? (i === slots.length - 1 ? '表紙' : '裏表紙') : i === 0 ? '表紙の裏' : i === bodyLen() - 1 ? '裏表紙の裏' : isTobira(i) ? (i === 1 ? '扉' : '奥付') : isWhiteP(i) ? '白紙（印刷なし）' : `${i}ページ`;
   const slots = Array.from({length:PAIRS*2}, () => null); // {src,url,name}
   // 装飾（文字・画像）: one list per spread. key 'c' = the 写真集 cover, otherwise the spread index
@@ -2182,14 +2210,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     card.innerHTML = `
       <div class="stage"><canvas></canvas><span class="lowres" hidden></span><span class="lowres" hidden></span><button class="spine" type="button" title="見開きごと移動" aria-label="見開き${p+1}をつかんで移動"><span class="bars"></span></button></div>
       <div class="bar">
-        <button class="num vopen" type="button" title="この見開きをプレビュー" aria-label="${p*2+1}–${p*2+2}をプレビュー">${p*2+1}-${p*2+2}</button>
+        <div class="bside l"><button class="num vopen pn" type="button" title="この見開きをプレビュー">${p*2+1}</button><span class="val"></span></div>
         <div class="pairslots">
           <div class="slot" tabindex="0" role="button"></div>
           <button class="icon-btn swap" title="左右を入れ替え" aria-label="見開き${p+1}の左右を入れ替え">⇄</button>
           <div class="slot" tabindex="0" role="button"></div>
         </div>
-        <div class="vals"><span></span><div class="ctr"><button class="icon-btn lay" type="button" aria-pressed="false" title="単一ページレイアウト" aria-label="見開き${p+1}を1枚の写真で見開きにする"><svg viewBox="0 0 20 14" width="18" height="13" aria-hidden="true"><rect class="l2" x="1" y="1" width="8" height="12" rx="1"/><rect class="l2" x="11" y="1" width="8" height="12" rx="1"/><rect class="l1" x="1" y="1" width="18" height="12" rx="1"/></svg></button><button class="icon-btn txtbtn" type="button" title="この見開きに文字や画像（ロゴなど）を重ねる">装飾</button></div><span></span></div>
-        <button class="icon-btn save" type="button" disabled>保存</button>
+        <div class="ctr"><button class="icon-btn lay" type="button" aria-pressed="false" title="単一ページレイアウト" aria-label="見開き${p+1}を1枚の写真で見開きにする"><svg viewBox="0 0 20 14" width="18" height="13" aria-hidden="true"><rect class="l2" x="1" y="1" width="8" height="12" rx="1"/><rect class="l2" x="11" y="1" width="8" height="12" rx="1"/><rect class="l1" x="1" y="1" width="18" height="12" rx="1"/></svg></button><button class="icon-btn txtbtn" type="button" title="装飾：この見開きに文字や画像（ロゴなど）を重ねる" aria-label="装飾"><span class="aa" aria-hidden="true">aA</span></button><button class="icon-btn save" type="button" disabled title="保存：この見開きを画像で保存" aria-label="保存"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h8l2 2v9H3z"/><path d="M5.5 2.5v3.2h4.5V2.5M5.5 13.5V9.5h5v4"/></svg></button></div>
+        <div class="bside r"><span class="val"></span><button class="num vopen pn" type="button" title="この見開きをプレビュー">${p*2+2}</button></div>
         <div class="meta" hidden></div>
       </div>
       <div class="fallback" hidden>
@@ -2199,11 +2227,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     spreadsEl.appendChild(card);
     const [sL, sR] = card.querySelectorAll('.slot');
     const ui = {card, cv:card.querySelector('canvas'), slots:[sL,sR], meta:card.querySelector('.meta'),
-      save:card.querySelector('.save'), vals:card.querySelectorAll('.vals span'), fb:card.querySelector('.fallback'), fbImg:card.querySelector('.fallback img')};
+      save:card.querySelector('.save'), vals:card.querySelectorAll('.bside .val'), pns:card.querySelectorAll('.bside .pn'), fb:card.querySelector('.fallback'), fbImg:card.querySelector('.fallback img')};
     pairUI.push(ui);
 
     ui.cv.dataset.pair = p;
-    card.querySelector('.vopen').addEventListener('click', () => openViewer(p));
+    card.querySelectorAll('.vopen').forEach(b => b.addEventListener('click', () => openViewer(p)));
     ui.cv.addEventListener('pointerdown', e => {
       if(e.pointerType === 'touch' || e.button !== 0) return;
       const r = ui.cv.getBoundingClientRect();
@@ -3035,7 +3063,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const free = avail - ui.card.offsetHeight - navH; if(free > 8) ui.card.style.marginTop = Math.floor(free / 2) + 'px'; }
     ui.meta.textContent = `${W}×${H}`;
     ui.save.disabled = !pairReady(p);
-    const cov = isCover(p); ui.card.classList.toggle('cover', cov); ui.txt.classList.toggle('on', hasDeco(p)); ui.card.querySelector('.vopen').textContent = pairLabel(p);
+    const cov = isCover(p); ui.card.classList.toggle('cover', cov); ui.txt.classList.toggle('on', hasDeco(p)); { const [l, r] = sideLabels(p); ui.pns[0].textContent = l; ui.pns[1].textContent = r; ui.pns[0].hidden = !l; ui.pns[1].hidden = !r; ui.pns[0].dataset.s = l === '裏表紙' ? '裏' : ''; ui.pns[1].dataset.s = r === '表紙' ? '表' : ''; if(!ui.pns[0].dataset.s) delete ui.pns[0].dataset.s; if(!ui.pns[1].dataset.s) delete ui.pns[1].dataset.s; ui.pns.forEach(b => b.setAttribute('aria-label', pairLabel(p) + 'をプレビュー')); }
     ui.lay.hidden = isEnd(p) || !!noPrintSide(p); ui.card.querySelector('.spine').hidden = isEnd(p);
     if(ui.lay){ const on = wide.has(p); ui.lay.setAttribute('aria-pressed', on ? 'true' : 'false'); ui.lay.title = on ? '見開きレイアウト' : '単一ページレイアウト'; }
     renderVals(p);
