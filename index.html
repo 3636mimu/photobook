@@ -6182,8 +6182,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // ドライブに保存済み（変更なし）は上の段だけに。パソコンに保存したBOOKと、まだ保存していない作業はこちら
     if(driveMode) list = list.filter(w => !(w.fileState === 'synced' && w.handle && w.handle.drive));
     $('stRecentTitle').textContent = driveMode ? 'この端末' : '続きから作る';
-    $('stRecentSub').textContent = driveMode ? 'この端末に保存したBOOKと、まだ保存していない作業（最近の8件まで）' : 'このブラウザに一時保存（最近の8件まで）';
-    $('stRecentNote').textContent = driveMode ? 'Google ドライブに保存すると、上の段に移ります。' + (MOBILE ? '' : `この端末に保存したBOOKは、ここに出ていなくても「${DEVN}のBOOKファイルを開く」から開けます。`) : '一時保存なので、消えることがあります。大切なBOOKは「BOOKを保存」でファイルにしておくと安心です。';
+    $('stRecentSub').textContent = driveMode ? '保存したBOOKと、まだ保存していない作業（最近の8件まで）' : 'このブラウザに一時保存（最近の8件まで）';
+    $('stRecentNote').textContent = driveMode ? 'Google ドライブに保存すると、上の段に移ります。' + (MOBILE ? '' : `ここにないBOOKは「${DEVN}のBOOKファイルを開く」から開けます。`) : '一時保存なので、消えることがあります。大切なBOOKは「BOOKを保存」でファイルにしておくと安心です。';
     const box = $('stRecent'), row = $('stRecentList');
     if(list.length) photosBytes().then(b => { $('stRecentSize').textContent = b ? `・写真 約${b >= 1e9 ? (b / 1e9).toFixed(1) + 'GB' : Math.max(1, Math.round(b / 1e6)) + 'MB'}` : ''; });
     box.hidden = !list.length; row.innerHTML = '';
@@ -6194,7 +6194,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       card.className = 'strcard ' + (KIND_CLS[w.kind] || 'c1'); if(w.handle && w.handle.drive && w.handle.folderId) card.dataset.fid = w.handle.folderId;
       const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       card.innerHTML = `<div class="strkind"><i class="strdot"></i>${esc(KIND_NAME[w.kind] || 'BOOK')}</div><button type="button" class="strthumb" title="続きから編集する">${w.thumb ? `<img src="${w.thumb}" alt="">` : '<span class="strnoimg">写真なし</span>'}</button>`
-        + `<div class="strmeta">${w.bookFile ? `<small class="strfname" title="${esc(w.bookFile)}">${esc(w.bookFile).replace(/_/g, '_<wbr>')}</small>` : ''}<small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${w.pages}ページ・写真${w.photos}枚・${((w.project.settings || {}).fmt || 'jpg').toUpperCase()}</small>${w.fileState && w.bookFile ? `<small class="strfile${w.fileState === 'synced' ? ' ok' : ''}" title="${esc(w.bookFile || '')}">${w.fileState === 'synced' ? (WEB ? '✓ この端末に保存済み' : '✓ BOOKに保存済み') : (w.handle && w.handle.drive ? 'Google ドライブに保存後、変更あり' : (WEB ? 'この端末に保存後、変更あり' : 'BOOKに保存後、変更あり'))}</small>` : ''}</div>`
+        + `<div class="strmeta">${w.bookFile ? `<small class="strfname" title="${esc(w.bookFile)}">${esc(w.bookFile.replace(/\.pbmk$/i, '')).replace(/_/g, '_<wbr>')}</small>` : ''}<small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${w.pages}ページ・写真${w.photos}枚・${((w.project.settings || {}).fmt || 'jpg').toUpperCase()}</small>${w.fileState && w.bookFile ? `<small class="strfile${w.fileState === 'synced' ? ' ok' : ''}" title="${esc(w.bookFile || '')}">${w.fileState === 'synced' ? (WEB ? '✓ 保存済み' : '✓ BOOKに保存済み') : (w.handle && w.handle.drive ? 'Google ドライブに保存後、変更あり' : (WEB ? '保存後、変更あり' : 'BOOKに保存後、変更あり'))}</small>` : ''}</div>`
         + `<button type="button" class="stredit">✎ 続きから編集</button><button type="button" class="strdel" title="このBOOKを削除" aria-label="このBOOKを削除">×</button>`;
       const open = async () => {
         try{ await openWork(w.id); stClose(); }catch(e){ status('このBOOKを開けませんでした。'); }
