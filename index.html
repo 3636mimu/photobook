@@ -1261,6 +1261,15 @@ html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgr
   .spreads.pagemode .spread .bar{padding:4px 12px}
   .pagenav{display:none}
 }
+
+/* スマホ・タブレット：縦向きは横に2枚か4枚（見開き1つか2つ）、横向きは4枚か8枚（見開き2つか4つ） */
+@media (pointer:coarse) and (max-width:640px){
+  .spreads{grid-template-columns:minmax(0,1fr) !important}
+  .spreads.cols4{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+}
+@media (pointer:coarse) and (min-width:641px) and (max-width:1100px){
+  .spreads.cols4{grid-template-columns:repeat(4,minmax(0,1fr)) !important}
+}
 </style>
 </head>
 <body>
@@ -2645,6 +2654,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     spreadsEl.classList.toggle('cols4', n >= 4); spreadsEl.classList.toggle('cols5', n === 5);
     [2, 4, 5].forEach(k => $('cols' + k).setAttribute('aria-pressed', n === k ? 'true' : 'false'));
   }
+  // ボタンの「◯枚」は、実際に横に並ぶページの数に合わせる（スマホの縦向きは 2枚／4枚）
+  function colLabels(){ const narrow = COARSE && matchMedia('(max-width:640px)').matches; $('cols2').textContent = narrow ? '2枚' : '4枚'; $('cols4').textContent = narrow ? '4枚' : '8枚'; }
+  colLabels(); addEventListener('resize', colLabels);
   const colsNow = () => spreadsEl.classList.contains('cols5') ? 5 : spreadsEl.classList.contains('cols4') ? 4 : 2;
   [['cols2',2],['cols4',4],['cols5',5]].forEach(([id,n]) => $(id).addEventListener('click', () => { setCols(n); renderAll(); saveSettings(); }));
   function valueFor(idx){
