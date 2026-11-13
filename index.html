@@ -1154,6 +1154,20 @@ header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
   .vstrip button{flex:none;min-width:30px;height:24px;font-size:11px;padding:0 7px;border-radius:5px}
   .vstrip > :first-child{margin-left:auto}.vstrip > :last-child{margin-right:auto}
 }
+
+/* スマホの縦：上のひとことは1行、4つの選択は横2×縦2（アイコンは上、文字は下） */
+@media (max-width:560px){
+  .startsheet #stStep1.ststep{padding-left:14px;padding-right:14px}
+  #stStep1 .sthero{height:62px !important;padding:0 14px !important}
+  #stStep1 .sthero h3{left:14px;right:14px;font-size:19px;white-space:nowrap;overflow:hidden;text-align:center;letter-spacing:.02em}
+  #stStep1 .stsub{margin:12px 0 10px;font-size:12px;text-align:center}
+  #stStep1 .stchoices{grid-template-columns:1fr 1fr !important;gap:8px}
+  #stStep1 .stcard{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;row-gap:4px;align-items:start;padding:10px 10px 11px !important}
+  #stStep1 .stcard .stic{grid-row:auto;width:46px;height:38px;border-radius:9px}
+  #stStep1 .stcard .stic svg{width:36px;height:27px}
+  #stStep1 .stcard b{font-size:14px;align-self:start;margin-top:2px}
+  #stStep1 .stcard span{font-size:11px;line-height:1.5}
+}
 </style>
 </head>
 <body>
@@ -5955,6 +5969,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       : (r < .55) ? T[key].concat(wk && h >= 7 ? T.weekend : [])
       : H;
     const el = document.getElementById('startTitle'); if(el) el.textContent = pool[Math.floor(Math.random() * pool.length)];
+    fitStartTitle();
   })();
   // 初回だけ、最初の画面の使い方を開いた状態で出す（2回目からは閉じておく）
   try{ if(!localStorage.getItem('mihiraki-starthow-v1')){ $('stHowBox').hidden = false; $('stHow').setAttribute('aria-expanded', 'true'); localStorage.setItem('mihiraki-starthow-v1', '1'); } }catch(e){}
@@ -6091,6 +6106,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // BOOKファイルと同じ内容になったことを、一時保存にも記録する
   const sigOf = P => { const k = JSON.stringify(Object.assign({}, P, { savedAt: 0, id: 0, withPhotos: 0, fonts: 0 })); let h = 5381; for(let i = 0; i < k.length; i++) h = ((h << 5) + h + k.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + k.length.toString(36); };
+
+  // スマホの縦：いちばん上のひとことは1行に収める（入りきらないときだけ文字を小さく）
+  function fitStartTitle(){
+    const el = document.getElementById('startTitle'); if(!el) return;
+    el.style.fontSize = '';
+    if(!matchMedia('(max-width:560px)').matches) return;
+    requestAnimationFrame(() => {
+      const box = el.parentElement, w = box.clientWidth - 28; if(w <= 0) return;
+      let f = parseFloat(getComputedStyle(el).fontSize);
+      while(el.scrollWidth > w && f > 11){ f -= 0.5; el.style.fontSize = f + 'px'; }
+    });
+  }
+  addEventListener('resize', () => fitStartTitle());
   function syncedToFile(){ fileChanged = false; const P = buildProject(); fileSig = sigOf(P); fileSnap = { project: P, thumb: workThumb() }; dirty = true; clearTimeout(autoT); autoT = setTimeout(autoSave, 300); }
   function startNewWork(){ workId = null; baseSavedAt = 0; fileSig = null; bookFile = ''; fileSnap = null; fileHandle = null; autoOn = false; autoAt = ''; fileAt = 0; fileChanged = false; syncAutoUI(); lost = []; if(Object.keys(decos).length){ decos = {}; saveDecos(); renderAll(); } }
 
