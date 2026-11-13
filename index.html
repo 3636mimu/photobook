@@ -806,6 +806,10 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
   #modeLine .workbtns .wfile{max-width:110px}
   #modeLine .workbtns .wfile small{display:none}
 }
+.wfile.wclick{cursor:pointer;border-radius:10px;padding:3px 8px 3px 6px;margin:0 -2px;background:rgba(255,255,255,.55);transition:background .15s}
+.wfile.wclick:hover{background:rgba(255,255,255,.9)}
+.wfile.woff img.glogo{filter:grayscale(1);opacity:.5}
+.wfile .wre{color:var(--accent);font-style:normal;font-weight:700}
 .gswitch{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;margin-left:10px;white-space:nowrap}
 .gswitch:hover{color:var(--accent)}
 .ginvite{border:1.5px solid #E8B4A2;background:#FFF9F6;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -1087,7 +1091,7 @@ header .howto summary{background:rgba(255,255,255,.75);border-color:transparent}
             <option value="jpg" selected>JPG</option>
             <option value="pdf">PDF</option>
           </select></div>
-          <div class="workbtns"><button class="wbtn gconn" id="gConn" type="button" hidden></button><span class="wfile" id="workName" hidden></span><small class="wautotime" id="autoTime" hidden></small><button class="wbtn" id="workOver" type="button" hidden title="BOOKファイルに、いまの内容をすぐ上書き保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h8l2 2v9H3z"/><path d="M5.5 2.5v3.2h4.5V2.5M5.5 13.5V9.5h5v4"/></svg>上書き保存</button><button class="wbtn" id="workSave" type="button" title="BOOKの続きができるファイル（.pbmk）に保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.2-3.2L8 10l3.2-3.2M3 12.5h10"/></svg><span id="workSaveLbl">BOOKを保存</span></button><button class="wbtn" id="workOpen" type="button" hidden title="保存したBOOKファイル（.pbmk）を開いて続きから"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h4l1.2 1.4h5.8v6.6h-11z"/></svg>BOOKを開く</button></div>
+          <div class="workbtns"><button class="wbtn gconn" id="gConn" type="button" hidden></button><span class="wfile" id="workName" hidden></span><small class="wautotime" id="autoTime" hidden></small><button class="wbtn" id="workOver" type="button" hidden title="上書き保存：いまのBOOKに、すぐ保存します" aria-label="上書き保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h8l2 2v9H3z"/><path d="M5.5 2.5v3.2h4.5V2.5M5.5 13.5V9.5h5v4"/></svg>保存</button><button class="wbtn" id="workSave" type="button" title="BOOKの続きができるファイル（.pbmk）に保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.2-3.2L8 10l3.2-3.2M3 12.5h10"/></svg><span id="workSaveLbl">BOOKを保存</span></button><button class="wbtn" id="workOpen" type="button" hidden title="保存したBOOKファイル（.pbmk）を開いて続きから"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h4l1.2 1.4h5.8v6.6h-11z"/></svg>BOOKを開く</button></div>
           
 
         </div>
@@ -6069,10 +6073,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const on = !!(fileHandle && bookFile);   // Web版で上書きできるのはドライブのBOOKだけ
     $('autoOn').checked = on && autoOn;
     $('workName').hidden = !bookFile; $('workName').innerHTML = bookFile ? `${fileHandle && fileHandle.drive ? '<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">' : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.5 5v9.2H4z"/><path d="M9 1.8V5.3h3.5"/></svg>'}<span class="wfn"><b>${bookFile.replace(/[<>&]/g, '')}</b>${fileAt ? `<small>${whenText(fileAt)}に${fileAtAuto ? '自動' : ''}保存${fileChanged ? '<em>・変更あり</em>' : ''}</small>` : ''}</span>` : ''; $('workName').title = bookFile ? `編集中のBOOKファイル：${bookFile}${fileChanged ? '（保存したあとに変更があります）' : ''}` : ''; $('workName').classList.toggle('chg', !!(bookFile && fileChanged));
-    $('workOver').hidden = !on; $('workSaveLbl').textContent = on ? '別名で保存' : 'BOOKを保存';
+    $('workOver').hidden = !on; $('workSaveLbl').textContent = on ? '別名' : 'BOOKを保存';
+    $('workSave').setAttribute('aria-label', on ? '別名で保存' : 'BOOKを保存');
+    $('workSave').querySelector('svg').innerHTML = on ? '<path d="M3 2.5h7l2 2v4"/><path d="M3 2.5v11h5.5"/><path d="M5.5 2.5v3h4v-3"/><path d="M12.2 10v5M9.7 12.5h5"/>' : '<path d="M8 2v8m-3.2-3.2L8 10l3.2-3.2M3 12.5h10"/>';   // 別名：保存＋（新しく作る）
     $('workSave').title = on ? 'いまの内容を、別の名前の新しいBOOKファイルに保存' : 'BOOKの続きができるファイル（.pbmk）に保存';
     $('autoTime').textContent = '';
     $('autoTime').hidden = !$('autoTime').textContent;
+    if(WEB) mergeDriveName();
   }
   // 保存したあとのポップアップ：どこに何を保存したかと、3分毎の自動保存のチェック
   function showSaved(over){
@@ -6526,8 +6533,23 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     b.innerHTML = `<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">` + (gValid() ? '' : GD.email ? '<em>つなぐ</em>' : '<span>Google ドライブとつなぐ</span>');   // つないでいるときはロゴだけ（アカウントはマウスを乗せると出る）
     b.classList.toggle('off', !gValid());
     b.title = gValid() ? `Google ドライブ（${GD.email}）と連携中。押すと、アカウントの切り替えができます` : 'Google ドライブとつなぐ（ログインして、保存先のアカウントを選びます）';
+    mergeDriveName();
+  }
+  // ドライブのBOOKを編集中は、ロゴのボタンとファイル名を1つにまとめる（ファイル名を押すと、ロゴのボタンと同じ動き）
+  function mergeDriveName(){
+    const n = $('workName'), b = $('gConn'), merged = !!(fileHandle && fileHandle.drive && bookFile && !n.hidden);
+    b.hidden = merged;
+    n.classList.toggle('wclick', merged); n.classList.toggle('woff', merged && !gValid());
+    if(merged){
+      n.setAttribute('role', 'button'); n.tabIndex = 0;
+      n.title = (gValid() ? `Google ドライブ（${GD.email}）の「${bookFile}」を編集中。押すと、アカウントの切り替えができます` : `「${bookFile}」を編集中。Google ドライブとのつながりが切れています。押すと、つなぎ直します`);
+      const sm = n.querySelector('.wfn small'), re = n.querySelector('.wre');
+      if(gValid()){ if(re) re.remove(); } else if(sm && !re) sm.insertAdjacentHTML('beforeend', '<em class="wre">・つなぎ直す</em>');
+    } else { n.removeAttribute('role'); n.removeAttribute('tabindex'); }
   }
   if(WEB){
+    $('workName').addEventListener('click', () => { if($('workName').classList.contains('wclick')) $('gConn').click(); });
+    $('workName').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && $('workName').classList.contains('wclick')){ e.preventDefault(); $('gConn').click(); } });
     $('gConn').addEventListener('click', async () => {
       if(gValid()) askYesNo('アカウントを切り替えますか？', `<p>いまは「${esc2(GD.email)}」のGoogle ドライブと連携しています。<br>YES を押すと、別のアカウントを選び直せます。</p>`, async () => { if(await gSwitch()) renderDriveStart(); });
       else if(await gEnsure(true)) status(`「${GD.email}」のGoogle ドライブと連携しました。`);
