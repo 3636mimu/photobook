@@ -816,6 +816,23 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .setbtn .setsum{overflow:hidden;text-overflow:ellipsis}
 .setsheet{position:fixed;inset:0;z-index:45;background:rgba(20,20,22,.28);display:flex;align-items:flex-start;justify-content:center;padding:calc(var(--hdrH,60px) + 6px) 14px 14px}
 .setsheet[hidden]{display:none}
+/* スマホ・タブレット：右のメニューはしまっておき、右端の「メニュー」から写真の上に重ねて出す */
+body.sidedrawer .grid{grid-template-columns:minmax(0,1fr) !important;grid-template-rows:none !important;padding-right:26px}
+body.sidedrawer .grid>main{grid-column:1 !important;grid-row:auto !important}
+body.sidedrawer .brand{display:none !important}
+body.sidedrawer .grid>aside{position:fixed !important;z-index:35;right:10px;top:calc(var(--hdrH,0px) + 8px) !important;margin:0 !important;width:236px !important;max-height:calc(100dvh - var(--hdrH,0px) - 20px) !important;overflow-y:auto !important;overflow-x:hidden;overscroll-behavior:contain;box-shadow:0 12px 40px rgba(30,25,20,.22) !important;transform:translateX(calc(100% + 24px));visibility:hidden;transition:transform .26s cubic-bezier(.2,.8,.2,1),visibility 0s .26s}
+body.sidedrawer.sideopen .grid>aside{transform:none;visibility:visible;transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+body.sidedrawer .sidein{width:auto !important}
+.sidehd{display:none}
+body.sidedrawer .sidehd{display:flex;align-items:center;justify-content:space-between;margin:-2px 0 -8px;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--ink)}
+.sidehd button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.sidehd svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.sidetab{position:fixed;z-index:29;right:0;top:calc(var(--hdrH,0px) + 14px);display:flex;flex-direction:row;align-items:center;gap:6px;padding:12px 5px 12px 7px;border:1px solid var(--line);border-right:0;border-radius:12px 0 0 12px;background:var(--panel);color:var(--ink);font:inherit;font-size:12px;font-weight:700;letter-spacing:.2em;writing-mode:vertical-rl;box-shadow:-2px 2px 10px rgba(30,25,20,.12);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sidetab svg{width:14px;height:14px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;writing-mode:horizontal-tb}
+.sidetab[hidden],body.sideopen .sidetab{display:none}
+.sidescrim{position:fixed;inset:0;z-index:34;background:rgba(20,20,22,.12)}
+.sidescrim[hidden]{display:none}
+
 .setsh-in{width:min(560px,100%);max-height:calc(100vh - var(--hdrH,60px) - 30px);overflow:auto;background:var(--panel);color:var(--ink);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:14px 18px 16px}
 .setsh-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .setsh-hd b{font-size:15px}
@@ -2309,6 +2326,28 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // iPad・スマホは画面が小さいので、横は8枚まで（10枚は出さない）
   const COARSE = matchMedia('(pointer:coarse)').matches;
   if(COARSE) $('cols5').hidden = true;
+  // スマホ・タブレット：右のメニューは、必要なときだけ写真の上に重ねて出す
+  if(COARSE){
+    const aside = document.querySelector('.grid>aside'), inner = aside.querySelector('.sidein');
+    document.body.classList.add('sidedrawer');
+    const tab = document.createElement('button'); tab.type = 'button'; tab.className = 'sidetab'; tab.setAttribute('aria-label', 'メニューを開く');
+    tab.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>メニュー';
+    const scrim = document.createElement('div'); scrim.className = 'sidescrim'; scrim.hidden = true;
+    const hd = document.createElement('div'); hd.className = 'sidehd';
+    hd.innerHTML = '<span>メニュー</span><button type="button" aria-label="メニューを閉じる"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>';
+    inner.prepend(hd); document.body.append(scrim, tab);
+    const sideOpen = on => { document.body.classList.toggle('sideopen', on); scrim.hidden = !on; aside.setAttribute('aria-hidden', on ? 'false' : 'true'); if(on) aside.scrollTop = 0; };
+    tab.addEventListener('click', () => sideOpen(true));
+    scrim.addEventListener('click', () => sideOpen(false));
+    hd.querySelector('button').addEventListener('click', () => sideOpen(false));
+    addEventListener('keydown', e => { if(e.key === 'Escape' && document.body.classList.contains('sideopen')) sideOpen(false); });
+    // 書き出しや写真選びで別の画面が開くときは、メニューを閉じる
+    aside.addEventListener('click', e => { if(e.target.closest('#saveAll,#saveSheet,#saveSingles,#clearAll')) setTimeout(() => sideOpen(false), 0); });
+    $('fileMany').addEventListener('change', () => sideOpen(false));
+    // 写真がないあいだ（はじめの画面）は出さない
+    const showTab = () => { tab.hidden = !document.querySelector('.grid') || !document.querySelector('.grid').offsetParent; if(tab.hidden) sideOpen(false); };
+    setInterval(showTab, 800); showTab(); sideOpen(false);
+  }
   // iPad・スマホ：上の設定は「設定」ボタンにまとめて、押したときだけ開く（いまの設定はボタンに短く表示）
   if(COARSE){
     const ml = $('modeLine'), sheet = document.createElement('div');
