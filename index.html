@@ -852,8 +852,8 @@ select.selopen{border-color:var(--accent) !important;box-shadow:0 0 0 1px var(--
 body.sidedrawer .grid{grid-template-columns:minmax(0,1fr) !important;grid-template-rows:none !important;padding-right:26px}
 body.sidedrawer .grid>main{grid-column:1 !important;grid-row:auto !important}
 body.sidedrawer .brand{display:none !important}
-body.sidedrawer .grid>aside{position:fixed !important;z-index:35;right:10px;top:calc(var(--hdrH,0px) + 8px) !important;margin:0 !important;width:236px !important;max-height:calc(100dvh - var(--hdrH,0px) - 20px) !important;overflow-y:auto !important;overflow-x:hidden;overscroll-behavior:contain;box-shadow:0 12px 40px rgba(30,25,20,.22) !important;transform:translateX(calc(100% + 24px));visibility:hidden;transition:transform .26s cubic-bezier(.2,.8,.2,1),visibility 0s .26s}
-body.sidedrawer.sideopen .grid>aside{transform:none;visibility:visible;transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+body.sidedrawer .grid>aside{position:fixed !important;z-index:35;right:10px;top:calc(var(--hdrH,0px) + 8px) !important;margin:0 !important;width:236px !important;max-height:calc(100dvh - var(--hdrH,0px) - 20px) !important;overflow-y:auto !important;overflow-x:hidden;overscroll-behavior:contain;box-shadow:0 12px 40px rgba(30,25,20,.22) !important;transform:translateX(8px);opacity:0;visibility:hidden;pointer-events:none;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s,visibility 0s .22s}
+body.sidedrawer.sideopen .grid>aside{transform:none;opacity:1;visibility:visible;pointer-events:auto;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s}
 body.sidedrawer .sidein{width:auto !important}
 .sidehd{display:none}
 body.sidedrawer .sidehd{display:flex;align-items:center;justify-content:space-between;margin:-2px 0 -8px;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--ink)}
@@ -1213,6 +1213,19 @@ header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
 /* 画面を重ねているあいだは、うしろのページを固定 */
 html.mlock,html.mlock body{overflow:hidden;overscroll-behavior:none}
 html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgrid{overscroll-behavior:contain}
+
+/* スマホ・タブレット：画面が横にずれないように（画面の外にあるものまで横スクロールで見えてしまうのを防ぐ）。2回タップでの拡大もしない */
+@media (pointer:coarse){
+  html,body{overflow-x:hidden;max-width:100%}
+  html{touch-action:manipulation}
+}
+
+/* パーツレイヤー：見出しを押すと、一覧を閉じたり開いたりできる（＋文字・＋画像などのボタンはいつも出す） */
+.ilaytog{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;margin:0;font:inherit;font-weight:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ilaytog .chev{display:inline-block;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);opacity:.55;transition:transform .18s}
+.ilayer.laycl .ilaytog .chev{transform:rotate(-45deg)}
+.ilaycnt{font-style:normal;font-weight:500;font-size:.85em;opacity:.6}
+.ilayer.laycl #tChips{display:none}
 </style>
 </head>
 <body>
@@ -1847,7 +1860,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           </div>
         </details>
         <div class="icard ilayer">
-        <div class="ilayhd"><span>パーツレイヤー</span><small>上にあるほど前面表示</small><button type="button" class="ilaymulti" id="tMulti" aria-pressed="false" title="オンにすると、押したパーツを次々に選べます（Shift／Ctrl＋クリックと同じ）">複数選択</button></div>
+        <div class="ilayhd"><button type="button" class="ilaytog" id="tLayTog" aria-expanded="true" aria-controls="tChips" title="パーツの一覧を開く・閉じる"><span class="chev" aria-hidden="true"></span><span>パーツレイヤー</span><em class="ilaycnt" id="tLayCnt"></em></button><small>上にあるほど前面表示</small><button type="button" class="ilaymulti" id="tMulti" aria-pressed="false" title="オンにすると、押したパーツを次々に選べます（Shift／Ctrl＋クリックと同じ）">複数選択</button></div>
         <div class="ihead"><div class="iheadbtns"><button class="iadd" id="tAdd" type="button" aria-label="文字を追加">＋ 文字</button><label class="isml" id="tAddImg" title="ロゴなどの画像を追加（PNG の透過もそのまま使えます）">＋ 画像<input type="file" id="tImgFile" accept="image/*" hidden></label><button class="isml" id="tDup" type="button" title="選んでいる文字を複製">複製</button><button class="isml danger" id="tDel" type="button" title="選んでいる文字を削除">削除</button></div></div>
           <div class="ilist" id="tChips"></div>
           <div class="titxt" id="tTextWrap" hidden><textarea id="tText" rows="1" placeholder="文字を入力（改行もできます）"></textarea></div>
@@ -2457,7 +2470,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const openSel = '.modal:not([hidden]), #viewer:not([hidden]), #setSheet:not([hidden]), #manual:not([hidden])';
     const sync = () => {
       const on = !!document.querySelector(openSel);
-      if(on && !document.documentElement.classList.contains('mlock')){ mLockH = window.innerHeight; mLockW = window.innerWidth; }
+      if(on && !document.documentElement.classList.contains('mlock')){ mLockH = window.innerHeight; mLockW = window.innerWidth; if(window.scrollX) window.scrollTo(0, window.scrollY); }
       if(!on) mLockH = 0;
       document.documentElement.classList.toggle('mlock', on);
     };
@@ -5055,6 +5068,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // 複数選択（キーボードのない iPad 向け。パソコンでも使える）
   let tMultiOn = false;
   $('tMulti').addEventListener('click', () => { tMultiOn = !tMultiOn; $('tMulti').setAttribute('aria-pressed', String(tMultiOn)); $('tMulti').classList.toggle('on', tMultiOn); });
+  // パーツレイヤーの一覧を開く・閉じる（閉じても、何個あるかは見出しに出す）
+  { const card = $('tLayTog').closest('.ilayer'), list = $('tChips');
+    let laycl = false; try{ laycl = localStorage.getItem('pbm-laycl') === '1'; }catch(e){}
+    const apply = () => { card.classList.toggle('laycl', laycl); $('tLayTog').setAttribute('aria-expanded', laycl ? 'false' : 'true'); };
+    const cnt = () => { const n = list.children.length; $('tLayCnt').textContent = n ? `${n}` : ''; };
+    $('tLayTog').addEventListener('click', () => { laycl = !laycl; apply(); try{ localStorage.setItem('pbm-laycl', laycl ? '1' : '0'); }catch(e){} });
+    new MutationObserver(cnt).observe(list, { childList: true }); apply(); cnt(); }
   tcv.addEventListener('dblclick', () => { if(tCur()){ $('tText').focus(); $('tText').select(); } });
   onDoubleTap(tcv, () => { if(tCur()){ $('tText').focus(); $('tText').select(); } });
   // ---------- マイスタイル: favourite text looks (one text) and whole cover layouts, kept in this browser ----------
