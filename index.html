@@ -1322,6 +1322,42 @@ html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgr
   .spread .bar .bside .pn{padding:2px 2px;font-size:13px}
   .spread .bar .pval b{font-size:11px;letter-spacing:0}
 }
+
+body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !important}
+#setBtn[hidden]{display:none !important}
+
+/* パソコンでも窓をせまくしたときは、上のバーをスマホ・タブレットと同じ1行の形に */
+@media (pointer:fine) and (max-width:900px), (hover:hover) and (max-width:900px){
+  header:has(#modeLine){flex-wrap:nowrap !important;align-items:center}
+  /* 縦をできるだけ詰める：上のバーと、一覧・見開き・プレビューの行 */
+  header:has(#modeLine){padding-top:5px !important;padding-bottom:5px !important}
+  #modeLine{padding:0 !important}
+  #setBtn.setbtn{padding:5px 12px 5px 10px;font-size:12.5px}
+  #modeLine .wbtn{height:28px}
+  .dropbar{padding-top:3px !important;padding-bottom:3px !important}
+  .viewrow .vseg button{padding-top:4px;padding-bottom:4px}
+  .wrap:has(#modeLine){padding-inline:12px}
+  body.sidedrawer .grid{padding-right:22px}
+  #modeLine{flex:1 1 auto !important;min-width:0;flex-wrap:nowrap !important;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 0}
+  #modeLine::-webkit-scrollbar{display:none}
+  #modeLine > *{flex:none}
+  #modeLine .workbtns{position:sticky;right:0;z-index:2;flex:none !important;min-width:0 !important;margin-left:auto;padding-left:16px;background:linear-gradient(to right,rgba(234,236,250,0),rgba(234,236,250,.96) 14px)}
+  #modeLine .workbtns .wfile{max-width:170px}
+}
+@media (pointer:fine) and (max-width:600px){
+  #gConn span{font-size:0}
+  header:has(#modeLine) .closeed{font-size:0}
+  header:has(#modeLine) .closeed::before{content:'× 閉じる';font-size:12px}
+  #gConn span::after{content:'つなぐ';font-size:12px}
+  #modeLine .workbtns{padding-left:8px;background:none}
+  #modeLine{overflow:hidden}
+  #modeLine > #setBtn{flex:0 1 auto;min-width:0}
+  #setBtn .setsum{overflow:hidden;text-overflow:ellipsis}
+}
+@media (pointer:fine) and (max-width:900px){
+  #modeLine .workbtns .wfile{max-width:110px}
+  #modeLine .workbtns .wfile small{display:none}
+}
 </style>
 </head>
 <body>
@@ -2616,10 +2652,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }, { passive: false, capture: true });
   }
   if(PHONE) $('cols5').hidden = true;
-  // スマホ・タブレット：右のメニューは、必要なときだけ写真の上に重ねて出す
-  if(COARSE){
+  // スマホ・タブレット、またはパソコンでも窓をせまくしたとき：右のメニューは、必要なときだけ写真の上に重ねて出す
+  // （せまい窓で、メニューがいちばん下に回って見えなくなるのを防ぐ）
+  const NARROW = matchMedia('(max-width:900px)');
+  const compactOn = () => COARSE || NARROW.matches;
+  {
     const aside = document.querySelector('.grid>aside'), inner = aside.querySelector('.sidein');
-    document.body.classList.add('sidedrawer');
     const tab = document.createElement('button'); tab.type = 'button'; tab.className = 'sidetab'; tab.setAttribute('aria-label', 'メニューを開く');
     tab.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>メニュー';
     const scrim = document.createElement('div'); scrim.className = 'sidescrim'; scrim.hidden = true;
@@ -2635,20 +2673,30 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     aside.addEventListener('click', e => { if(e.target.closest('#saveAll,#saveSheet,#saveSingles,#clearAll')) setTimeout(() => sideOpen(false), 0); });
     $('fileMany').addEventListener('change', () => sideOpen(false));
     // 写真がないあいだ（はじめの画面）は出さない
-    const showTab = () => { tab.hidden = !document.querySelector('.grid') || !document.querySelector('.grid').offsetParent; if(tab.hidden) sideOpen(false); };
-    setInterval(showTab, 800); showTab(); sideOpen(false);
+    const showTab = () => { tab.hidden = !compactOn() || !document.querySelector('.grid') || !document.querySelector('.grid').offsetParent; if(tab.hidden) sideOpen(false); };
+    const applyDrawer = () => { document.body.classList.toggle('sidedrawer', compactOn()); if(!compactOn()) aside.removeAttribute('aria-hidden'); showTab(); };
+    NARROW.addEventListener('change', applyDrawer);
+    setInterval(showTab, 800); applyDrawer(); sideOpen(false); if(!compactOn()) aside.removeAttribute('aria-hidden');
   }
-  // iPad・スマホ：上の設定は「設定」ボタンにまとめて、押したときだけ開く（いまの設定はボタンに短く表示）
-  if(COARSE){
+  // iPad・スマホ、またはせまい窓：上の設定は「設定」ボタンにまとめて、押したときだけ開く（いまの設定はボタンに短く表示）
+  {
     const ml = $('modeLine'), sheet = document.createElement('div');
     sheet.id = 'setSheet'; sheet.className = 'setsheet'; sheet.hidden = true;
     sheet.innerHTML = '<div class="setsh-in" role="dialog" aria-modal="true" aria-label="作るものの設定"><div class="setsh-hd"><b>作るものの設定</b><button type="button" class="setsh-ok">完了</button></div><div class="setsh-body"></div><p class="setsh-note">設定は、作っている途中でもいつでも変えられます。</p></div>';
     document.body.appendChild(sheet);
     const body = sheet.querySelector('.setsh-body');
-    [...ml.querySelectorAll(':scope > .mctl')].forEach(m => body.appendChild(m));
+    // 設定の部品は、せまいときだけシートの中へ移し、広くなったら元の場所に戻す
+    const mctls = [...ml.querySelectorAll(':scope > .mctl')].map(m => { const mark = document.createComment('mctl'); m.before(mark); return { m, mark }; });
     const btn = document.createElement('button'); btn.type = 'button'; btn.id = 'setBtn'; btn.className = 'setbtn';
     btn.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h7M12.5 4.5h1M2.5 11.5h1M6.5 11.5h7"/><circle cx="11" cy="4.5" r="1.6"/><circle cx="5" cy="11.5" r="1.6"/></svg><span class="setsum"></span>';
     ml.insertBefore(btn, ml.firstChild);
+    const applySheet = () => {
+      const on = compactOn();
+      mctls.forEach(({ m, mark }) => { if(on){ if(m.parentElement !== body) body.appendChild(m); } else if(m.parentElement !== ml){ mark.after(m); } });
+      btn.hidden = !on; document.body.classList.toggle('setcompact', on);
+      if(!on && !sheet.hidden){ sheet.hidden = true; document.body.classList.remove('setopen'); }
+    };
+    NARROW.addEventListener('change', applySheet); applySheet();
     const short = id => { const e = $(id); if(!e || !e.options || e.selectedIndex < 0) return ''; return e.options[e.selectedIndex].text.trim().split(/[\s　（(]/)[0]; };
     const sum = () => {
       const parts = [];
@@ -2693,6 +2741,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     });
     body.querySelectorAll('select').forEach(sel => {
       // 端末のプルダウンを出さずに、こちらの一覧を出す
+      if(!COARSE) return;   // パソコンは、いつものプルダウンのまま
       sel.addEventListener('mousedown', e => e.preventDefault());
       sel.addEventListener('touchend', e => { e.preventDefault(); popSel === sel ? popClose() : popOpen(sel); }, { passive: false });
       sel.addEventListener('click', e => { e.preventDefault(); });
