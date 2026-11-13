@@ -1127,7 +1127,7 @@ header .howto summary{background:rgba(255,255,255,.75);border-color:transparent}
             <option value="none">トリミングしない</option>
           </select></div>
           <div class="mctl" id="tobiraRow" hidden style="display:none"><span>扉・奥付</span><button class="toggle" id="tobiraOn" type="button" role="switch" aria-checked="false" aria-label="扉・奥付のオン・オフ"><span class="knob"></span><span class="tl">OFF</span></button></div>
-          <div class="mctl"><label for="pages">ページ数</label><select id="pages"><option value="4">4ページ</option><option value="8">8ページ</option><option value="16">16ページ</option><option value="20">20ページ</option><option value="24" selected>24ページ</option><option value="28">28ページ</option><option value="32">32ページ</option><option value="36">36ページ</option><option value="44">44ページ</option><option value="48">48ページ</option><option value="52">52ページ</option><option value="60">60ページ</option><option value="64">64ページ</option><option value="72">72ページ</option><option value="76">76ページ</option><option value="96">96ページ</option><option value="100">100ページ</option><option value="120">120ページ</option></select></div>
+          <div class="mctl"><label for="pages">ページ数</label><select id="pages"><option value="4">4P</option><option value="8">8P</option><option value="16">16P</option><option value="20">20P</option><option value="24" selected>24P</option><option value="28">28P</option><option value="32">32P</option><option value="36">36P</option><option value="44">44P</option><option value="48">48P</option><option value="52">52P</option><option value="60">60P</option><option value="64">64P</option><option value="72">72P</option><option value="76">76P</option><option value="96">96P</option><option value="100">100P</option><option value="120">120P</option></select></div>
           <div class="mctl"><label for="outH">ページの解像度</label><select id="outH">
             <option value="0">元の解像度（低い方に合わせる）</option>
             <option value="3508">3508 px（A3 小冊子用）</option>
@@ -2792,7 +2792,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const fitCtx = document.createElement('canvas').getContext('2d');
   const SEL_LONGEST = {
     crop: () => [...$('crop').options].map(o => o.textContent),
-    pages: () => ['120ページ　写真118枚（中116＋表裏2）', '120ページ　写真117枚（中116＋表紙1）', '120ページ（60見開き）'],
+    pages: () => ['120P　118枚（116+表裏2）', '120P　117枚（116+表紙1）', '120P（60見開き）'],
     outH: () => ['元の解像度（低い方に合わせる）', '2220×3000px（Photoback GRAPH）', '1888×2551px（Photoback LIFE）', '2596×3508px（A3 小冊子用）', '縦 3000px（Photoback GRAPH）'],
     fmt: () => [...$('fmt').options].map(o => o.textContent)
   };
@@ -5516,7 +5516,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       ? `写真集モード：表紙・裏表紙を含めて全${n}ページ（A3 ${n/4}枚）、写真は${photoPages(n)}枚（1枚目は右ページから）の小冊子を作ります。見開一括書き出しの PDF をコンビニのマルチコピー機などで「小冊子」印刷できます。`
       : `写真を最大${n}枚。1-2、3-4…${n-1}-${n} の2枚ずつ${np}組で見開きにして、JPG・PDF で書き出します。比率が違う写真は、選んだ比率（A・B判 / Photoback LIFE / Photoback GRAPH / 1:1 / 2:3 / 4:3）に揃えます。`;
     $('lead').title = $('lead').textContent;   // the line is cut to fit; the whole text on hover
-    [...$('pages').options].forEach(o => { const v = +o.value; o.textContent = booklet ? `${v}ページ　写真${photoPages(v) + (backOff() ? 1 : 2)}枚（中${photoPages(v)}＋${backOff() ? '表紙1' : '表裏2'}）` : `${v}ページ（${v/2}見開き）`; o.disabled = o.hidden = !allowedPages().includes(v); });
+    [...$('pages').options].forEach(o => { const v = +o.value; o.textContent = booklet ? `${v}P　${photoPages(v) + (backOff() ? 1 : 2)}枚（${photoPages(v)}+${backOff() ? '表紙1' : '表裏2'}）` : `${v}P（${v/2}見開き）`; o.disabled = o.hidden = !allowedPages().includes(v); });
     $('tobiraRow').hidden = true;
   }
   // 写真集 mode on/off. On: the cover is added at the end of the slots and one empty body spread keeps the total a multiple of 4.
