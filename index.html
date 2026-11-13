@@ -1180,7 +1180,9 @@ header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
   #textModal{padding:0}
   #textModal .tsheet{height:100dvh;max-height:none;border-radius:0 !important;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px 10px calc(14px + env(safe-area-inset-bottom,0px));gap:8px}
   #textModal .tlayout{flex:none;display:flex;flex-direction:column;gap:10px}
-  #textModal .tstage{height:min(72vh,calc(100vw * .95));padding:2px;flex:none}
+  /* 写真は上に止めたまま、下の調整メニューだけがスクロールする */
+  #textModal .tstage{height:min(66vh,calc(100vw * .95));padding:2px;flex:none;position:sticky;top:-10px;z-index:6;box-shadow:0 8px 14px -10px rgba(0,0,0,.5)}
+  #textModal .tsheet{scroll-padding-top:0}
   #textModal .tpanel{overflow:visible;min-height:auto;flex:none}
   #textModal .cnav{width:32px;height:32px;border-radius:50%;font-size:22px;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
   #textModal .cnav.prev{left:4px}#textModal .cnav.next{right:4px}
@@ -4334,7 +4336,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       vert: false, spill: false, shadow: false, shC: '#000000', shA: 55, shB: 18, shS: 0, shX: 2.5, shY: 4.5, strokeOn: false, stroke: 3, stA: 100, stB: 0, stG: 0, stX: 0, stY: 0, stLJ: 'round', stShape: '', sc: '#000000' };
   }
   function tBuildBase(){
-    const box = $('tStage'), [bw, bh] = contentBox(box);
+    const box = $('tStage'), narrowBox = matchMedia('(max-width:820px)').matches;
+    if(narrowBox) box.style.height = '';   // いったん上限の高さで測り、あとで写真の高さにぴったり合わせる
+    const [bw, bh] = contentBox(box);
     if(bw < 20 || bh < 20) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const off = document.createElement('canvas');
@@ -4346,6 +4350,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     let sw = Math.max(40, Math.min(bw - 2*PX, (bh - PT - PB) * ar)), sh = sw / ar;
     const cw = sw + 2*PX, ch = sh + PT + PB;
     tcv.style.width = cw + 'px'; tcv.style.height = ch + 'px';
+    if(narrowBox){ const cs = getComputedStyle(box); box.style.height = Math.ceil(ch + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)) + 'px'; }
     tcv.width = Math.round(cw * dpr); tcv.height = Math.round(ch * dpr);
     tGeo = { dpr, ox: PX * dpr, oy: PT * dpr, sw: sw * dpr, sh: sh * dpr };
     tBase = off;
