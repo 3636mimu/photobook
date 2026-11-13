@@ -1168,6 +1168,24 @@ header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
   #stStep1 .stcard b{grid-row:1;grid-column:2;align-self:center;font-size:clamp(11.5px,3.6vw,14px);line-height:1.25;letter-spacing:.01em;word-break:keep-all;overflow-wrap:normal}
   #stStep1 .stcard span{grid-row:2;grid-column:1 / -1;align-self:start;font-size:11px;line-height:1.55}
 }
+
+@media (pointer:coarse){
+  .vstage{touch-action:none;overflow:hidden}
+  .vstage canvas{will-change:transform}
+  .viewer.vzoomed .varrow{opacity:0;pointer-events:none}
+}
+
+/* スマホ・タブレット（せまい画面）の装飾：全体を1つにスクロール、写真は大きく */
+@media (max-width:820px){
+  #textModal{padding:0}
+  #textModal .tsheet{height:100dvh;max-height:none;border-radius:0 !important;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px 10px calc(14px + env(safe-area-inset-bottom,0px));gap:8px}
+  #textModal .tlayout{flex:none;display:flex;flex-direction:column;gap:10px}
+  #textModal .tstage{height:min(72vh,calc(100vw * .95));padding:2px;flex:none}
+  #textModal .tpanel{overflow:visible;min-height:auto;flex:none}
+  #textModal .cnav{width:32px;height:32px;border-radius:50%;font-size:22px;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  #textModal .cnav.prev{left:4px}#textModal .cnav.next{right:4px}
+}
+@media (pointer:coarse){ #textTitle span,#textModal .tleft .hint{display:none} }
 </style>
 </head>
 <body>
@@ -3184,7 +3202,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const cur = box.children[vPos]; if(cur) cur.focus({preventScroll:false});
   }
   $('vGridBtn').addEventListener('click', () => { if(viewer.classList.contains('gridmode')){ setGrid(false); showSpread(vPos, true); } else showGrid(); });
-  function closeViewer(){
+  function closeViewer(){ if(typeof vzReset === 'function') vzReset(false);
     // the spread shown last in the preview becomes the one 'last opened' (ページ follows it too)
     if(vList && vList[vPos] != null){ lastPair = vList[vPos]; if(viewMode === 'page'){ const k = allPairs().indexOf(lastPair); if(k >= 0){ pagePos = k; renderAll(); } } }
     endFlip(); showSpread.last = undefined; viewer.hidden = true; document.body.style.overflow = ''; $('openViewer').focus(); }
@@ -3196,6 +3214,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function showSpread(k, instant){
     if(k < 0 || k >= vList.length) return;
+    if(typeof vzReset === 'function' && vz.s > 1) vzReset(false);
     vPos = k;
     const p = vList[k];
     $('vTitle').innerHTML = `見開き<small>${k+1} / ${vList.length}</small>`;
@@ -3414,9 +3433,73 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     else if(e.key === 'ArrowLeft') showSpread(vPos - 1);
     else if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); showSpread(vPos + 1); }
   });
+  // ---------- プレビューの拡大（スマホ・タブレット：2本指でピンチ、2回タップで拡大／元に戻す） ----------
+  let vTapT = 0;
+  const vz = { s: 1, x: 0, y: 0 }, vpts = new Map(); let vpinch = null, vpan = null, vzUsed = false, vzHiT = 0, vLastTap = 0;
+  const vzApply = () => { vcv.style.transform = vz.s === 1 ? '' : `translate(${vz.x}px,${vz.y}px) scale(${vz.s})`; vcv.style.transformOrigin = 'center center'; viewer.classList.toggle('vzoomed', vz.s > 1); };
+  const vzClamp = () => {
+    const w = vcv.offsetWidth, h = vcv.offsetHeight, st = $('vStage'), bw = st.clientWidth, bh = st.clientHeight;
+    const mx = Math.max(0, (w * vz.s - bw) / 2 + 20), my = Math.max(0, (h * vz.s - bh) / 2 + 20);
+    vz.x = Math.max(-mx, Math.min(mx, vz.x)); vz.y = Math.max(-my, Math.min(my, vz.y));
+  };
+  // 拡大したあとは、その大きさで描き直してくっきり見せる
+  const vzSharpen = () => {
+    clearTimeout(vzHiT);
+    vzHiT = setTimeout(() => {
+      if(viewer.hidden || vz.s <= 1.05) return;
+      const dpr = Math.min(3, window.devicePixelRatio || 1), cssW = vcv.offsetWidth, cssH = vcv.offsetHeight;
+      const want = Math.min(4800, Math.round(Math.max(cssW, cssH) * vz.s * dpr));
+      if(Math.max(vcv.width, vcv.height) >= want * 0.95) return;
+      const d = document.createElement('canvas'); d._display = true; compose(vList[vPos], d, want);
+      vcv.width = d.width; vcv.height = d.height; vcv.getContext('2d').drawImage(d, 0, 0);
+      vcv.style.width = cssW + 'px'; vcv.style.height = cssH + 'px'; vcv.style.imageRendering = 'auto';
+    }, 180);
+  };
+  function vzReset(redraw){ const was = vz.s > 1; vz.s = 1; vz.x = 0; vz.y = 0; vzApply(); clearTimeout(vzHiT); if(redraw && was && !viewer.hidden) drawViewer(); }
+  const vzTo = (s, cx, cy) => {   // cx, cy: 画面上の指の位置を中心に拡大
+    const r = $('vStage').getBoundingClientRect(), px = cx - (r.left + r.width / 2), py = cy - (r.top + r.height / 2);
+    const k = s / vz.s; vz.x = px - (px - vz.x) * k; vz.y = py - (py - vz.y) * k; vz.s = s; vzClamp(); vzApply();
+  };
+  $('vStage').addEventListener('pointerdown', e => {
+    if(e.pointerType !== 'touch' || e.target.closest('.varrow')) return;
+    vpts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if(vpts.size === 2){ const [a, b] = [...vpts.values()]; vpinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: vz.s, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, x: vz.x, y: vz.y }; vpan = null; vzUsed = true; }
+    else if(vpts.size === 1 && vz.s > 1){ vpan = { x: e.clientX, y: e.clientY, ox: vz.x, oy: vz.y }; }
+  });
+  $('vStage').addEventListener('pointermove', e => {
+    if(!vpts.has(e.pointerId)) return;
+    vpts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if(vpinch && vpts.size >= 2){
+      const [a, b] = [...vpts.values()], d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      const ns = Math.max(1, Math.min(5, vpinch.s * d / Math.max(1, vpinch.d)));
+      const r = $('vStage').getBoundingClientRect(), px = vpinch.mx - (r.left + r.width / 2), py = vpinch.my - (r.top + r.height / 2), k = ns / vpinch.s;
+      vz.s = ns; vz.x = px - (px - vpinch.x) * k + (mx - vpinch.mx); vz.y = py - (py - vpinch.y) * k + (my - vpinch.my); vzClamp(); vzApply();
+    } else if(vpan){ vz.x = vpan.ox + e.clientX - vpan.x; vz.y = vpan.oy + e.clientY - vpan.y; vzClamp(); vzApply(); vzUsed = true; }
+  });
+  const vzEnd = e => {
+    if(!vpts.has(e.pointerId)) return;
+    vpts.delete(e.pointerId);
+    if(vpts.size < 2 && vpinch){ vpinch = null; if(vz.s < 1.05) vzReset(true); else vzSharpen();
+      if(vpts.size === 1 && vz.s > 1){ const [a] = [...vpts.values()]; vpan = { x: a.x, y: a.y, ox: vz.x, oy: vz.y }; } }
+    if(vpts.size === 0){ vpan = null; setTimeout(() => { vzUsed = false; }, 0); }
+  };
+  $('vStage').addEventListener('pointerup', vzEnd); $('vStage').addEventListener('pointercancel', vzEnd);
   let swipeX = null;
-  $('vStage').addEventListener('pointerdown', e => { if(e.target.closest('.varrow')) return; swipeX = e.clientX; });
+  let vTap0 = null;
+  $('vStage').addEventListener('pointerdown', e => { if(e.target.closest('.varrow')) return; vTap0 = vpts.size > 1 ? null : { x: e.clientX, y: e.clientY }; swipeX = (vz.s > 1 || vpts.size > 1) ? null : e.clientX; });
   $('vStage').addEventListener('pointerup', e => {
+    if(e.pointerType === 'touch'){
+      // 2回タップ：拡大 ⇄ 元の大きさ
+      const now = Date.now(), still = vTap0 && Math.hypot(e.clientX - vTap0.x, e.clientY - vTap0.y) < 10 && !e.target.closest('.varrow') && !vpinch; vTap0 = null;
+      if(still && now - vLastTap < 320){ vLastTap = 0; swipeX = null; clearTimeout(vTapT); if(vz.s > 1) vzReset(true); else { vzTo(2.5, e.clientX, e.clientY); vzSharpen(); } return; }
+      if(vz.s > 1 || vzUsed){ if(still) vLastTap = now; swipeX = null; return; }
+      if(swipeX !== null && still){
+        // 1回だけのタップは、2回目が来ないのを待ってから見開きをめくる
+        vLastTap = now; const x = e.clientX; swipeX = null; clearTimeout(vTapT);
+        vTapT = setTimeout(() => { const r = $('vStage').getBoundingClientRect(); showSpread(vPos + (x >= r.left + r.width/2 ? 1 : -1)); }, 300);
+        return;
+      }
+    }
     if(swipeX === null) return;
     const dx = e.clientX - swipeX; swipeX = null;
     if(Math.abs(dx) > 50) showSpread(vPos + (dx < 0 ? 1 : -1));
@@ -4258,7 +4341,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     noCoverText = true; noGrid = true; let r; try{ r = compose(tPair, off, 1800); } finally { noCoverText = false; noGrid = false; }
     coverGeom = r;
     // narrow margins (just room for the page buttons above and the ‹ › at the sides) so the spread shows as large as it can
-    const ar = off.width / off.height, PX = 58, PT = 34, PB = 8;
+    // せまい画面では ‹ › を写真の上に小さく重ねるので、左右の余白はわずかに
+    const narrow = bw < 640, ar = off.width / off.height, PX = narrow ? 10 : 58, PT = 34, PB = narrow ? 4 : 8;
     let sw = Math.max(40, Math.min(bw - 2*PX, (bh - PT - PB) * ar)), sh = sw / ar;
     const cw = sw + 2*PX, ch = sh + PT + PB;
     tcv.style.width = cw + 'px'; tcv.style.height = ch + 'px';
