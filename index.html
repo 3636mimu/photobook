@@ -1358,6 +1358,21 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
   #modeLine .workbtns .wfile{max-width:110px}
   #modeLine .workbtns .wfile small{display:none}
 }
+
+/* iPhone・iPad のブラウザでは 100vh が「ブラウザの枠が隠れたときの高さ」になり、下が切れる。見えている高さ（dvh）で合わせる */
+@supports (height:100dvh){
+  .sheet{max-height:calc(100dvh - 32px)}
+  .tsheet{height:calc(100dvh - 32px)}
+}
+/* タブレット横向きなど広い画面の装飾：画面いっぱいに開き、写真・下の行・右のメニューが全部見えるように */
+@media (pointer:coarse) and (min-width:821px){
+  #textModal{padding:0}
+  #textModal .tsheet{height:100dvh;max-height:none;border-radius:0 !important;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+  #textModal .tlayout{grid-template-columns:minmax(0,1fr) 310px;gap:12px}
+}
+.ilayhd{flex-wrap:nowrap;min-width:0}
+.ilaytog{white-space:nowrap;flex:none}
+.ilayhd small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
 </style>
 </head>
 <body>
