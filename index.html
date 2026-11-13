@@ -154,6 +154,7 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 .stage{position:relative}
 .spine{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(20,21,24,.72);color:#fff;font-size:11px;letter-spacing:.04em;cursor:grab;touch-action:none;user-select:none;white-space:nowrap;opacity:.85;transition:opacity .15s,background .15s}
 .spine:active{cursor:grabbing}
+@media (pointer:coarse){.spine{touch-action:pan-x pan-y;-webkit-touch-callout:none;-webkit-user-select:none}.spine.held{opacity:1;background:var(--accent);color:var(--accent-ink);border-color:transparent;transform:translateX(-50%) scale(1.12)}}
 .spine:hover,.spine:focus-visible{opacity:1;background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .spine .bars{width:14px;height:8px;background:linear-gradient(currentColor 0 0) top/100% 1.5px no-repeat,linear-gradient(currentColor 0 0) center/100% 1.5px no-repeat,linear-gradient(currentColor 0 0) bottom/100% 1.5px no-repeat}
 .stage canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;box-shadow:0 6px 18px rgba(0,0,0,.25)}
@@ -1105,7 +1106,7 @@ header .howto summary{background:rgba(255,255,255,.75);border-color:transparent}
             <option value="jpg" selected>JPG</option>
             <option value="pdf">PDF</option>
           </select></div>
-          <div class="workbtns"><button class="wbtn gconn" id="gConn" type="button" hidden></button><span class="wfile" id="workName" hidden></span><small class="wautotime" id="autoTime" hidden></small><button class="wbtn" id="workOver" type="button" hidden title="上書き保存：いまのBOOKに、すぐ保存します" aria-label="上書き保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h8l2 2v9H3z"/><path d="M5.5 2.5v3.2h4.5V2.5M5.5 13.5V9.5h5v4"/></svg>保存</button><button class="wbtn" id="workSave" type="button" title="BOOKの続きができるファイル（.pbmk）に保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.2-3.2L8 10l3.2-3.2M3 12.5h10"/></svg><span id="workSaveLbl">BOOKを保存</span></button><button class="wbtn" id="workOpen" type="button" hidden title="保存したBOOKファイル（.pbmk）を開いて続きから"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h4l1.2 1.4h5.8v6.6h-11z"/></svg>BOOKを開く</button></div>
+          <div class="workbtns"><button class="wbtn gconn" id="gConn" type="button" hidden></button><span class="wfile" id="workName" hidden></span><small class="wautotime" id="autoTime" hidden></small><button class="wbtn" id="workOver" type="button" hidden title="上書き保存：いまのBOOKに、すぐ保存します" aria-label="上書き保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h8l2 2v9H3z"/><path d="M5.5 2.5v3.2h4.5V2.5M5.5 13.5V9.5h5v4"/></svg>上書き</button><button class="wbtn" id="workSave" type="button" title="BOOKの続きができるファイル（.pbmk）に保存"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.2-3.2L8 10l3.2-3.2M3 12.5h10"/></svg><span id="workSaveLbl">BOOKを保存</span></button><button class="wbtn" id="workOpen" type="button" hidden title="保存したBOOKファイル（.pbmk）を開いて続きから"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h4l1.2 1.4h5.8v6.6h-11z"/></svg>BOOKを開く</button></div>
           
 
         </div>
@@ -2918,20 +2919,27 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     renderPair(a); renderPair(b);
   }
   function startPairDrag(e, from){
-    e.preventDefault();
-    document.body.classList.add('moving');   // closed hand from the moment the handle is pressed
-    const x0 = e.clientX, y0 = e.clientY;
-    let ghost = null, cur = -1;
+    // タッチでは「長押し」してから動かす（フリックやスクロールで、思わぬ見開きの移動が起きないように）
+    const touch = e.pointerType === 'touch';
+    if(!touch){ e.preventDefault(); document.body.classList.add('moving'); }   // closed hand from the moment the handle is pressed
+    const x0 = e.clientX, y0 = e.clientY, spine = pairUI[from].card.querySelector('.spine');
+    let ghost = null, cur = -1, armed = !touch, timer = 0;
     const clear = () => { if(cur >= 0) pairUI[cur].card.classList.remove('target'); };
+    const lift = (x, y) => {
+      ghost = document.createElement('img');
+      ghost.className = 'ghost pair'; ghost.alt = '';
+      ghost.src = pairUI[from].cv.toDataURL('image/jpeg', .7);
+      document.body.appendChild(ghost);
+      document.body.classList.add('moving');
+      pairUI[from].card.classList.add('dragging-src');
+      ghost.style.left = x + 'px'; ghost.style.top = y + 'px';
+    };
+    const noScroll = ev => { if(armed) ev.preventDefault(); };
     const move = ev => {
+      if(!armed){ if(Math.hypot(ev.clientX-x0, ev.clientY-y0) > 10) end(ev); return; }   // 長押しの前に動いた＝スクロール
       if(!ghost){
         if(Math.hypot(ev.clientX-x0, ev.clientY-y0) < 6) return;
-        ghost = document.createElement('img');
-        ghost.className = 'ghost pair'; ghost.alt = '';
-        ghost.src = pairUI[from].cv.toDataURL('image/jpeg', .7);
-        document.body.appendChild(ghost);
-        document.body.classList.add('moving');
-        pairUI[from].card.classList.add('dragging-src');
+        lift(ev.clientX, ev.clientY);
       }
       ev.preventDefault();
       ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px';
@@ -2939,11 +2947,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const card = el && el.closest('.spread');
       const q = card ? pairUI.findIndex(u => u.card === card) : -1;
       if(q !== cur){ clear(); cur = q; if(cur >= 0 && cur !== from) pairUI[cur].card.classList.add('target'); }
+      const edge = 70; if(touch){ if(ev.clientY < edge) window.scrollBy(0, -12); else if(ev.clientY > innerHeight - edge) window.scrollBy(0, 12); }
     };
     const end = ev => {
+      clearTimeout(timer);
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', end);
       window.removeEventListener('pointercancel', end);
+      window.removeEventListener('touchmove', noScroll);
+      spine.classList.remove('held');
       document.body.classList.remove('moving');
       if(!ghost) return;
       ghost.remove();
@@ -2951,6 +2963,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       clear();
       if(ev.type === 'pointerup' && cur >= 0) swapPairs(from, cur);
     };
+    if(touch){
+      timer = setTimeout(() => {
+        armed = true; spine.classList.add('held');
+        try{ navigator.vibrate && navigator.vibrate(12); }catch(_){}
+        lift(x0, y0);   // 持ち上がったのが見えるように、指の位置にすぐ出す
+      }, 350);
+      window.addEventListener('touchmove', noScroll, {passive:false});
+    }
     window.addEventListener('pointermove', move, {passive:false});
     window.addEventListener('pointerup', end);
     window.addEventListener('pointercancel', end);
