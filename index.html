@@ -795,13 +795,31 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 /* iPad・スマホ：上の設定の行を1行に。設定は横にスワイプ、保存のボタンは右に固定 */
 @media (pointer:coarse){
   header:has(#modeLine){flex-wrap:nowrap !important;align-items:center}
-  header:has(#modeLine) .closeed{font-size:0;flex:none;width:34px;height:34px;padding:0;border-radius:50%;background:rgba(255,255,255,.7)}
-  header:has(#modeLine) .closeed::before{content:'×';font-size:20px;line-height:34px;color:#6b5a4f}
+  header:has(#modeLine) .closeed{font-size:0;flex:none;width:30px;height:30px;padding:0;border-radius:50%;background:rgba(255,255,255,.7)}
+  header:has(#modeLine) .closeed::before{content:'×';font-size:19px;line-height:30px;color:#6b5a4f}
+  /* 縦をできるだけ詰める：上のバーと、一覧・見開き・プレビューの行 */
+  header:has(#modeLine){padding-top:5px !important;padding-bottom:5px !important}
+  header:has(#modeLine) .closeed{width:30px !important;height:30px !important}
+  #modeLine{padding:0 !important}
+  #setBtn.setbtn{padding:5px 12px 5px 10px;font-size:12.5px}
+  #modeLine .wbtn{height:28px}
+  .dropbar{padding-top:3px !important;padding-bottom:3px !important}
+  .viewrow .vseg button{padding-top:4px;padding-bottom:4px}
+  .wrap:has(#modeLine){padding-inline:12px}
+  body.sidedrawer .grid{padding-right:22px}
   #modeLine{flex:1 1 auto !important;min-width:0;flex-wrap:nowrap !important;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 0}
   #modeLine::-webkit-scrollbar{display:none}
   #modeLine > *{flex:none}
   #modeLine .workbtns{position:sticky;right:0;z-index:2;flex:none !important;min-width:0 !important;margin-left:auto;padding-left:16px;background:linear-gradient(to right,rgba(234,236,250,0),rgba(234,236,250,.96) 14px)}
   #modeLine .workbtns .wfile{max-width:170px}
+}
+@media (pointer:coarse) and (max-width:600px){
+  #gConn span{font-size:0}
+  #gConn span::after{content:'つなぐ';font-size:12px}
+  #modeLine .workbtns{padding-left:8px;background:none}
+  #modeLine{overflow:hidden}
+  #modeLine > #setBtn{flex:0 1 auto;min-width:0}
+  #setBtn .setsum{overflow:hidden;text-overflow:ellipsis}
 }
 @media (pointer:coarse) and (max-width:900px){
   #modeLine .workbtns .wfile{max-width:110px}
@@ -6179,7 +6197,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const on = !!(fileHandle && bookFile);   // Web版で上書きできるのはドライブのBOOKだけ
     $('autoOn').checked = on && autoOn;
     $('workName').hidden = !bookFile; $('workName').innerHTML = bookFile ? `${fileHandle && fileHandle.drive ? '<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">' : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.5 5v9.2H4z"/><path d="M9 1.8V5.3h3.5"/></svg>'}<span class="wfn"><b>${bookFile.replace(/[<>&]/g, '')}</b>${fileAt ? `<small>${whenText(fileAt)}に${fileAtAuto ? '自動' : ''}保存${fileChanged ? '<em>・変更あり</em>' : ''}</small>` : ''}</span>` : ''; $('workName').title = bookFile ? `編集中のBOOKファイル：${bookFile}${fileChanged ? '（保存したあとに変更があります）' : ''}` : ''; $('workName').classList.toggle('chg', !!(bookFile && fileChanged));
-    $('workOver').hidden = !on; $('workSaveLbl').textContent = on ? '別名' : 'BOOKを保存';
+    $('workOver').hidden = !on; $('workSaveLbl').textContent = on ? '別名' : matchMedia('(pointer:coarse) and (max-width:600px)').matches ? '保存' : 'BOOKを保存';
     $('workSave').setAttribute('aria-label', on ? '別名で保存' : 'BOOKを保存');
     $('workSave').querySelector('svg').innerHTML = on ? '<path d="M3 2.5h7l2 2v4"/><path d="M3 2.5v11h5.5"/><path d="M5.5 2.5v3h4v-3"/><path d="M12.2 10v5M9.7 12.5h5"/>' : '<path d="M8 2v8m-3.2-3.2L8 10l3.2-3.2M3 12.5h10"/>';   // 別名：保存＋（新しく作る）
     $('workSave').title = on ? 'いまの内容を、別の名前の新しいBOOKファイルに保存' : 'BOOKの続きができるファイル（.pbmk）に保存';
