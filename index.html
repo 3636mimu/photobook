@@ -5761,6 +5761,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         done(`「${saveDir.name}」に`); return;
       }catch(e){ console.warn(e); status(`フォルダに書き込めませんでした（${e && e.name || 'Error'}）。ダウンロードで保存します…`); await new Promise(r => setTimeout(r, 1200)); }
     }
+    if(!downloads && !inArtifact && await sharePdf(blob, name, () => done(''))) return;
     try{
       const r = await saveBlob(blob, name);
       if(r === 'blocked'){ status('この表示では直接保存できません。'); return; }
@@ -5793,6 +5794,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         }
       } else if(inArtifact){
         showFallback(p, img.blob); done++;
+      } else if(list.length === 1 && (pdf ? await sharePdf(blob, filename) : await shareImages([{ blob, name: filename }]))){
+        return;   // iPhone・iPad：「写真に保存」から写真アプリへ
       } else {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob); a.download = filename;
@@ -5862,6 +5865,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         else { fb(); status('一覧を書き出しました。'); }
       }
     } else if(inArtifact){ fb(); status('一覧を書き出しました。'); }
+    else if(await shareImages([{ blob: data, name: filename }])){ /* iPhone・iPad：「写真に保存」から写真アプリへ */ }
     else {
       const a = document.createElement('a'); a.href = URL.createObjectURL(data); a.download = filename;
       document.body.appendChild(a); a.click(); a.remove();
@@ -5891,14 +5895,25 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
 
   // iPad・スマホ：書き出したJPGを、共有画面から「写真」に保存（ZIPにしない）
+  // iPhone・iPad：PDF は共有の画面から（「ファイルに保存」や、コンビニ印刷のアプリへそのまま送れる）
+  async function sharePdf(blob, name, done){
+    if(canPickDir || !navigator.canShare || !navigator.share) return false;
+    let f; try{ f = new File([blob], name, { type: 'application/pdf' }); if(!navigator.canShare({ files: [f] })) return false; }catch(e){ return false; }
+    status('PDF ができました。');
+    askYesNo('PDF ができました', `<p>「保存先を選ぶ」を押すと、いつもの共有の画面が出ます。</p><p>・保存するとき：<b>「"ファイル"に保存」</b><br>・すぐ印刷するとき：<b>コンビニ印刷のアプリ</b>（ネットプリントなど）</p>`, async () => {
+      try{ await navigator.share({ files: [f] }); if(done) done(); else status('PDF を共有しました。'); }
+      catch(e){ status(e && e.name === 'AbortError' ? '共有をキャンセルしました。' : '共有できませんでした。'); }
+    }, '保存先を選ぶ', '閉じる');
+    return true;
+  }
   async function shareImages(files){
     if(canPickDir || !navigator.canShare || !navigator.share) return false;
     let fl; try{ fl = files.map(f => new File([f.blob], f.name.split('/').pop(), { type: f.blob.type || 'image/jpeg' })); if(!navigator.canShare({ files: fl })) return false; }catch(e){ return false; }
     status(`${fl.length}枚の書き出しができました。`);
-    askYesNo('書き出しができました', `<p>${fl.length}枚の JPG ができました。<br>「写真に保存」を押して、出てきた画面で<b>「${fl.length > 1 ? fl.length + '枚の画像を保存' : '画像を保存'}」</b>を選ぶと、写真アプリに入ります。</p>`, async () => {
+    askYesNo('書き出しができました', `<p>${fl.length}枚の JPG ができました。「保存先を選ぶ」を押すと、いつもの共有の画面が出ます。</p><p>・写真アプリに入れるとき：<b>「${fl.length > 1 ? fl.length + '枚の画像を保存' : '画像を保存'}」</b><br>・ファイルアプリに入れるとき：<b>「"ファイル"に保存」</b>（置き場所を選べます）</p>`, async () => {
       try{ await navigator.share({ files: fl }); status(`${fl.length}枚を共有しました。`); }
       catch(e){ status(e && e.name === 'AbortError' ? '保存をキャンセルしました。' : '保存できませんでした。'); }
-    }, '写真に保存', '閉じる');
+    }, '保存先を選ぶ', '閉じる');
     return true;
   }
   // minimal ZIP (stored, no compression: JPG is already compressed)
@@ -5960,6 +5975,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           return;
         }catch(e){ console.warn(e); status(`フォルダに書き込めませんでした（${e && e.name || 'Error'}）。ダウンロードで保存します…`); await new Promise(r => setTimeout(r, 1200)); }
       }
+      if(!downloads && !inArtifact && await sharePdf(blob, name)) return;
       try{
         const r = await saveBlob(blob, name);
         if(r === 'blocked'){ savePairs(list); return; }
