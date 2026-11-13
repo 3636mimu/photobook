@@ -1398,7 +1398,7 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
 /* スマホを横向きにしたときの写真の調整：写真は左、調整のボタン類は右 */
 @media (pointer:coarse) and (orientation:landscape){
   #cropModal{padding:0}
-  #cropModal .sheet{display:grid !important;grid-template-columns:minmax(0,1fr) clamp(260px,34vw,380px);grid-template-rows:auto auto auto auto minmax(0,1fr);
+  #cropModal .sheet{display:grid !important;grid-template-columns:minmax(0,1fr) clamp(286px,40vw,380px);grid-template-rows:auto auto auto auto minmax(0,1fr);
     grid-template-areas:"stage head" "stage warn" "stage zoom" "stage rot" "stage acts";column-gap:12px;row-gap:6px;align-items:start;
     width:100% !important;max-width:none !important;height:100dvh;max-height:none !important;border-radius:0 !important;padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px)) !important;overflow-y:auto}
   #cropModal .crophead{grid-area:head;margin:0;gap:4px}
@@ -1498,6 +1498,23 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
   #cropModal .cropacts2 .cgrid select.cgridsel{font-size:12px !important;padding:0 16px 0 6px !important;min-width:0 !important;flex:1 1 auto;background-position:right 4px center !important}
   #cropModal .cropacts2 .cgrid .toggle{transform:scale(.85);margin:0 -3px}
   #cropModal .cropacts2 #cropTextOn .knob{transform:scale(.85)}
+}
+
+/* 横向きの写真の調整：右の列からはみ出さない（グリッドと装飾表示も1行に） */
+@media (pointer:coarse) and (orientation:landscape){
+  #cropModal .sheet{overflow-x:hidden !important}
+  #cropModal .sheet > *{min-width:0;max-width:100%;box-sizing:border-box}
+  #cropModal .cropacts2 .cgrid{flex:1 1 0 !important;min-width:0;max-width:none !important;display:flex;align-items:center;gap:4px !important;padding:2px 6px !important;font-size:12px}
+  #cropModal .cropacts2 .cgrid > span:first-child{font-size:12px;white-space:nowrap}
+  #cropModal .cropacts2 .cgrid .toggle .tl{display:none}
+  #cropModal .cropacts2 .cgrid .toggle{transform:scale(.85);margin:0 -3px}
+  #cropModal .cropacts2 .cgrid select.cgridsel{font-size:12px !important;padding:0 16px 0 6px !important;min-width:0 !important;width:auto !important;flex:1 1 auto;background-position:right 4px center !important}
+  #cropModal .cropacts2 #cropTextOn{flex:none;padding:2px 6px !important;white-space:nowrap}
+  #cropModal .cropacts2 #cropTextOn .tl{font-size:11px;margin-left:-2px}
+  #cropModal .cropacts2 #cropTextOn .knob{transform:scale(.85)}
+  #cropModal .cropacts2{column-gap:5px !important}
+  #cropModal .cropstage{overflow:hidden}
+  #cropModal .cropvseg{display:none !important}
 }
 </style>
 </head>
