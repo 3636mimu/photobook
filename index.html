@@ -1188,6 +1188,16 @@ header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
   #textModal .cnav.prev{left:4px}#textModal .cnav.next{right:4px}
 }
 @media (pointer:coarse){ #textTitle span,#textModal .tleft .hint{display:none} }
+
+/* せまい画面の写真の調整：「横幅・縦幅・中央」で1列、「左90°・右90°・左右反転・上下反転」で1列 */
+@media (max-width:640px){
+  .rotrow{display:grid !important;grid-template-columns:repeat(24,minmax(0,1fr));gap:6px !important}
+  .rotrow .rsep{display:none}
+  .rotrow .icon-btn{width:100%;min-width:0;padding:0 2px;white-space:nowrap;justify-content:center;gap:3px;font-size:clamp(11px,3.3vw,12.5px)}
+  .rotrow #fitW,.rotrow #fitH,.rotrow #fitC{grid-column:span 8}
+  .rotrow #rotL,.rotrow #rotR{grid-column:span 5}
+  .rotrow #flipH,.rotrow #flipV{grid-column:span 7}
+}
 </style>
 </head>
 <body>
@@ -1521,7 +1531,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <tr><th>回転</th><td>90°ずつ左右に回します。</td></tr>
       <tr><th>反転</th><td>「⇆ 左右」で左右を、「⇅ 上下」で上下を反転します。もう一度押すと元に戻ります。反転中はボタンが紺色になります。</td></tr>
       <tr><th>傾き補正</th><td>写真を傾けて、水平をまっすぐにしたり、斜めに配置したりします（±45°、0.1°刻み）。写真は切らずにそのまま回すので、四隅のすき間には余白の色が入ります。</td></tr>
-      <tr><th>合わせる</th><td><span class="btn">↔ 横幅に合わせる</span> で写真の横幅を、<span class="btn">↕ 縦幅に合わせる</span> で写真の高さを、白い枠にぴったり合わせます（拡大・縮小が自動で決まり、位置は真ん中に戻ります）。<span class="btn">✛ 中央に合わせる</span> は大きさはそのままで、写真を枠の真ん中に戻します。横長の写真を切らずに入れたいときは「横幅に合わせる」。</td></tr>
+      <tr><th>合わせる</th><td><span class="btn">↔︎ 横幅</span> で写真の横幅を、<span class="btn">↕︎ 縦幅</span> で写真の高さを、白い枠にぴったり合わせます（拡大・縮小が自動で決まり、位置は真ん中に戻ります）。<span class="btn">✛ 中央</span> は大きさはそのままで、写真を枠の真ん中に戻します。横長の写真を切らずに入れたいときは「横幅に合わせる」。</td></tr>
       <tr><th>拡大・縮小</th><td>25〜400%。白い枠（仕上がりの範囲）は固定のまま、写真の大きさが変わります。100%より小さくすると写真全体が枠に入り、まわりに余白の色が入ります（横長の写真を切らずに載せたいときなど）。縮小した写真もドラッグで枠の中を動かせます。マウスホイールでも変えられます。</td></tr>
       <tr><th>位置</th><td>写真をドラッグして、枠の中での位置を合わせます。</td></tr>
       <tr><th>余白・切れの表示</th><td>写真を小さくしたり動かしたり傾けたりして、枠の中に写真のない部分ができると、写真のすぐ下に「⚠ 枠の中に写真のない部分があります」と出ます。その部分は余白の色で埋まります。<br>写真と枠の形が違ったり拡大したりして、写真の一部が枠の外で切れているときは「✂ 上下が約5%切れています」のように、どちらがどれくらい切れているかを出します。写真をドラッグして見せたい位置に調整してください。</td></tr>
@@ -1771,12 +1781,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <div class="zoomrow"><label for="tilt">傾き補正</label><input type="range" id="tilt" min="-45" max="45" step="0.1" value="0"><output id="tilto">0.0°</output></div>
     </div>
     <div class="rotrow">
-      <button class="icon-btn" id="fitW" type="button">↔ 横幅に合わせる</button>
-      <button class="icon-btn" id="fitH" type="button">↕ 縦幅に合わせる</button>
-      <button class="icon-btn" id="fitC" type="button">✛ 中央に合わせる</button>
+      <button class="icon-btn" id="fitW" type="button" title="横幅に合わせる">↔︎ 横幅</button>
+      <button class="icon-btn" id="fitH" type="button" title="縦幅に合わせる">↕︎ 縦幅</button>
+      <button class="icon-btn" id="fitC" type="button" title="中央に合わせる">✛ 中央</button>
       <span class="rsep"></span>
-      <button class="icon-btn" id="rotL" type="button">⟲ 左に90°</button>
-      <button class="icon-btn" id="rotR" type="button">⟳ 右に90°</button>
+      <button class="icon-btn" id="rotL" type="button" title="左に90°回転">⟲ 左90°</button>
+      <button class="icon-btn" id="rotR" type="button" title="右に90°回転">⟳ 右90°</button>
       <span class="rsep"></span>
       <button class="icon-btn flip" id="flipH" type="button" aria-pressed="false">⇆ 左右反転</button>
       <button class="icon-btn flip" id="flipV" type="button" aria-pressed="false">⇅ 上下反転</button>
