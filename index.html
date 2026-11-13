@@ -810,6 +810,20 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .wfile.wclick:hover{background:rgba(255,255,255,.9)}
 .wfile.woff img.glogo{filter:grayscale(1);opacity:.5}
 .wfile .wre{color:var(--accent);font-style:normal;font-weight:700}
+.setbtn{flex:none;display:inline-flex;align-items:center;gap:8px;max-width:100%;border:1px solid rgba(0,0,0,.08);border-radius:999px;background:rgba(255,255,255,.75);color:var(--ink);font:inherit;font-size:13px;font-weight:700;padding:7px 14px 7px 11px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.setbtn svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.setbtn .setsum{overflow:hidden;text-overflow:ellipsis}
+.setsheet{position:fixed;inset:0;z-index:45;background:rgba(20,20,22,.28);display:flex;align-items:flex-start;justify-content:center;padding:calc(var(--hdrH,60px) + 6px) 14px 14px}
+.setsheet[hidden]{display:none}
+.setsh-in{width:min(560px,100%);max-height:calc(100vh - var(--hdrH,60px) - 30px);overflow:auto;background:var(--panel);color:var(--ink);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:14px 18px 16px}
+.setsh-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.setsh-hd b{font-size:15px}
+.setsh-ok{border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;font-size:13px;border-radius:999px;padding:7px 18px;cursor:pointer}
+.setsh-body .mctl{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.setsh-body .mctl:last-child{border-bottom:0}
+.setsh-body .mctl > span,.setsh-body .mctl > label{font-weight:700;white-space:nowrap}
+.setsh-body .mctl select{flex:none;width:62% !important;max-width:62% !important;min-width:0;font-size:14px;padding:7px 10px}
+.setsh-note{margin:10px 0 0;font-size:12px;color:var(--muted)}
 .gswitch{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;margin-left:10px;white-space:nowrap}
 .gswitch:hover{color:var(--accent)}
 .ginvite{border:1.5px solid #E8B4A2;background:#FFF9F6;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -2294,6 +2308,35 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // iPad・スマホは画面が小さいので、横は8枚まで（10枚は出さない）
   const COARSE = matchMedia('(pointer:coarse)').matches;
   if(COARSE) $('cols5').hidden = true;
+  // iPad・スマホ：上の設定は「設定」ボタンにまとめて、押したときだけ開く（いまの設定はボタンに短く表示）
+  if(COARSE){
+    const ml = $('modeLine'), sheet = document.createElement('div');
+    sheet.id = 'setSheet'; sheet.className = 'setsheet'; sheet.hidden = true;
+    sheet.innerHTML = '<div class="setsh-in" role="dialog" aria-modal="true" aria-label="作るものの設定"><div class="setsh-hd"><b>作るものの設定</b><button type="button" class="setsh-ok">完了</button></div><div class="setsh-body"></div><p class="setsh-note">設定は、作っている途中でもいつでも変えられます。</p></div>';
+    document.body.appendChild(sheet);
+    const body = sheet.querySelector('.setsh-body');
+    [...ml.querySelectorAll(':scope > .mctl')].forEach(m => body.appendChild(m));
+    const btn = document.createElement('button'); btn.type = 'button'; btn.id = 'setBtn'; btn.className = 'setbtn';
+    btn.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h7M12.5 4.5h1M2.5 11.5h1M6.5 11.5h7"/><circle cx="11" cy="4.5" r="1.6"/><circle cx="5" cy="11.5" r="1.6"/></svg><span class="setsum"></span>';
+    ml.insertBefore(btn, ml.firstChild);
+    const short = id => { const e = $(id); if(!e || !e.options || e.selectedIndex < 0) return ''; return e.options[e.selectedIndex].text.trim().split(/[\s　（(]/)[0]; };
+    const sum = () => {
+      const parts = [];
+      if($('bookletOn').getAttribute('aria-checked') === 'true') parts.push('写真集');
+      parts.push(short('crop'), short('pages'), ($('fmt').value || '').toUpperCase());
+      btn.querySelector('.setsum').textContent = parts.filter(Boolean).join('・');
+      btn.title = '作るものの設定を開く（' + parts.filter(Boolean).join('・') + '）';
+    };
+    const open = () => { sum(); sheet.hidden = false; document.body.classList.add('setopen'); };
+    const close = () => { sheet.hidden = true; document.body.classList.remove('setopen'); sum(); };
+    btn.addEventListener('click', open);
+    sheet.querySelector('.setsh-ok').addEventListener('click', close);
+    sheet.addEventListener('click', e => { if(e.target === sheet) close(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape' && !sheet.hidden) close(); });
+    body.addEventListener('change', sum); body.addEventListener('click', () => setTimeout(sum, 0));
+    setInterval(() => { if(sheet.hidden) sum(); }, 1500);   // BOOKを開いたときなど、ほかの所で設定が変わったとき
+    sum();
+  }
   function setCols(n){
     n = n === 5 ? 5 : n === 4 ? 4 : 2;
     if(n === 5 && COARSE) n = 4;
