@@ -1262,14 +1262,19 @@ html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgr
   .pagenav{display:none}
 }
 
-/* スマホ・タブレット：縦向きは横に2枚か4枚（見開き1つか2つ）、横向きは4枚か8枚（見開き2つか4つ） */
-@media (pointer:coarse) and (max-width:640px){
+/* スマホ・タブレットの「横の表示」：向きごとに並ぶ数を変える（ボタンの◯枚＝横に並ぶページ数）
+   スマホ縦 2／4枚 ・ スマホ横 4／8枚 ・ タブレット縦 2／4／8枚 ・ タブレット横 4／8／10枚 */
+@media (pointer:coarse) and (orientation:portrait){
   .spreads{grid-template-columns:minmax(0,1fr) !important}
   .spreads.cols4{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+  .spreads.cols4.cols5{grid-template-columns:repeat(4,minmax(0,1fr)) !important}
 }
-@media (pointer:coarse) and (min-width:641px) and (max-width:1100px){
+@media (pointer:coarse) and (orientation:landscape){
+  .spreads{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
   .spreads.cols4{grid-template-columns:repeat(4,minmax(0,1fr)) !important}
+  .spreads.cols4.cols5{grid-template-columns:repeat(5,minmax(0,1fr)) !important}
 }
+.spreads.pagemode{grid-template-columns:minmax(0,1fr) !important}
 </style>
 </head>
 <body>
@@ -2522,6 +2527,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   });
   // iPad・スマホは画面が小さいので、横は8枚まで（10枚は出さない）
   const COARSE = matchMedia('(pointer:coarse)').matches;
+  const PHONE = COARSE && Math.min(screen.width, screen.height) < 600;   // スマホ（タブレットより小さい画面）
   // スマホ・タブレット：調整・装飾・プレビューなどの画面を開いているあいだは、うしろのページを動かさない
   // （いちばん上で指を下に引いても、ブラウザの枠が出てきて画面や写真が小さくなる、ということが起きないように）
   let mLockH = 0, mLockW = 0;
@@ -2558,7 +2564,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!canScroll(t, dy) && e.cancelable) e.preventDefault();
     }, { passive: false, capture: true });
   }
-  if(COARSE) $('cols5').hidden = true;
+  if(PHONE) $('cols5').hidden = true;
   // スマホ・タブレット：右のメニューは、必要なときだけ写真の上に重ねて出す
   if(COARSE){
     const aside = document.querySelector('.grid>aside'), inner = aside.querySelector('.sidein');
@@ -2650,12 +2656,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function setCols(n){
     n = n === 5 ? 5 : n === 4 ? 4 : 2;
-    if(n === 5 && COARSE) n = 4;
+    if(n === 5 && PHONE) n = 4;
     spreadsEl.classList.toggle('cols4', n >= 4); spreadsEl.classList.toggle('cols5', n === 5);
     [2, 4, 5].forEach(k => $('cols' + k).setAttribute('aria-pressed', n === k ? 'true' : 'false'));
   }
   // ボタンの「◯枚」は、実際に横に並ぶページの数に合わせる（スマホの縦向きは 2枚／4枚）
-  function colLabels(){ const narrow = COARSE && matchMedia('(max-width:640px)').matches; $('cols2').textContent = narrow ? '2枚' : '4枚'; $('cols4').textContent = narrow ? '4枚' : '8枚'; }
+  function colLabels(){
+    const port = matchMedia('(orientation:portrait)').matches, L = !COARSE ? ['4枚', '8枚', '10枚'] : port ? ['2枚', '4枚', '8枚'] : ['4枚', '8枚', '10枚'];
+    $('cols2').textContent = L[0]; $('cols4').textContent = L[1]; $('cols5').textContent = L[2];
+  }
   colLabels(); addEventListener('resize', colLabels);
   const colsNow = () => spreadsEl.classList.contains('cols5') ? 5 : spreadsEl.classList.contains('cols4') ? 4 : 2;
   [['cols2',2],['cols4',4],['cols5',5]].forEach(([id,n]) => $(id).addEventListener('click', () => { setCols(n); renderAll(); saveSettings(); }));
