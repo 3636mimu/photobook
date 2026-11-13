@@ -691,7 +691,9 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .wfile svg{flex:none;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round;opacity:.75}
 .wfile b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
 .wfn small em{font-style:normal;color:#C8553D;font-weight:700}
-.wfile.chg b::after{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#C8553D;margin-left:5px;vertical-align:2px}
+#workOver.chg{background:var(--accent);border-color:var(--accent);color:var(--accent-ink,#fff);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+#workOver.chg svg{stroke:currentColor}
+#workOver.chg:hover{filter:brightness(1.06)}
 .wfn{display:flex;flex-direction:column;min-width:0}
 .wfn small{font-size:10px;font-weight:500;color:#9a8a80;line-height:1.2;white-space:nowrap}
 .wautotime{align-self:center;font-size:11px;color:#9a8a80;white-space:nowrap;margin-right:2px}
@@ -1115,6 +1117,26 @@ header .howto summary{background:rgba(255,255,255,.75);border-color:transparent}
   .modeline .mctl{min-width:0;max-width:100%}
   .modeline select{max-width:calc(100vw - 150px)}
 }
+
+/* 角丸のそろえ方（3段）：浮いて出る枠 12px ／ カード 6px ／ 枠の中の小さな部品 5px。
+   写真はカードの縁から約4px内側にあるので、カードは 6px にすると写真の四角とすなおに重なる */
+:root{--r-lg:12px;--r-md:6px;--r-sm:5px}
+/* 写真を少しでも大きく：カードどうしのすき間と、カードの内側の余白を詰める */
+.spreads{gap:8px}
+.spreads.cols4{gap:6px}
+.spreads.cols5{gap:5px}
+.spreads .stage{padding:3px}
+.spreads .bar{padding-top:3px;padding-bottom:3px}
+.spread,aside,.dropbar{border-radius:var(--r-md) !important}
+header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
+.spread .bar button{border-radius:var(--r-sm)}
+.wbtn{border-radius:7px}
+.setsh-in,.startsheet,.mansheet,.tourpop,.howto .howbody,.tourhole,.selpop,body.sidedrawer .grid>aside{border-radius:var(--r-lg) !important}
+.sidetab{border-radius:var(--r-lg) 0 0 var(--r-lg)}
+.selpop button{border-radius:var(--r-sm)}
+.stcard{border-radius:var(--r-lg)}
+.modal > .sheet{border-radius:var(--r-lg)}
+.mctl select,.setsh-body select{border-radius:var(--r-sm)}
 </style>
 </head>
 <body>
@@ -6242,7 +6264,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function syncAutoUI(){
     const on = !!(fileHandle && bookFile);   // Web版で上書きできるのはドライブのBOOKだけ
     $('autoOn').checked = on && autoOn;
-    $('workName').hidden = !bookFile; $('workName').innerHTML = bookFile ? `${fileHandle && fileHandle.drive ? '<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">' : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.5 5v9.2H4z"/><path d="M9 1.8V5.3h3.5"/></svg>'}<span class="wfn"><b>${bookFile.replace(/[<>&]/g, '')}</b>${fileAt ? `<small>${whenText(fileAt)}に${fileAtAuto ? '自動' : ''}保存${fileChanged ? '<em>・変更あり</em>' : ''}</small>` : ''}</span>` : ''; $('workName').title = bookFile ? `編集中のBOOKファイル：${bookFile}${fileChanged ? '（保存したあとに変更があります）' : ''}` : ''; $('workName').classList.toggle('chg', !!(bookFile && fileChanged));
+    $('workName').hidden = !bookFile; $('workName').innerHTML = bookFile ? `${fileHandle && fileHandle.drive ? '<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">' : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.5 5v9.2H4z"/><path d="M9 1.8V5.3h3.5"/></svg>'}<span class="wfn"><b>${bookFile.replace(/[<>&]/g, '')}</b>${fileAt ? `<small>${whenText(fileAt)}に${fileAtAuto ? '自動' : ''}保存</small>` : ''}</span>` : ''; $('workName').title = bookFile ? `編集中のBOOKファイル：${bookFile}${fileChanged ? '（保存したあとに変更があります）' : ''}` : ''; $('workName').classList.toggle('chg', !!(bookFile && fileChanged));
+    // 変更があるときは、文字ではなく「上書き」ボタンの色で知らせる
+    const chg = !!(on && fileChanged); $('workOver').classList.toggle('chg', chg); $('workOver').title = chg ? '保存したあとに変更があります。押すと、いまのBOOKに上書き保存します' : '上書き保存：いまのBOOKに、すぐ保存します';
     $('workOver').hidden = !on; $('workSaveLbl').textContent = on ? '別名' : matchMedia('(pointer:coarse) and (max-width:600px)').matches ? '保存' : 'BOOKを保存';
     $('workSave').setAttribute('aria-label', on ? '別名で保存' : 'BOOKを保存');
     $('workSave').querySelector('svg').innerHTML = on ? '<path d="M3 2.5h7l2 2v4"/><path d="M3 2.5v11h5.5"/><path d="M5.5 2.5v3h4v-3"/><path d="M12.2 10v5M9.7 12.5h5"/>' : '<path d="M8 2v8m-3.2-3.2L8 10l3.2-3.2M3 12.5h10"/>';   // 別名：保存＋（新しく作る）
