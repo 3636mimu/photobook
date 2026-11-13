@@ -337,7 +337,9 @@ button{font:inherit}
 .flipwrap .leaf{position:absolute;top:0;height:100%;transform-style:preserve-3d;will-change:transform}
 .flipwrap .strip{position:absolute;top:0;height:100%;transform-style:preserve-3d;will-change:transform}
 .flipwrap .face{position:absolute;top:0;bottom:0;left:-1px;right:-1px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
-.flipwrap .face.back{transform:rotateY(180deg)}
+.flipwrap /* iPhone・iPad（Safari の仕組み）では、表の面にも3Dの向きを持たせないと裏側から表が透けて見える（めくり終わりに前のページが映る） */
+.face{-webkit-transform:rotateY(0deg) translateZ(.5px);transform:rotateY(0deg) translateZ(.5px)}
+.face.back{-webkit-transform:rotateY(180deg) translateZ(.5px);transform:rotateY(180deg) translateZ(.5px)}
 .flipwrap .shade{position:absolute;inset:0;opacity:0}
 .flipwrap .undershade{position:absolute;top:0;height:100%;opacity:0}
 .flipwrap .undershade.l{background:linear-gradient(to left,rgba(0,0,0,.55),transparent 75%)}
