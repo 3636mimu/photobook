@@ -1159,14 +1159,14 @@ header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
 @media (max-width:560px){
   .startsheet #stStep1.ststep{padding-left:14px;padding-right:14px}
   #stStep1 .sthero{height:62px !important;padding:0 14px !important}
-  #stStep1 .sthero h3{left:14px;right:14px;font-size:19px;white-space:nowrap;overflow:hidden;text-align:center;letter-spacing:.02em}
+  #stStep1 .sthero h3{left:22px;right:22px;font-size:19px;white-space:nowrap;overflow:hidden;text-align:center;letter-spacing:.02em}
   #stStep1 .stsub{margin:12px 0 10px;font-size:12px;text-align:center}
   #stStep1 .stchoices{grid-template-columns:1fr 1fr !important;gap:8px}
-  #stStep1 .stcard{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;row-gap:4px;align-items:start;padding:10px 10px 11px !important}
-  #stStep1 .stcard .stic{grid-row:auto;width:46px;height:38px;border-radius:9px}
-  #stStep1 .stcard .stic svg{width:36px;height:27px}
-  #stStep1 .stcard b{font-size:14px;align-self:start;margin-top:2px}
-  #stStep1 .stcard span{font-size:11px;line-height:1.5}
+  #stStep1 .stcard{grid-template-columns:36px 1fr;grid-template-rows:auto 1fr;column-gap:9px;row-gap:8px;align-items:center;padding:11px 11px 12px !important}
+  #stStep1 .stcard .stic{grid-row:1;grid-column:1;width:36px;height:36px;border-radius:9px}
+  #stStep1 .stcard .stic svg{width:28px;height:21px}
+  #stStep1 .stcard b{grid-row:1;grid-column:2;align-self:center;font-size:clamp(11.5px,3.6vw,14px);line-height:1.25;letter-spacing:.01em;word-break:keep-all;overflow-wrap:normal}
+  #stStep1 .stcard span{grid-row:2;grid-column:1 / -1;align-self:start;font-size:11px;line-height:1.55}
 }
 </style>
 </head>
@@ -1650,8 +1650,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       </div>
       <p class="stsub">デジタルで楽しむか、印刷して質感ごと味わうか。</p>
       <div class="stchoices">
-        <button type="button" class="stcard c1" data-k="spread"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="4" y="8" width="27" height="34" rx="2" fill="#fff"/><rect x="33" y="8" width="27" height="34" rx="2" fill="#fff"/><path d="M8 36l7-9 5 6 4-4 5 7z" fill="currentColor" opacity=".55"/><circle cx="24" cy="16" r="3" fill="currentColor" opacity=".55"/><path d="M37 36l6-10 6 7 3-3 4 6z" fill="currentColor" opacity=".8"/><line x1="32" y1="8" x2="32" y2="42" stroke="currentColor" stroke-width="1.5" opacity=".35"/></svg></i><b>見開きコラージュ</b><span>2枚の写真を、見開きの1枚に。<br>簡単にコラージュできます。</span></button>
-        <button type="button" class="stcard c2" data-k="conv"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="6" width="34" height="38" rx="2" fill="#fff" transform="rotate(-6 31 25)"/><rect x="16" y="6" width="34" height="38" rx="2" fill="#fff"/><rect x="20" y="11" width="26" height="18" rx="1" fill="currentColor" opacity=".6"/><rect x="20" y="33" width="16" height="3" rx="1.5" fill="currentColor" opacity=".45"/><rect x="20" y="38" width="10" height="2.5" rx="1.25" fill="currentColor" opacity=".3"/></svg></i><b>PDF写真集</b><span>表紙もタイトルも、思いのままに。<br>コンビニの小冊子印刷でオリジナルの一冊が完成。</span></button>
+        <button type="button" class="stcard c1" data-k="spread"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="4" y="8" width="27" height="34" rx="2" fill="#fff"/><rect x="33" y="8" width="27" height="34" rx="2" fill="#fff"/><path d="M8 36l7-9 5 6 4-4 5 7z" fill="currentColor" opacity=".55"/><circle cx="24" cy="16" r="3" fill="currentColor" opacity=".55"/><path d="M37 36l6-10 6 7 3-3 4 6z" fill="currentColor" opacity=".8"/><line x1="32" y1="8" x2="32" y2="42" stroke="currentColor" stroke-width="1.5" opacity=".35"/></svg></i><b>見開き<wbr>コラージュ</b><span>2枚の写真を、見開きの1枚に。<br>簡単にコラージュできます。</span></button>
+        <button type="button" class="stcard c2" data-k="conv"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="6" width="34" height="38" rx="2" fill="#fff" transform="rotate(-6 31 25)"/><rect x="16" y="6" width="34" height="38" rx="2" fill="#fff"/><rect x="20" y="11" width="26" height="18" rx="1" fill="currentColor" opacity=".6"/><rect x="20" y="33" width="16" height="3" rx="1.5" fill="currentColor" opacity=".45"/><rect x="20" y="38" width="10" height="2.5" rx="1.25" fill="currentColor" opacity=".3"/></svg></i><b>PDF<wbr>写真集</b><span>表紙もタイトルも、思いのままに。<br>コンビニの小冊子印刷でオリジナルの一冊が完成。</span></button>
         <button type="button" class="stcard c3" data-k="life"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="20" y="4" width="26" height="40" rx="2" fill="#fff"/><rect x="18" y="4" width="4" height="40" rx="1.5" fill="currentColor" opacity=".7"/><circle cx="34" cy="20" r="7" fill="currentColor" opacity=".55"/><rect x="27" y="32" width="14" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback LIFE</b><span>編集・装飾・確認が手軽に出来ます。<br>ページごとに JPG を書き出して簡単入稿。</span></button>
         <button type="button" class="stcard c4" data-k="graph"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="3" width="36" height="42" rx="2" fill="#fff"/><rect x="12" y="3" width="4.5" height="42" rx="1.5" fill="currentColor" opacity=".7"/><rect x="20" y="8" width="26" height="26" rx="1" fill="currentColor" opacity=".55"/><rect x="20" y="38" width="16" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback GRAPH</b><span>編集・装飾・確認が手軽に出来ます。<br>ページごとに JPG を書き出して簡単入稿。</span></button>
       </div>
@@ -6113,7 +6113,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     el.style.fontSize = '';
     if(!matchMedia('(max-width:560px)').matches) return;
     requestAnimationFrame(() => {
-      const box = el.parentElement, w = box.clientWidth - 28; if(w <= 0) return;
+      const box = el.parentElement, w = box.clientWidth - 44; if(w <= 0) return;
       let f = parseFloat(getComputedStyle(el).fontSize);
       while(el.scrollWidth > w && f > 11){ f -= 0.5; el.style.fontSize = f + 'px'; }
     });
