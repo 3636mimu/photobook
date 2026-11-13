@@ -2725,16 +2725,25 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     });
     fitVals(p);
   }
-  // テンプレの値は、それぞれの写真（左ページ・右ページ）の真ん中に出す。ボタンや番号に重なるときだけ、説明→値の順に省く
+  // テンプレの値は、それぞれの写真（左ページ・右ページ）の真ん中に出す。
+  // ボタンや番号に重なりそうなら、空いている所（番号とボタンのあいだ）にずらして収める。それでも入らないときだけ、説明→値の順に省く
   function fitVals(p){
     const ui = pairUI[p]; if(!ui || !ui.vals) return;
-    const bar = ui.vals[0].parentElement;
-    const blocks = [...bar.querySelectorAll('.ctr, .bside .pn:not([hidden])')];
-    const hits = el => { const r = el.getBoundingClientRect(); if(!r.width) return false; return blocks.some(b => { const q = b.getBoundingClientRect(); return q.width && r.left < q.right + 4 && r.right > q.left - 4; }); };
-    ui.vals.forEach(el => {
-      el.classList.remove('nosm', 'novl');
-      if(!el.childNodes.length || !bar.offsetWidth) return;
-      if(hits(el)){ el.classList.add('nosm'); if(hits(el)) el.classList.add('novl'); }
+    const bar = ui.vals[0].parentElement, br = bar.getBoundingClientRect(); if(!br.width) return;
+    const ctr = bar.querySelector('.ctr').getBoundingClientRect(), pns = ui.pns || [];
+    const edge = (b, side) => { if(!b || b.hidden) return null; const r = b.getBoundingClientRect(); return r.width ? r : null; };
+    ui.vals.forEach((el, k) => {
+      el.classList.remove('nosm', 'novl'); el.style.left = '';
+      if(!el.childNodes.length) return;
+      const pn = edge(pns[k]);
+      // 使える範囲（バーの中の座標）
+      const lo = k === 0 ? (pn ? pn.right - br.left + 6 : 6) : ctr.right - br.left + 6;
+      const hi = k === 0 ? ctr.left - br.left - 6 : (pn ? pn.left - br.left - 6 : br.width - 6);
+      const want = br.width * (k === 0 ? .25 : .75);
+      const place = () => { const w = el.offsetWidth; if(w > hi - lo) return false; const c = Math.max(lo + w / 2, Math.min(hi - w / 2, want)); el.style.left = c + 'px'; return true; };
+      if(place()) return;
+      el.classList.add('nosm'); if(place()) return;
+      el.classList.add('novl');
     });
   }
   function shadowOn(){ return $('shadowOn').getAttribute('aria-checked') === 'true'; }
