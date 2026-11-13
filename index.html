@@ -1222,10 +1222,27 @@ html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgr
 
 /* パーツレイヤー：見出しを押すと、一覧を閉じたり開いたりできる（＋文字・＋画像などのボタンはいつも出す） */
 .ilaytog{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;margin:0;font:inherit;font-weight:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.ilaytog .chev{display:inline-block;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);opacity:.55;transition:transform .18s}
-.ilayer.laycl .ilaytog .chev{transform:rotate(-45deg)}
+.ilaychev{border:0;background:none;padding:6px 2px 6px 10px;margin:0 -2px 0 2px;cursor:pointer;display:inline-flex;align-items:center;align-self:center;-webkit-tap-highlight-color:transparent}
+.ilaychev .chev{display:block;width:8px;height:8px;border-right:2px solid #C4C4C7;border-bottom:2px solid #C4C4C7;transform:rotate(45deg) translate(-2px,-2px);transition:transform .15s}
+.ilayer.laycl .ilaychev .chev{transform:rotate(-45deg)}
 .ilaycnt{font-style:normal;font-weight:500;font-size:.85em;opacity:.6}
 .ilayer.laycl #tChips{display:none}
+
+/* スマホ：上の行に「グリッド」と「装飾表示」、下の行にリセット・写真削除・装飾・完了を1行で */
+@media (max-width:640px){
+  .cropacts2 .cdeco{display:contents}
+  .cropacts2 .cgrid{order:1}
+  .cropacts2 #cropTextOn{order:2}
+  .cropacts2{row-gap:0 !important}
+  .cropacts2::after{content:'';order:3;flex-basis:100%;height:0}
+  .cropacts2 .cbtn{margin-top:12px}
+  .cropacts2 .cgrid{max-width:100%;min-width:0;box-sizing:border-box}
+  .cropacts2 .cgrid .cgridsel{min-width:0;flex:1 1 auto}
+  .cropacts2 #cropReset{order:4}.cropacts2 #cropDelete{order:5}.cropacts2 #cropToText{order:6}.cropacts2 #cropDone{order:7}
+  .cropacts2 .cbtn{flex:1 1 0;min-width:0 !important;padding:0 4px;height:40px;font-size:clamp(11.5px,3.4vw,13.5px);letter-spacing:0}
+  .cropacts2 #cropDelete{flex-grow:1.35}
+  .cropacts2 #cropDone{flex-grow:1.15}
+}
 </style>
 </head>
 <body>
@@ -1860,7 +1877,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           </div>
         </details>
         <div class="icard ilayer">
-        <div class="ilayhd"><button type="button" class="ilaytog" id="tLayTog" aria-expanded="true" aria-controls="tChips" title="パーツの一覧を開く・閉じる"><span class="chev" aria-hidden="true"></span><span>パーツレイヤー</span><em class="ilaycnt" id="tLayCnt"></em></button><small>上にあるほど前面表示</small><button type="button" class="ilaymulti" id="tMulti" aria-pressed="false" title="オンにすると、押したパーツを次々に選べます（Shift／Ctrl＋クリックと同じ）">複数選択</button></div>
+        <div class="ilayhd"><button type="button" class="ilaytog" id="tLayTog" aria-expanded="true" aria-controls="tChips" title="パーツの一覧を開く・閉じる"><span>パーツレイヤー</span><em class="ilaycnt" id="tLayCnt"></em></button><small>上にあるほど前面表示</small><button type="button" class="ilaymulti" id="tMulti" aria-pressed="false" title="オンにすると、押したパーツを次々に選べます（Shift／Ctrl＋クリックと同じ）">複数選択</button><button type="button" class="ilaychev" id="tLayChev" aria-label="パーツの一覧を開く・閉じる" aria-controls="tChips"><span class="chev" aria-hidden="true"></span></button></div>
         <div class="ihead"><div class="iheadbtns"><button class="iadd" id="tAdd" type="button" aria-label="文字を追加">＋ 文字</button><label class="isml" id="tAddImg" title="ロゴなどの画像を追加（PNG の透過もそのまま使えます）">＋ 画像<input type="file" id="tImgFile" accept="image/*" hidden></label><button class="isml" id="tDup" type="button" title="選んでいる文字を複製">複製</button><button class="isml danger" id="tDel" type="button" title="選んでいる文字を削除">削除</button></div></div>
           <div class="ilist" id="tChips"></div>
           <div class="titxt" id="tTextWrap" hidden><textarea id="tText" rows="1" placeholder="文字を入力（改行もできます）"></textarea></div>
@@ -5071,9 +5088,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // パーツレイヤーの一覧を開く・閉じる（閉じても、何個あるかは見出しに出す）
   { const card = $('tLayTog').closest('.ilayer'), list = $('tChips');
     let laycl = false; try{ laycl = localStorage.getItem('pbm-laycl') === '1'; }catch(e){}
-    const apply = () => { card.classList.toggle('laycl', laycl); $('tLayTog').setAttribute('aria-expanded', laycl ? 'false' : 'true'); };
+    const apply = () => { card.classList.toggle('laycl', laycl); $('tLayTog').setAttribute('aria-expanded', laycl ? 'false' : 'true'); $('tLayChev').setAttribute('aria-expanded', laycl ? 'false' : 'true'); };
     const cnt = () => { const n = list.children.length; $('tLayCnt').textContent = n ? `${n}` : ''; };
-    $('tLayTog').addEventListener('click', () => { laycl = !laycl; apply(); try{ localStorage.setItem('pbm-laycl', laycl ? '1' : '0'); }catch(e){} });
+    const tog = () => { laycl = !laycl; apply(); try{ localStorage.setItem('pbm-laycl', laycl ? '1' : '0'); }catch(e){} };
+    $('tLayTog').addEventListener('click', tog); $('tLayChev').addEventListener('click', tog);
     new MutationObserver(cnt).observe(list, { childList: true }); apply(); cnt(); }
   tcv.addEventListener('dblclick', () => { if(tCur()){ $('tText').focus(); $('tText').select(); } });
   onDoubleTap(tcv, () => { if(tCur()){ $('tText').focus(); $('tText').select(); } });
