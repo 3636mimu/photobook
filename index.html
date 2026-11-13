@@ -1469,6 +1469,14 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
   #textModal .tacts .cgrid{display:flex;align-items:center;gap:6px;min-width:0}
   #textModal .tacts .cgrid select{flex:1 1 auto;min-width:0;width:auto}
 }
+
+/* 横向き：‹ › は写真の外の左右の余白に、「〇ページを調整」はその上に縦書き */
+#tStage.tvert .cnav{width:34px;height:34px;border-radius:50%;font-size:22px;top:50%}
+#tStage.tvert .cnav.prev{left:6px}#tStage.tvert .cnav.next{right:6px}
+#tStage.tvert .tpbtn{transform:translate(-50%,-100%);padding:9px 5px;font-size:11.5px;line-height:1.1}
+#tStage.tvert .tpbtn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 5px}
+#tStage.tvert .tpbtn .vch{display:block;line-height:1.05;font-size:11.5px}
+#tStage.tvert .tpbtn{background:rgba(0,0,0,.42);border-color:rgba(255,255,255,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);max-height:none;white-space:nowrap;display:block;block-size:auto;inline-size:max-content;height:max-content;width:auto;box-sizing:content-box}
 </style>
 </head>
 <body>
@@ -4752,7 +4760,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     coverGeom = r;
     // narrow margins (just room for the page buttons above and the ‹ › at the sides) so the spread shows as large as it can
     // せまい画面では ‹ › を写真の上に小さく重ねるので、左右の余白はわずかに
-    const narrow = bw < 640, ar = off.width / off.height, PX = narrow ? 10 : 58, PT = 34, PB = narrow ? 4 : 8;
+    // 横向き（スマホ・タブレット）：「〇ページを調整」は ‹ › の上に縦書きで置くので、写真の上の余白はいらない
+    const tVert = COARSE && matchMedia('(orientation:landscape)').matches; $('tStage').classList.toggle('tvert', tVert);
+    const narrow = bw < 640, ar = off.width / off.height, PT = tVert ? 6 : 34, PB = tVert ? 6 : narrow ? 4 : 8,
+      // 横向きは高さいっぱいの大きさを優先。横に余りがあればそこに ‹ › と縦書きボタンを置き、なければ写真の端に重ねる
+      PX = tVert ? Math.max(6, Math.min(46, (bw - (bh - PT - PB) * ar) / 2)) : narrow ? 10 : 58;
     let sw = Math.max(40, Math.min(bw - 2*PX, (bh - PT - PB) * ar)), sh = sw / ar;
     const cw = sw + 2*PX, ch = sh + PT + PB;
     tcv.style.width = cw + 'px'; tcv.style.height = ch + 'px';
@@ -4798,9 +4810,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         // 写真がせまいときは、ボタンの文字を短く（となりのボタンや「折り目」に重ならないように）
         const half = sw / dpr / (one ? 1 : 2), tail = ok ? (half < 150 ? ' ›' : half < 210 ? 'を調整 ›' : 'の写真を調整 ›') : isLocked(i) ? '' : (half < 150 ? '' : '（写真なし）');
         b.textContent = (one ? '見開きの写真' : pn(i)) + tail;
-        b.style.left = (cvX + x) + 'px'; b.style.top = (cvY + oy / dpr - 6) + 'px';
+        if($('tStage').classList.contains('tvert')){
+          // ‹ › の真上に、縦書きで（左ページは ‹ の上、右ページは › の上）
+          const nav = n === 0 || one ? $('tPrev') : $('tNext');
+          // 縦書き：1文字ずつ縦に積む（数字はまとめて1つ。長音「ー」は縦向きの線に）
+          const txt = (one ? '見開きの写真' : pn(i)) + (ok ? 'を調整' : isLocked(i) ? '' : '（なし）');
+          b.replaceChildren(...(txt.match(/[0-9]+|./g) || []).map(ch => { const e = document.createElement('span'); e.className = 'vch'; e.textContent = ch === 'ー' ? '｜' : ch; return e; }));
+          b.style.left = (nav.offsetLeft + nav.offsetWidth / 2) + 'px'; b.style.top = (nav.offsetTop - nav.offsetHeight / 2 - 8) + 'px';
+        } else { b.style.left = (cvX + x) + 'px'; b.style.top = (cvY + oy / dpr - 6) + 'px'; }
       }); }
-    if(!(wide.has(tPair) && !(isCover(tPair) && backOff())) && sw / dpr / 2 >= 210) g.fillText('折り目', sx, oy - 6*dpr);   // a one-photo spread has its button there instead
+    if(!$('tStage').classList.contains('tvert') && !(wide.has(tPair) && !(isCover(tPair) && backOff())) && sw / dpr / 2 >= 210) g.fillText('折り目', sx, oy - 6*dpr);   // a one-photo spread has its button there instead
     // グリッド（装飾画面だけの ON / OFF と種類）：ページごとに
     if(tGridOn){ const ty = $('tGridType').value, wl = G.wa / G.W * sw, xr = ox + (G.wa + G.gapPx) / G.W * sw, wr = G.wb / G.W * sw;
       drawGuide(g, ox, oy, wl, sh, '#ff0000', dpr, ty); drawGuide(g, xr, oy, wr, sh, '#ff0000', dpr, ty); }
