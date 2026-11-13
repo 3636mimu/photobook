@@ -1308,8 +1308,20 @@ html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgr
 .spread .bar .pval.r{left:75%}
 .spread .bar .pval b{font-size:12px;color:#C0392B;letter-spacing:.03em}
 .spread .bar .pval small{font-size:11px;color:#C0392B;font-weight:500}
-.spread .bar .pval.nosm small{display:none}
+.spread .bar .pval.nosm small,.spread .bar .pval.nosmall small{display:none}
 .spread .bar .pval.novl{visibility:hidden}
+
+/* せまいカード：ボタンとすき間を少し詰めて、テンプレの値（数値まで）が入る場所を作る */
+@container (max-width:270px){
+  .spread .bar{padding:4px 5px !important;gap:3px !important}
+  .spread .bar .ctr{gap:3px}
+  .spread .bar .ctr .icon-btn{min-width:25px !important;height:25px !important;padding:0 4px !important}
+  .spread .bar .txtbtn .aa{font-size:12px}
+  .spread .bar .save .ico{width:12px;height:12px}
+  .spread .bar .lay svg{width:14px;height:10px}
+  .spread .bar .bside .pn{padding:2px 2px;font-size:13px}
+  .spread .bar .pval b{font-size:11px;letter-spacing:0}
+}
 </style>
 </head>
 <body>
@@ -2241,6 +2253,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
 
     ui.cv.dataset.pair = p;
     card.querySelectorAll('.vopen').forEach(b => b.addEventListener('click', () => openViewer(p)));
+    // 下の行の幅が変わったら（並べ方・画面の向き・サイドの開閉・文字の読み込みなど）、テンプレの値の置き場所を決め直す
+    if(window.ResizeObserver){ let t = 0; new ResizeObserver(() => { cancelAnimationFrame(t); t = requestAnimationFrame(() => fitVals(p)); }).observe(card.querySelector('.bar')); }
     ui.cv.addEventListener('pointerdown', e => {
       if(e.pointerType === 'touch' || e.button !== 0) return;
       const r = ui.cv.getBoundingClientRect();
@@ -2727,6 +2741,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // テンプレの値は、それぞれの写真（左ページ・右ページ）の真ん中に出す。
   // ボタンや番号に重なりそうなら、空いている所（番号とボタンのあいだ）にずらして収める。それでも入らないときだけ、説明→値の順に省く
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => pairUI.forEach((u, p) => fitVals(p)));
+  // 見た目をそろえる：どれか1つでも説明を省いたら、ほかも省いた形にそろえる
+  let unifyT = 0;
+  function unifyVals(){ clearTimeout(unifyT); unifyT = setTimeout(() => {
+    const all = pairUI.flatMap(u => u.vals ? [...u.vals] : []).filter(el => el.childNodes.length && el.offsetParent);
+    const short = all.some(el => el.classList.contains('nosm'));
+    all.forEach(el => el.classList.toggle('nosmall', short && !el.classList.contains('nosm')));
+  }, 60); }
   function fitVals(p){
     const ui = pairUI[p]; if(!ui || !ui.vals) return;
     const bar = ui.vals[0].parentElement, br = bar.getBoundingClientRect(); if(!br.width) return;
@@ -2737,14 +2759,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!el.childNodes.length) return;
       const pn = edge(pns[k]);
       // 使える範囲（バーの中の座標）
-      const lo = k === 0 ? (pn ? pn.right - br.left + 6 : 6) : ctr.right - br.left + 6;
-      const hi = k === 0 ? ctr.left - br.left - 6 : (pn ? pn.left - br.left - 6 : br.width - 6);
+      const g = br.width < 280 ? 3 : 6;
+      const lo = k === 0 ? (pn ? pn.right - br.left + g : g) : ctr.right - br.left + g;
+      const hi = k === 0 ? ctr.left - br.left - g : (pn ? pn.left - br.left - g : br.width - g);
       const want = br.width * (k === 0 ? .25 : .75);
       const place = () => { const w = el.offsetWidth; if(w > hi - lo) return false; const c = Math.max(lo + w / 2, Math.min(hi - w / 2, want)); el.style.left = c + 'px'; return true; };
       if(place()) return;
       el.classList.add('nosm'); if(place()) return;
       el.classList.add('novl');
     });
+    unifyVals();
   }
   function shadowOn(){ return $('shadowOn').getAttribute('aria-checked') === 'true'; }
   function params(){
@@ -3094,7 +3118,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const free = avail - ui.card.offsetHeight - navH; if(free > 8) ui.card.style.marginTop = Math.floor(free / 2) + 'px'; }
     ui.meta.textContent = `${W}×${H}`;
     ui.save.disabled = !pairReady(p);
-    const cov = isCover(p); ui.card.classList.toggle('cover', cov); ui.txt.classList.toggle('on', hasDeco(p)); { const [l, r] = sideLabels(p); ui.pns[0].textContent = l; ui.pns[1].textContent = r; ui.pns[0].hidden = !l; ui.pns[1].hidden = !r; ui.pns[0].dataset.s = l === '裏表紙' ? '裏' : ''; ui.pns[1].dataset.s = r === '表紙' ? '表' : ''; if(!ui.pns[0].dataset.s) delete ui.pns[0].dataset.s; if(!ui.pns[1].dataset.s) delete ui.pns[1].dataset.s; ui.pns.forEach(b => b.setAttribute('aria-label', pairLabel(p) + 'をプレビュー')); }
+    const cov = isCover(p); ui.card.classList.toggle('cover', cov); ui.txt.classList.toggle('on', hasDeco(p)); { const [l, r] = sideLabels(p); ui.pns[0].textContent = l; ui.pns[1].textContent = r; ui.pns[0].hidden = !l; ui.pns[1].hidden = !r; ui.pns[0].dataset.s = l === '裏表紙' ? '裏' : ''; ui.pns[1].dataset.s = r === '表紙' ? '表' : ''; if(!ui.pns[0].dataset.s) delete ui.pns[0].dataset.s; if(!ui.pns[1].dataset.s) delete ui.pns[1].dataset.s; ui.pns.forEach(b => b.setAttribute('aria-label', pairLabel(p) + 'をプレビュー')); } requestAnimationFrame(() => fitVals(p));
     ui.lay.hidden = isEnd(p) || !!noPrintSide(p); ui.card.querySelector('.spine').hidden = isEnd(p);
     if(ui.lay){ const on = wide.has(p); ui.lay.setAttribute('aria-pressed', on ? 'true' : 'false'); ui.lay.title = on ? '見開きレイアウト' : '単一ページレイアウト'; }
     renderVals(p);
