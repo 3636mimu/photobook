@@ -8,6 +8,11 @@
 <meta name="author" content="YUJI MIMURA">
 <meta name="copyright" content="© 2026 YUJI MIMURA">
 <title>PHOTO BOOK MAKER</title>
+<!-- スマホ・iPad：ホーム画面に追加すると、ブラウザの枠なしの全画面で開く -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PHOTO BOOK">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -1198,6 +1203,12 @@ header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
   .rotrow #rotL,.rotrow #rotR{grid-column:span 5}
   .rotrow #flipH,.rotrow #flipV{grid-column:span 7}
 }
+
+@media (max-width:640px){
+  .cropacts2{justify-content:center;column-gap:8px;row-gap:10px}
+  .cropacts2 .rsep{display:none}
+  .cropacts2 .cgrid{flex:0 0 auto}
+}
 </style>
 </head>
 <body>
@@ -1520,7 +1531,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <tr><th>1枚で見開きにする</th><td>見開きの下の <span class="btn">◫◫</span> ボタンを押すと、その見開きだけ1枚の写真を左右2ページにまたがって大きく使えます（左側の写真を使います）。もう一度押すと2枚の見開きに戻ります。右側に入っていた写真は消えずに残り、2枚に戻すと表示されます。写真をクリックすると、見開き全体の枠で位置や大きさを調整できます。</td></tr>
       <tr><th>見開きを丸ごと入れ替える</th><td>カードの上に出る <span class="btn">≡</span>（つまみ。マウスを見開きに乗せると出ます） をつかんで、別の見開きへドロップします。</td></tr>
       <tr><th>写真をすべて消す</th><td>上の <span class="btn" style="color:#B23B30;border-color:#B23B30">すべての写真を削除</span> を押すと確認が出るので、「YES」を押します（元の写真ファイルは消えません）。</td></tr>
-      <tr><th>写真を消す</th><td>写真をクリックして調整画面を開き、<span class="btn" style="color:#B23B30;border-color:#B23B30">✕ この写真を消す</span> を押します。</td></tr>
+      <tr><th>写真を消す</th><td>写真をクリックして調整画面を開き、<span class="btn" style="color:#B23B30;border-color:#B23B30">✕ 写真削除</span> を押します。</td></tr>
     </table></div>
   </section>
 
@@ -1536,7 +1547,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <tr><th>位置</th><td>写真をドラッグして、枠の中での位置を合わせます。</td></tr>
       <tr><th>余白・切れの表示</th><td>写真を小さくしたり動かしたり傾けたりして、枠の中に写真のない部分ができると、写真のすぐ下に「⚠ 枠の中に写真のない部分があります」と出ます。その部分は余白の色で埋まります。<br>写真と枠の形が違ったり拡大したりして、写真の一部が枠の外で切れているときは「✂ 上下が約5%切れています」のように、どちらがどれくらい切れているかを出します。写真をドラッグして見せたい位置に調整してください。</td></tr>
       <tr><th>リセット</th><td>調整を全部元に戻します。</td></tr>
-      <tr><th>この写真を消す</th><td>その写真を見開きから外します。</td></tr>
+      <tr><th>写真削除</th><td>その写真を見開きから外します。</td></tr>
     </table></div>
     <p class="small">調整は写真と一緒に移動するので、並べ替えても消えません。</p>
   </section>
@@ -1795,7 +1806,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <span class="cgrid" title="この画面のグリッド（一覧とは別に設定できます）"><span>グリッド</span><button class="toggle" id="cropGrid" type="button" role="switch" aria-checked="false" aria-label="グリッドの表示をオン・オフ"><span class="knob"></span><span class="tl">OFF</span></button><select id="cropGridType" class="cgridsel" aria-label="グリッドの種類"></select></span>
       <span class="rsep"></span>
       <button class="cbtn outline" id="cropReset" type="button">リセット</button>
-      <button class="cbtn danger" id="cropDelete" type="button">✕ この写真を消す</button>
+      <button class="cbtn danger" id="cropDelete" type="button" title="この写真を見開きから外します（元の写真ファイルは消えません）">✕ 写真削除</button>
       <span id="cropTextRow" class="cdeco">
         <button class="cbtn outline" id="cropToText" type="button">装飾</button>
         <button class="toggle" id="cropTextOn" type="button" role="switch" aria-checked="true" aria-label="装飾（文字・画像）を表示" title="装飾（文字・画像）の表示・非表示"><span class="knob"></span><span class="tl">装飾表示</span></button>
