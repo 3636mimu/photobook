@@ -7297,19 +7297,23 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const gPatch = (id, meta) => gJson(`${GAPI}/drive/v3/files/${id}?fields=id,name`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(meta) });
   const gCopy = (id, meta) => gJson(`${GAPI}/drive/v3/files/${id}/copy?fields=id,name`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(meta) });
   const gGet = async id => (await gFetch(`${GAPI}/drive/v3/files/${id}?alt=media`)).blob();
-  // マイスタイルを Google ドライブで共有（「PHOTO BOOK MAKER」フォルダの mystyles.json）。どの端末でも同じマイスタイルに
+  // マイスタイルを Google ドライブで共有（「PHOTO BOOK MAKER」フォルダの「マイスタイル（消さないでください）.json」）。どの端末でも同じマイスタイルに
   let styFileId = '', styBusy = false, styT = 0;
+  const STY_NAME = 'マイスタイル（消さないでください）.json';   // ドライブで見て、何のファイルか分かる名前
+  const STY_DESC = 'PHOTO BOOK MAKER のマイスタイル（よく使う装飾の組み合わせ）です。消すと、ほかの端末とマイスタイルを共有できなくなります。';   // ドライブの「説明」欄
   async function gStylesFile(){
     if(styFileId) return styFileId;
-    const f = await gList(`appProperties has { key='pbm' and value='styles' } and trashed=false`, 'files(id,modifiedTime)');
-    styFileId = f.length ? f[0].id : ''; return styFileId;
+    const f = await gList(`appProperties has { key='pbm' and value='styles' } and trashed=false`, 'files(id,name,description,modifiedTime)');
+    styFileId = f.length ? f[0].id : '';
+    if(f.length && (f[0].name !== STY_NAME || f[0].description !== STY_DESC)) try{ await gPatch(styFileId, { name: STY_NAME, description: STY_DESC }); }catch(e){}   // 前の名前（mystyles.json）は、分かる名前と説明に直す
+    return styFileId;
   }
   async function gStylesPush(){
     if(!gValid()) return;
     try{
       const at = Number(localStorage.getItem(STY_AT)) || Date.now(), id = await gStylesFile();
       const blob = new Blob([JSON.stringify({ app: 'mihiraki-mystyles', version: 1, at, styles: myStyles })], { type: 'application/json' });
-      styFileId = (await gUpload(id ? {} : { name: 'mystyles.json', parents: [await gRoot()], appProperties: { pbm: 'styles' } }, blob, id || undefined)).id;
+      styFileId = (await gUpload(id ? {} : { name: STY_NAME, description: STY_DESC, parents: [await gRoot()], appProperties: { pbm: 'styles' } }, blob, id || undefined)).id;
     }catch(e){ styFileId = ''; }
   }
   async function gStylesPull(){
