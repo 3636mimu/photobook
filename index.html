@@ -130,6 +130,10 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 .spreads.pagemode .pgarrow:not(.over){width:40px;height:40px;border:1.5px solid #8A8A8A;background:rgba(255,255,255,.85);color:#555;box-shadow:none}
 .spreads.pagemode .pgarrow:not(.over):not(:disabled):hover{background:#555;border-color:#555;color:#fff}
 .spreads.pagemode .pgarrow:not(.over):disabled{opacity:0;pointer-events:none}
+.spreads.pagemode .spread .bar .bside .vopen.pn{visibility:hidden}
+#pageNav{display:none !important}
+.pgnum{display:none}
+.spreads.pagemode .spread .bar .pgnum:not([hidden]){display:block;grid-column:1/-1;justify-self:center;font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;margin:-6px 0 6px;line-height:1}
 .pgpeek{position:absolute;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);z-index:1}
 .pgpeek[hidden]{display:none}
 .pagenav{display:flex;align-items:center;justify-content:center;margin-top:8px;font-size:12px;color:var(--muted)}
@@ -2877,7 +2881,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function placePageArrows(){
     const page = viewMode === 'page', ui = page && pairUI[allPairs()[pagePos]];
     ['pgPrev', 'pgNext'].forEach(id => $(id).hidden = !ui);
-    if(!ui){ document.querySelectorAll('.pgpeek').forEach(c => c.hidden = true); return; }
+    if(!ui){ document.querySelectorAll('.pgpeek,.pgnum').forEach(c => c.hidden = true); return; }
     document.querySelectorAll('.pgpeek').forEach(c => { if(c.parentNode !== ui.card.querySelector('.stage')) c.remove(); });
     const st = ui.card.querySelector('.stage'), cv = ui.cv, a = $('pgPrev'), b = $('pgNext');
     if(a.parentNode !== st){ st.appendChild(a); st.appendChild(b); }
@@ -2885,8 +2889,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     a.style.top = b.style.top = top + 'px';
     const over = PG_OVER(); a.classList.toggle('over', over); b.classList.toggle('over', over);
     if(over){ a.style.top = b.style.top = (cv.offsetTop + cv.offsetHeight / 2 - 16) + 'px'; a.style.left = (cv.offsetLeft + 6) + 'px'; b.style.left = (cv.offsetLeft + cv.offsetWidth - 38) + 'px'; }   // 写真の上に小さく重ねる
-    else { a.style.left = '8px'; b.style.left = (st.clientWidth - 48) + 'px'; }   // 画面の端に
+    else { a.style.left = '8px'; b.style.left = (st.clientWidth - 48) + 'px'; }   // 画面の端に（のぞかせた前後の見開きの上）
     placePeeks(st, cv, over);
+    // ページ番号は写真の下の真ん中に（例：10 - 11）
+    const bar = ui.card.querySelector('.bar');
+    let pn = bar.querySelector('.pgnum'); if(!pn){ document.querySelectorAll('.pgnum').forEach(e => e.remove()); pn = document.createElement('div'); pn.className = 'pgnum'; bar.prepend(pn); }
+    const nums = [...ui.card.querySelectorAll('.bar .bside .pn')].map(e => e.textContent.trim()).filter(Boolean);
+    pn.textContent = nums.join(' - '); pn.hidden = !nums.length;
   }
   // 前後の見開きを、左右の端から少しのぞかせる（写真の大きさは変えない。写真の外の余白に置く）
   function placePeeks(st, cv, over){
@@ -2900,9 +2909,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const dpr = Math.min(2, window.devicePixelRatio || 1), off = document.createElement('canvas');
       try{ compose(p, off, Math.round(H * dpr * 1.6)); }catch(e){ c.hidden = true; return; }
       if(!off.width || !off.height){ c.hidden = true; return; }
-      const sc = H / off.height, vw = Math.min(w, off.width * sc);
+      const sc = H / off.height, vw = Math.min(w, off.width * sc, 56);   // ‹ › のボタンの幅くらいだけ
       c.width = Math.round(vw * dpr); c.height = Math.round(H * dpr); c.style.width = vw + 'px'; c.style.height = H + 'px';
-      c.style.top = cv.offsetTop + 'px'; c.style.left = k ? (cv.offsetLeft + cv.offsetWidth + GAP) + 'px' : (gapL - GAP - vw) + 'px';
+      c.style.top = cv.offsetTop + 'px'; c.style.left = k ? (st.clientWidth - vw) + 'px' : '0px';   // 画面の端に寄せて、‹ › と重ねる
       const g = c.getContext('2d'), sw = vw / sc;
       // 左は前の見開きの右端、右は次の見開きの左端を見せる
       g.drawImage(off, k ? 0 : off.width - sw, 0, sw, off.height, 0, 0, c.width, c.height);
