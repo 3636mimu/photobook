@@ -137,7 +137,7 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 .spreads.pagemode .spread .bar .pgnum span{position:absolute;top:0;transform:translate(-50%,-50%);white-space:nowrap}
 .spreads.pagemode .spread .bar .pgnum.stack:not([hidden]){position:relative;top:auto;left:auto;right:auto;grid-column:1/-1;height:12px;margin:-4px 0 6px}
 .spreads.pagemode .spread .bar .pgnum.stack span{transform:translateX(-50%)}
-.pgtip{position:fixed;z-index:60;pointer-events:none;background:rgba(40,41,44,.88);color:#fff;font-size:12px;line-height:1;padding:6px 9px;border-radius:5px;white-space:nowrap}
+.pgtip{position:fixed;z-index:60;pointer-events:none;transform:translateX(-50%);background:rgba(40,41,44,.88);color:#fff;font-size:12px;line-height:1;padding:6px 9px;border-radius:5px;white-space:nowrap}
 .pgtip[hidden]{display:none}
 .pgpeek{position:absolute;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);z-index:1}
 .pgpeek[hidden]{display:none}
@@ -2630,7 +2630,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(viewMode !== 'page' || e.pointerType !== 'mouse' || document.body.classList.contains('moving')){ tip.hidden = true; return; }
       const r = ui.cv.getBoundingClientRect(), idx = p*2 + (wide.has(p) || (e.clientX - r.left) / r.width < ui.seam ? 0 : 1);
       if(isLocked(idx) || sample || !slots[idx]){ tip.hidden = true; return; }
-      tip.hidden = false; tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY - 34) + 'px';
+      // 位置は固定：乗せている写真（ページ）の上の真ん中、写真のすぐ上
+      const one = wide.has(p), cx = one ? r.left + r.width / 2 : idx % 2 === 0 ? r.left + r.width * ui.seam / 2 : r.left + r.width * (1 + ui.seam) / 2;
+      tip.hidden = false; tip.style.left = cx + 'px'; tip.style.top = Math.max(4, r.top - 30) + 'px';
     });
     ui.cv.addEventListener('pointerleave', () => { $('pgTip').hidden = true; });
     ui.cv.addEventListener('pointerdown', () => { $('pgTip').hidden = true; });
