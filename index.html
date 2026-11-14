@@ -803,6 +803,33 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .sdopt .sdgo{position:absolute;right:12px;top:50%;transform:translateY(-50%);min-width:66px;padding:8px 14px;border-radius:999px;background:var(--accent);color:#fff;font-size:13.5px;font-weight:700;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:filter .15s}
 .sdopt:hover .sdgo,.sdopt:focus-visible .sdgo{filter:brightness(1.08)}
 .sdopt:active .sdgo{filter:brightness(.92)}
+/* Google ドライブの見出し（最初の画面）：1行目 名前・フォルダを開く・アカウント／2行目 容量 */
+#stDrive .gbar{margin:0 2px 10px}
+#stDrive .gbrow{display:flex;align-items:center;gap:10px;min-width:0}
+#stDrive .gbrow .ghead{font-size:15px;white-space:nowrap}
+#stDrive .gbfold{display:inline-flex;min-width:0}
+#stDrive .gpill{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;text-decoration:none;white-space:nowrap;cursor:pointer;transition:border-color .15s,color .15s}
+#stDrive .gpill:hover{border-color:var(--accent);color:var(--accent)}
+#stDrive .gpill svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#stDrive .gpill .gfi{width:15px;height:15px}
+#stDrive .gacct{position:relative;margin-left:auto;min-width:0;display:inline-flex}
+#stDrive .gacbtn{max-width:100%;padding-left:4px}
+#stDrive .gacbtn .gem{min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+#stDrive .gav{width:22px;height:22px;border-radius:50%;background:#2E9C8F;color:#fff;font-style:normal;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}
+#stDrive .gchev{width:12px!important;height:12px!important}
+#stDrive .gacmenu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:240px;padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+#stDrive .gacinfo{margin:4px 8px 6px;font-size:11.5px;line-height:1.6;color:var(--muted);word-break:break-all}
+#stDrive .gacmenu button{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;border:0;border-radius:7px;background:none;color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+#stDrive .gacmenu button:hover{background:var(--bg);color:var(--accent)}
+#stDrive .gacmenu svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+#stDrive .gbrow2{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;margin-top:8px;font-size:11.5px;color:var(--muted)}
+#stDrive .gbrow2:not(:has(:not([hidden]))){display:none}
+#stDrive .gbrow2 .gquota{order:0;margin:0;padding:0;border:0;gap:7px}
+#stDrive .gbrow2 .gqbar{width:70px;height:5px}
+#stDrive .gbrow2 .gmine{margin:0;font-size:11.5px}
+#stDrive .gbrow2 .gquota:not([hidden])+.gmine::before{content:"・";margin-right:2px}
+@media (max-width:600px){#stDrive .gbrow{gap:6px}#stDrive .gbrow .ghead{font-size:14px;gap:5px}#stDrive .gpill{padding:0 9px;font-size:12px;gap:4px;height:28px}#stDrive .gpill .gfi{width:13px;height:13px}#stDrive .gbrow{flex-wrap:wrap;row-gap:8px}#stDrive .gacct{flex:none}#stDrive .gbfold{flex:none;order:3}#stDrive .gbrow::after{content:"";order:2;flex-basis:100%;height:0}#stDrive .gacbtn{padding:0 7px 0 4px;gap:4px}#stDrive .gacbtn .gem{display:none}#stDrive .gbrow2{gap:3px 6px}#stDrive .gbrow2 .gquota{flex-wrap:wrap;white-space:normal;flex:1 1 100%;min-width:0}#stDrive .gbrow2 .gqbar{width:50px}#stDrive .gbrow2 .gmine{flex-basis:100%}#stDrive .gbrow2 .gquota:not([hidden])+.gmine::before{content:none}}
+
 /* BOOKの扱いを選ぶ画面：読みやすく */
 #bookDelModal .bdname{margin:0;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:14px;font-weight:600;color:var(--ink)}
 #bookDelModal .bdopt{width:100%;margin:0;padding:13px 92px 13px 15px}
@@ -2039,7 +2066,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         <button type="button" class="stcard c3" data-k="life"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="20" y="4" width="26" height="40" rx="2" fill="#fff"/><rect x="18" y="4" width="4" height="40" rx="1.5" fill="currentColor" opacity=".7"/><circle cx="34" cy="20" r="7" fill="currentColor" opacity=".55"/><rect x="27" y="32" width="14" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback LIFE</b><span>編集・装飾・確認が手軽に出来ます。<br>ページごとに JPG を書き出して簡単入稿。</span></button>
         <button type="button" class="stcard c4" data-k="graph"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="3" width="36" height="42" rx="2" fill="#fff"/><rect x="12" y="3" width="4.5" height="42" rx="1.5" fill="currentColor" opacity=".7"/><rect x="20" y="8" width="26" height="26" rx="1" fill="currentColor" opacity=".55"/><rect x="20" y="38" width="16" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback GRAPH</b><span>編集・装飾・確認が手軽に出来ます。<br>ページごとに JPG を書き出して簡単入稿。</span></button>
       </div>
-      <div class="strecent" id="stDrive" hidden><div class="strhead"><span class="gquota" id="stDriveQuota" hidden></span><button type="button" class="gswitch" id="stDriveSwitch" hidden>アカウントを切り替え</button><b class="ghead"><img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">Google ドライブ</b><small id="stDriveAcct"></small></div><div class="strlist" id="stDriveList"></div></div>
+      <div class="strecent" id="stDrive" hidden><div class="gbar"><div class="gbrow"><b class="ghead"><img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">Google ドライブ</b><span id="stDriveAcct" class="gbfold"></span><span class="gacct" id="stDriveAcctBox" hidden><button type="button" class="gpill gacbtn" id="stDriveAcctBtn" aria-haspopup="menu" aria-expanded="false" title="Google アカウント"><i class="gav" id="stDriveAv"></i><span class="gem" id="stDriveEmail"></span><svg class="gchev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="gacmenu" id="stDriveMenu" role="menu" hidden><p class="gacinfo" id="stDriveMenuInfo"></p><button type="button" role="menuitem" id="stDriveSwitch"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5.5h9.5l-2.5-2.5M13 10.5H3.5L6 13"/></svg>アカウントを切り替え</button></div></span></div><div class="gbrow2"><span class="gquota" id="stDriveQuota" hidden></span><span class="gmine" id="stDriveMine" hidden></span></div></div><div class="strlist" id="stDriveList"></div></div>
       <div class="strecent" id="stRecent" hidden><div class="strhead"><b id="stRecentTitle">続きから作る</b><small><span id="stRecentSub">このブラウザに一時保存（最近の8件まで）</span><span id="stRecentSize"></span></small></div><div class="strlist" id="stRecentList"></div><p class="strnote" id="stRecentNote">一時保存なので、消えることがあります。大切なBOOKは「BOOKを保存」でファイルにしておくと安心です。</p></div>
       <div class="sthowbox" id="stHowBox" hidden><ol>
         <li><b>作りたいものを選ぶ</b>4つのカードから、いちばん近いものを押します。<br>見開きコラージュは画面で楽しむ用、PDF写真集と Photoback は一冊にまとめる用です。</li>
@@ -7517,11 +7544,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!el || !gValid()) return;
     try{ const id = await gRoot(); if(!id || !el.isConnected) return;
       // ドライブ側でフォルダ名を変えていても、実際の名前で表示する
-      try{ const r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(id)}?fields=name`); if(r && r.name) el.textContent = `${GD.email} の「${r.name}」フォルダ`; }catch(e){}
+      const fold = el.classList.contains('gfold'); let fname = 'PHOTO BOOK MAKER';
+      try{ const r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(id)}?fields=name`); if(r && r.name){ fname = r.name; if(!fold) el.textContent = `${GD.email} の「${r.name}」フォルダ`; } }catch(e){}
       if(!el.isConnected) return;
       const a = document.createElement('a'); a.className = 'gwhere glink'; a.target = '_blank'; a.rel = 'noopener';
       a.href = `https://drive.google.com/drive/folders/${encodeURIComponent(id)}?authuser=${encodeURIComponent(GD.email)}`;
-      a.title = 'Google ドライブで、このフォルダを開きます'; a.innerHTML = el.innerHTML + '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v4H2.5V4h4"/></svg>'; el.replaceWith(a);
+      a.title = `Google ドライブで「${fname}」フォルダを開きます`; const ext = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v4H2.5V4h4"/></svg>';
+      if(fold){ a.className = 'gpill gfoldbtn'; a.innerHTML = '<svg class="gfi" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.8 4.2v8.3h12.4V5.6H7.6L6.2 3.6H2.4z"/></svg>フォルダを開く' + ext; }
+      else a.innerHTML = el.innerHTML + ext;
+      el.replaceWith(a);
     }catch(e){}
   }
   // Google ドライブの保存容量（全体）と、このツールで使っている分
@@ -7532,7 +7563,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const q = ((await gJson(`${GAPI}/drive/v3/about?fields=storageQuota(limit,usage)`)) || {}).storageQuota || {};
       const used = Number(q.usage) || 0, limit = Number(q.limit) || 0;
       const pct = limit ? Math.min(100, used / limit * 100) : 0;
-      el.innerHTML = `<span class="gqtext">${limit ? `${gSize(limit)} 中 ${gSize(used)} を使用` : `${gSize(used)} を使用`}</span>${limit ? `<i class="gqbar${pct >= 90 ? ' full' : ''}"><i style="width:${pct.toFixed(1)}%"></i></i>` : ''}`;
+      el.innerHTML = `<span class="gqlab">ドライブ容量</span>${limit ? `<i class="gqbar${pct >= 90 ? ' full' : ''}"><i style="width:${pct.toFixed(1)}%"></i></i>` : ''}<span class="gqtext">${limit ? `${gSize(limit)} 中 ${gSize(used)} を使用` : `${gSize(used)} を使用`}</span>`;
       el.title = `Google アカウントの保存容量（ドライブ・Gmail・Google フォトで共有）：${limit ? `${gSize(limit)} 中 ${gSize(used)}（${Math.round(pct)}%）` : gSize(used)} を使用。`;
       el.hidden = false;
     }catch(e){}
@@ -7544,16 +7575,24 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       let mine = 0;
       (await gList(`trashed=false and (appProperties has { key='pbm' and value='photo' } or appProperties has { key='pbm' and value='json' } or appProperties has { key='pbm' and value='thumb' } or appProperties has { key='pbm' and value='font' } or appProperties has { key='pbm' and value='asset' })`, 'files(quotaBytesUsed)')).forEach(f => { mine += Number(f.quotaBytesUsed) || 0; });
       if(!el.isConnected) return;
-      el.textContent = gSize(mine); el.title = `このフォルダで使っている容量（写真・設定など）：${gSize(mine)}`; el.hidden = false;
+      el.textContent = `このツールで ${gSize(mine)} 使用中`; el.title = `このツールで保存した写真・設定などが使っている容量：${gSize(mine)}`; el.hidden = false;
     }catch(e){}
   }
   async function renderDriveStart(){
     if(!WEB) return;
     const box = $('stDrive'); box.hidden = false; if(!gValid()) $('stDriveQuota').hidden = true;
     const cloud = '<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">';
-    $('stDriveAcct').innerHTML = GD.email ? `<span class="gwhere">${esc2(GD.email)} の「PHOTO BOOK MAKER」フォルダ</span><span class="gmine" id="stDriveMine" hidden></span>` : '';
-    $('stDriveSwitch').hidden = !GD.email;
-    if(!$('stDriveSwitch').dataset.on){ $('stDriveSwitch').dataset.on = '1'; $('stDriveSwitch').addEventListener('click', async () => { if(await gSwitch()) renderRecent(); }); }
+    $('stDriveAcct').innerHTML = GD.email && gValid() ? `<span class="gwhere gfold">フォルダを開く</span>` : '';
+    $('stDriveMine').hidden = true; $('stDriveQuota').hidden = !gValid() || $('stDriveQuota').hidden;
+    $('stDriveAcctBox').hidden = !GD.email;
+    if(GD.email){ $('stDriveEmail').textContent = GD.email; $('stDriveAv').textContent = GD.email.charAt(0).toUpperCase(); $('stDriveMenuInfo').textContent = `${GD.email} の Google ドライブに保存しています。`; }
+    if(!$('stDriveSwitch').dataset.on){ $('stDriveSwitch').dataset.on = '1';
+      const menu = $('stDriveMenu'), btn = $('stDriveAcctBtn');
+      const closeM = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+      btn.addEventListener('click', e => { e.stopPropagation(); const o = menu.hidden; menu.hidden = !o; btn.setAttribute('aria-expanded', String(o)); });
+      document.addEventListener('click', e => { if(!menu.hidden && !menu.contains(e.target)) closeM(); });
+      menu.addEventListener('keydown', e => { if(e.key === 'Escape'){ closeM(); btn.focus(); } });
+      $('stDriveSwitch').addEventListener('click', async () => { closeM(); if(await gSwitch()) renderRecent(); }); }
     const connect = async () => { if(await gEnsure(true)){ renderRecent(); status(`「${GD.email}」のGoogle ドライブと連携しました。`); } };
     // はじめて：Google ドライブをおすすめ（つながずに使うこともできる）
     if(!gValid() && !GD.email && (!gSkipped() || MOBILE)){
