@@ -2627,15 +2627,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // 見開き表示（マウス）：写真の上にカーソルを乗せると「配置写真を調整」の小さな案内
     ui.cv.addEventListener('pointermove', e => {
       const tip = $('pgTip');
-      if(viewMode !== 'page' || e.pointerType !== 'mouse' || document.body.classList.contains('moving')){ tip.classList.remove('show'); return; }
+      if(viewMode !== 'page' || e.pointerType !== 'mouse' || document.body.classList.contains('moving')){ clearTimeout(pgTipT); pgTipT = 0; tip.classList.remove('show'); return; }
       const r = ui.cv.getBoundingClientRect(), idx = p*2 + (wide.has(p) || (e.clientX - r.left) / r.width < ui.seam ? 0 : 1);
-      if(isLocked(idx) || sample || !slots[idx]){ tip.classList.remove('show'); return; }
+      if(isLocked(idx) || sample || !slots[idx]){ clearTimeout(pgTipT); pgTipT = 0; tip.classList.remove('show'); return; }
       // 位置は固定：乗せている写真（ページ）の上の真ん中、写真のすぐ上
       const one = wide.has(p), cx = one ? r.left + r.width / 2 : idx % 2 === 0 ? r.left + r.width * ui.seam / 2 : r.left + r.width * (1 + ui.seam) / 2;
-      tip.style.left = cx + 'px'; tip.style.top = Math.max(4, r.top - 30) + 'px'; tip.classList.add('show');
+      tip.style.left = cx + 'px'; tip.style.top = Math.max(4, r.top - 30) + 'px';
+      // 乗せてから1秒たってから出す（出ているあいだは、ページを移ると位置だけ移る）
+      if(!tip.classList.contains('show') && !pgTipT) pgTipT = setTimeout(() => { pgTipT = 0; tip.classList.add('show'); }, 1000);
     });
-    ui.cv.addEventListener('pointerleave', () => { $('pgTip').classList.remove('show'); });
-    ui.cv.addEventListener('pointerdown', () => { $('pgTip').classList.remove('show'); });
+    ui.cv.addEventListener('pointerleave', () => { clearTimeout(pgTipT); pgTipT = 0; $('pgTip').classList.remove('show'); });
+    ui.cv.addEventListener('pointerdown', () => { clearTimeout(pgTipT); pgTipT = 0; $('pgTip').classList.remove('show'); });
     ui.cv.addEventListener('click', e => {
       if(justDragged){ justDragged = false; return; }
       const r = ui.cv.getBoundingClientRect();
@@ -2932,7 +2934,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       else pgFitN = 0;
     }
   }
-  let pgFitN = 0;
+  let pgFitN = 0, pgTipT = 0;
   // 前後の見開きを、左右の端から少しのぞかせる（写真の大きさは変えない。写真の外の余白に置く）
   function placePeeks(st, cv, over){
     const list = allPairs(), P = [list[pagePos - 1], list[pagePos + 1]];
