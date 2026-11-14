@@ -8,6 +8,8 @@
 <meta name="author" content="YUJI MIMURA">
 <meta name="copyright" content="© 2026 YUJI MIMURA">
 <title>PHOTO BOOK MAKER</title>
+<!-- iPhone・iPad：メールアドレスや電話番号を勝手にリンクにしない（押すとメール作成が開いてしまうため） -->
+<meta name="format-detection" content="telephone=no,email=no,address=no,date=no">
 <!-- スマホ・iPad：ホーム画面に追加すると、ブラウザの枠なしの全画面で開く -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1302,7 +1304,6 @@ html.mlock .modal .sheet,html.mlock .viewer,html.mlock .setsh-in,html.mlock .vgr
 .spreads.cols4 .bar .save .ico{width:13px;height:13px}
 .spreads.cols4 .bar .lay svg{width:15px;height:11px}
 /* せまいカードでは、表紙の番号を1文字に（裏表紙→裏、表紙→表） */
-@container (max-width:300px){ .spread .bar .pn[data-s]{font-size:0} .spread .bar .pn[data-s]::after{content:attr(data-s);font-size:13px} }
 
 /* テンプレの値：左右それぞれの写真の真ん中に */
 .spread .bar .pval{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;align-items:baseline;gap:4px;white-space:nowrap;pointer-events:none}
@@ -1379,7 +1380,7 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
 /* 横向き（スマホ・タブレット）の装飾：写真は左（高さいっぱい）、マイスタイル以下とグリッド・完了などは右 */
 @media (pointer:coarse) and (orientation:landscape){
   #textModal{padding:0}
-  #textModal .tsheet{display:grid !important;grid-template-columns:minmax(0,1fr) clamp(260px,34vw,380px);grid-template-rows:auto minmax(0,1fr) auto;
+  #textModal .tsheet{display:grid !important;grid-template-columns:minmax(0,1fr) var(--sidecol);grid-template-rows:auto minmax(0,1fr) auto;
     grid-template-areas:"s t" "s p" "s a";column-gap:12px;row-gap:6px;
     height:100dvh !important;max-height:none !important;overflow:hidden !important;border-radius:0 !important;padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px)) !important}
   #textModal #textTitle{grid-area:t;font-size:13px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1398,7 +1399,7 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
 /* スマホを横向きにしたときの写真の調整：写真は左、調整のボタン類は右 */
 @media (pointer:coarse) and (orientation:landscape){
   #cropModal{padding:0}
-  #cropModal .sheet{display:grid !important;grid-template-columns:minmax(0,1fr) clamp(286px,40vw,380px);grid-template-rows:auto auto auto auto minmax(0,1fr);
+  #cropModal .sheet{display:grid !important;grid-template-columns:minmax(0,1fr) var(--sidecol);grid-template-rows:auto auto auto auto minmax(0,1fr);
     grid-template-areas:"stage head" "stage warn" "stage zoom" "stage rot" "stage acts";column-gap:12px;row-gap:6px;align-items:start;
     width:100% !important;max-width:none !important;height:100dvh;max-height:none !important;border-radius:0 !important;padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px)) !important;overflow-y:auto}
   #cropModal .crophead{grid-area:head;margin:0;gap:4px}
@@ -1521,6 +1522,13 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
   #cropModal .cropvseg{display:flex !important;width:100%;max-width:100%;margin:0}
   #cropModal .cropvseg button{flex:1 1 0;min-width:0;white-space:nowrap;padding:3px 4px !important;font-size:12px}
 }
+
+a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !important;pointer-events:none !important;font:inherit !important}
+
+/* 横向きの写真の調整・装飾：右の操作の列は同じ幅（せまめ）にそろえる */
+:root{--sidecol:clamp(250px,28vw,300px)}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:500px){ :root{--sidecol:clamp(250px,38vw,290px)} }
+#tStage.tvert .cnav.prev{left:5px}#tStage.tvert .cnav.next{right:5px}
 </style>
 </head>
 <body>
@@ -2963,6 +2971,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }, 60); }
   function fitVals(p){
     const ui = pairUI[p]; if(!ui || !ui.vals) return;
+    // 表紙の番号：入りきらないときは「裏／表」の1文字に
+    if(ui.pns) ui.pns.forEach(b => { const full = b.dataset.full || (b.dataset.full = b.textContent); if(!b.dataset.s){ delete b.dataset.full; return; } b.textContent = full; const bs = b.parentElement; if(bs && b.scrollWidth > bs.clientWidth + 1 || (ui.card.offsetWidth && ui.card.offsetWidth < 300)) b.textContent = b.dataset.s; });
     const bar = ui.vals[0].parentElement, br = bar.getBoundingClientRect(); if(!br.width) return;
     const ctr = bar.querySelector('.ctr').getBoundingClientRect(), pns = ui.pns || [];
     const edge = (b, side) => { if(!b || b.hidden) return null; const r = b.getBoundingClientRect(); return r.width ? r : null; };
@@ -3330,7 +3340,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const free = avail - ui.card.offsetHeight - navH; if(free > 8) ui.card.style.marginTop = Math.floor(free / 2) + 'px'; }
     ui.meta.textContent = `${W}×${H}`;
     ui.save.disabled = !pairReady(p);
-    const cov = isCover(p); ui.card.classList.toggle('cover', cov); ui.txt.classList.toggle('on', hasDeco(p)); { const [l, r] = sideLabels(p); ui.pns[0].textContent = l; ui.pns[1].textContent = r; ui.pns[0].hidden = !l; ui.pns[1].hidden = !r; ui.pns[0].dataset.s = l === '裏表紙' ? '裏' : ''; ui.pns[1].dataset.s = r === '表紙' ? '表' : ''; if(!ui.pns[0].dataset.s) delete ui.pns[0].dataset.s; if(!ui.pns[1].dataset.s) delete ui.pns[1].dataset.s; ui.pns.forEach(b => b.setAttribute('aria-label', pairLabel(p) + 'をプレビュー')); } requestAnimationFrame(() => fitVals(p));
+    const cov = isCover(p); ui.card.classList.toggle('cover', cov); ui.txt.classList.toggle('on', hasDeco(p)); { const [l, r] = sideLabels(p); delete ui.pns[0].dataset.full; delete ui.pns[1].dataset.full; ui.pns[0].textContent = l; ui.pns[1].textContent = r; ui.pns[0].hidden = !l; ui.pns[1].hidden = !r; ui.pns[0].dataset.s = l === '裏表紙' ? '裏' : ''; ui.pns[1].dataset.s = r === '表紙' ? '表' : ''; if(!ui.pns[0].dataset.s) delete ui.pns[0].dataset.s; if(!ui.pns[1].dataset.s) delete ui.pns[1].dataset.s; ui.pns.forEach(b => b.setAttribute('aria-label', pairLabel(p) + 'をプレビュー')); } requestAnimationFrame(() => fitVals(p));
     ui.lay.hidden = isEnd(p) || !!noPrintSide(p); ui.card.querySelector('.spine').hidden = isEnd(p);
     if(ui.lay){ const on = wide.has(p); ui.lay.setAttribute('aria-pressed', on ? 'true' : 'false'); ui.lay.title = on ? '見開きレイアウト' : '単一ページレイアウト'; }
     renderVals(p);
@@ -4808,7 +4818,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const tVert = COARSE && matchMedia('(orientation:landscape)').matches; $('tStage').classList.toggle('tvert', tVert);
     const narrow = bw < 640, ar = off.width / off.height, PT = tVert ? 2 : 34, PB = tVert ? 2 : narrow ? 4 : 8,
       // 横向きは高さいっぱいの大きさを優先。横に余りがあればそこに ‹ › と縦書きボタンを置き、なければ写真の端に重ねる
-      PX = tVert ? Math.max(6, Math.min(46, (bw - (bh - PT - PB) * ar) / 2)) : narrow ? 10 : 58;
+      PX = tVert ? 44 : narrow ? 10 : 58;   // 横向き：‹ › と縦書きの「〇ページを調整」は写真の外の左右に置く
     let sw = Math.max(40, Math.min(bw - 2*PX, (bh - PT - PB) * ar)), sh = sw / ar;
     const cw = sw + 2*PX, ch = sh + PT + PB;
     tcv.style.width = cw + 'px'; tcv.style.height = ch + 'px';
@@ -6472,7 +6482,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     return { scrollIntoView: o => els[0].scrollIntoView(o), getBoundingClientRect: () => { const rs = els.map(e => e.getBoundingClientRect()); const l = Math.min(...rs.map(r => r.left)), t = Math.min(...rs.map(r => r.top)), r = Math.max(...rs.map(r => r.right)), b = Math.max(...rs.map(r => r.bottom)); return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t }; } }; };
   const inCard = sel => { const c = tourCard(); const e = c && c.querySelector(sel); return e && e.offsetParent ? e : null; };
   const TOUR = [
-    { el: () => $('modeLine'), t: '作るものの設定', x: 'サイズ・ページ数・解像度・保存形式は、ここでいつでも変えられます。' },
+    { el: () => { const b = $('setBtn'); return b && !b.hidden && b.offsetParent ? b : $('modeLine'); }, t: '作るものの設定', x: 'サイズ・ページ数・解像度・保存形式は、ここでいつでも変えられます。' },
     { el: () => $('pickMany'), t: '写真を入れる', x: 'ここから写真を選びます。\n見開きに直接ドラッグ＆ドロップしても入れられます。' },
     { el: () => inCard('.stage'), t: '写真を整える・並べ替える', x: '写真をクリックすると、拡大・回転・削除ができます。\nドラッグすると別のページへ移動できます。' },
     { el: () => inCard('.spine'), spine: true, t: '見開きごと並べ替える', x: 'カードの上に出る「≡」をつかんでドラッグすると、見開きごと順番を入れ替えられます。\nマウスを乗せると表示されます。' },
