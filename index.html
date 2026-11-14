@@ -420,7 +420,7 @@ button{font:inherit}
 .icon-btn.txtbtn{width:auto;min-width:30px;height:26px;padding:0 7px;font-size:11px;font-weight:700;white-space:nowrap}
 .icon-btn.txtbtn.on{background:#2F8F6B;color:#fff;border-color:#2F8F6B}   /* 装飾あり: green, apart from the navy buttons and the red warnings */
 .tsheet{max-width:min(2000px,100%);width:100%;height:calc(100vh - 32px)}
-.tlayout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;min-height:0;flex:1}
+.tlayout{display:grid;grid-template-columns:minmax(0,1fr) var(--tpw,330px);gap:14px;min-height:0;flex:1}
 .tstage{background:#202124;border-radius:3px;display:flex;align-items:center;justify-content:center;padding:8px;min-height:0;min-width:0;overflow:hidden;position:relative}
 .tpbtn{position:absolute;transform:translate(-50%,-100%);border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:12px;line-height:1;padding:5px 10px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .tpbtn:hover:not(:disabled){background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.7)}
@@ -4913,6 +4913,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const narrow = bw < 640, ar = off.width / off.height, PT = tVert ? 2 : 34, PB = tVert ? 2 : narrow ? 4 : 8,
       // 横向きは高さいっぱいの大きさを優先。横に余りがあればそこに ‹ › と縦書きボタンを置き、なければ写真の端に重ねる
       PX = tVert ? 44 : narrow ? 10 : 58;   // 横向き：‹ › と縦書きの「〇ページを調整」は写真の外の左右に置く
+    // パソコン：写真が高さいっぱいで左右に余りが出るときは、その分を右の調整欄に回す（330〜440px）
+    if(!COARSE && !narrowBox){
+      const lay = box.closest('.tlayout'), cur = parseFloat(getComputedStyle(lay).getPropertyValue('--tpw')) || 330;
+      const bw0 = bw + (cur - 330), cw0 = Math.min(bw0 - 2*PX, (bh - PT - PB) * ar) + 2*PX, want = Math.round(Math.max(330, Math.min(440, 330 + (bw0 - cw0) - 24)));
+      if(Math.abs(want - cur) > 2){ lay.style.setProperty('--tpw', want + 'px'); requestAnimationFrame(() => { tBuildBase(); tDraw(); }); return; }
+    }
     let sw = Math.max(40, Math.min(bw - 2*PX, (bh - PT - PB) * ar)), sh = sw / ar;
     const cw = sw + 2*PX, ch = sh + PT + PB;
     tcv.style.width = cw + 'px'; tcv.style.height = ch + 'px';
@@ -4949,6 +4955,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     g.fillStyle = 'rgba(255,255,255,.8)'; g.font = `${12*dpr}px "Zen Kaku Gothic New", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'bottom';
     const pn = i => isCover(tPair) ? slotLabel(i) : !booklet ? `${i+1}ページ` : slotLabel(i);
     // page names are buttons: they open 写真の調整 for that page's photo
+    // 縦書きのとき：‹ › は写真のすぐ外に（ステージの端ではなく、写真の左右の余白の中）
+    { const st = $('tStage'), tv = st.classList.contains('tvert'), L = tcv.offsetLeft, R = st.clientWidth - (tcv.offsetLeft + tcv.offsetWidth);
+      $('tPrev').style.left = tv ? (L + 5) + 'px' : ''; $('tNext').style.right = tv ? (R + 5) + 'px' : ''; }
     { const bs = $('tStage').querySelectorAll('.tpbtn'), one = wide.has(tPair) && !(isCover(tPair) && backOff());
       const cvX = tcv.offsetLeft, cvY = tcv.offsetTop, cx0 = (ox + G.wa / 2 / G.W * sw) / dpr, cx1 = (ox + (G.wa + G.gapPx + G.wb / 2) / G.W * sw) / dpr;
       [[tPair*2, one ? (ox + sw / 2) / dpr : cx0], [tPair*2+1, cx1]].forEach(([i, x], n) => {
@@ -4956,13 +4965,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const ok = !!slots[i] && !isLocked(i);
         b.disabled = !ok; b.dataset.i = i;
         // 写真がせまいときは、ボタンの文字を短く（となりのボタンや「折り目」に重ならないように）
-        const half = sw / dpr / (one ? 1 : 2), tail = ok ? (half < 150 ? ' ›' : half < 210 ? 'を調整 ›' : 'の写真を調整 ›') : isLocked(i) ? '' : (half < 150 ? '' : '（写真なし）');
+        const half = sw / dpr / (one ? 1 : 2), tail = ok ? (half < 140 ? ' ›' : 'の写真を調整 ›') : isLocked(i) ? '' : (half < 150 ? '' : '（写真なし）');
         b.textContent = (one ? '見開きの写真' : pn(i)) + tail;
         if($('tStage').classList.contains('tvert')){
           // ‹ › の真上に、縦書きで（左ページは ‹ の上、右ページは › の上）
           const nav = n === 0 || one ? $('tPrev') : $('tNext');
           // 縦書き：1文字ずつ縦に積む（数字はまとめて1つ。長音「ー」は縦向きの線に）
-          const txt = (one ? '見開きの写真' : pn(i)) + (ok ? 'を調整' : isLocked(i) ? '' : '（なし）');
+          const txt = (one ? '見開きの写真' : pn(i)) + (ok ? (one ? 'を調整' : 'の写真を調整') : isLocked(i) ? '' : '（なし）');
           b.replaceChildren(...(txt.match(/[0-9]+|./g) || []).map(ch => { const e = document.createElement('span'); e.className = 'vch'; e.textContent = ch === 'ー' ? '｜' : ch; return e; }));
           b.style.left = (nav.offsetLeft + nav.offsetWidth / 2) + 'px'; b.style.top = (nav.offsetTop - nav.offsetHeight / 2 - 8) + 'px';
         } else { b.style.left = (cvX + x) + 'px'; b.style.top = (cvY + oy / dpr - 6) + 'px'; }
