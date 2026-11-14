@@ -137,6 +137,8 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 .spreads.pagemode .spread .bar .pgnum span{position:absolute;top:0;transform:translate(-50%,-50%);white-space:nowrap}
 .spreads.pagemode .spread .bar .pgnum.stack:not([hidden]){position:relative;top:auto;left:auto;right:auto;grid-column:1/-1;height:12px;margin:-4px 0 6px}
 .spreads.pagemode .spread .bar .pgnum.stack span{transform:translateX(-50%)}
+.pgtip{position:fixed;z-index:60;pointer-events:none;background:rgba(40,41,44,.88);color:#fff;font-size:12px;line-height:1;padding:6px 9px;border-radius:5px;white-space:nowrap}
+.pgtip[hidden]{display:none}
 .pgpeek{position:absolute;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);z-index:1}
 .pgpeek[hidden]{display:none}
 .pagenav{display:flex;align-items:center;justify-content:center;margin-top:8px;font-size:12px;color:var(--muted)}
@@ -1742,6 +1744,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
         <button class="primary" id="saveSheet" disabled>一覧書き出し</button>
         <button class="primary" id="saveSingles" disabled title="調整した写真を1枚ずつ JPG で保存">1枚ずつ書き出し</button>
         <input type="file" id="workFile" class="vh" accept=".pbmk">
+        <div id="pgTip" class="pgtip" hidden>配置写真を調整</div>
         <input type="file" id="fileRelink" class="vh" accept="image/*" multiple>
         <input type="file" id="dirRelink" class="vh" webkitdirectory multiple>
         <p class="status" id="status"></p>
@@ -2621,6 +2624,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       startTouchDrag(t, p*2 + (wide.has(p) || (t.clientX - r.left) / r.width < ui.seam ? 0 : 1));
     }, { passive: true });
     card.querySelector('.spine').addEventListener('pointerdown', e => { if(e.button === 0 && !isEnd(p)) startPairDrag(e, p); });
+    // 見開き表示（マウス）：写真の上にカーソルを乗せると「配置写真を調整」の小さな案内
+    ui.cv.addEventListener('pointermove', e => {
+      const tip = $('pgTip');
+      if(viewMode !== 'page' || e.pointerType !== 'mouse' || document.body.classList.contains('moving')){ tip.hidden = true; return; }
+      const r = ui.cv.getBoundingClientRect(), idx = p*2 + (wide.has(p) || (e.clientX - r.left) / r.width < ui.seam ? 0 : 1);
+      if(isLocked(idx) || sample || !slots[idx]){ tip.hidden = true; return; }
+      tip.hidden = false; tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY - 34) + 'px';
+    });
+    ui.cv.addEventListener('pointerleave', () => { $('pgTip').hidden = true; });
+    ui.cv.addEventListener('pointerdown', () => { $('pgTip').hidden = true; });
     ui.cv.addEventListener('click', e => {
       if(justDragged){ justDragged = false; return; }
       const r = ui.cv.getBoundingClientRect();
