@@ -967,6 +967,11 @@ body.sidedrawer .sidehd{display:flex;align-items:center;justify-content:space-be
 .gskip{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:2px}
 .gskip:hover{color:var(--ink)}
 @media(max-width:560px){.ginvite .gbtns{width:100%}}
+.greconn{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap}
+.greconn p{flex:1 1 240px;margin:0;font-size:11.5px;line-height:1.6;color:var(--muted)}
+.greconn .stopen{flex:none}
+#stDrive .gbar:not(:has(.gbfold *))::after{display:none}
+#stDrive .gbfold:empty{display:none}
 .gquiet{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .gquiet small{font-size:11.5px;color:var(--muted)}
 .strhead b{font-size:15px}.strhead small{font-size:12px;color:var(--muted)}
@@ -7647,7 +7652,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       return;
     }
     if(!gValid()){
-      $('stDriveList').innerHTML = `<button type="button" class="stopen" id="stDriveConn"><img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">${GD.email ? 'Google ドライブにつなぐ' : 'Google ドライブとつなぐ'}</button>`;
+      $('stDriveList').innerHTML = GD.email
+        ? `<div class="greconn"><button type="button" class="stopen" id="stDriveConn">${cloud}Google ドライブに再接続</button><p>安全のため、しばらくすると接続が切れます。<br>再接続すると、保存したBOOKが表示されます。</p></div>`
+        : `<button type="button" class="stopen" id="stDriveConn">${cloud}Google ドライブとつなぐ</button>`;
       $('stDriveConn').addEventListener('click', connect);
       return;
     }
