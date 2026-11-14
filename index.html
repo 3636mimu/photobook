@@ -120,7 +120,7 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 .spreads.pagemode .spread .bar .vopen{font-size:15px;padding:4px 8px}
 .spreads.pagemode .spread .vals .ctr{gap:8px}   /* twice the usual height (beats the 8枚 / 10枚 card style too) */
 /* 見開き表示（Photoback 風）：枠のないカード、うすい線の写真、端に丸い枠線の ‹ ›、前後の見開きを端からのぞかせる */
-.spreads.pagemode .spread{background:transparent;border:0;box-shadow:none;border-radius:0}
+.spreads.pagemode .spread,.spreads.pagemode .spread.cover{background:transparent;border:0;box-shadow:none;border-radius:0;outline:0}
 .spreads.pagemode .stage{background:transparent}
 .spreads.pagemode .stage > canvas{box-shadow:0 0 0 1px rgba(0,0,0,.09)}
 .spreads.pagemode .spread .bar{background:transparent;border-top:0}
@@ -133,8 +133,10 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 .spreads.pagemode .spread .bar .bside .vopen.pn{visibility:hidden}
 #pageNav{display:none !important}
 .pgnum{display:none}
-.spreads.pagemode .spread .bar .pgnum:not([hidden]){display:block;grid-column:1/-1;justify-self:stretch;position:relative;height:12px;margin:-6px 0 8px;font-size:12px;color:var(--muted);line-height:1;font-variant-numeric:tabular-nums}
-.spreads.pagemode .spread .bar .pgnum span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.spreads.pagemode .spread .bar .pgnum:not([hidden]){display:block;position:absolute;left:0;right:0;top:50%;height:0;font-size:12px;color:var(--muted);line-height:1;font-variant-numeric:tabular-nums;pointer-events:none}
+.spreads.pagemode .spread .bar .pgnum span{position:absolute;top:0;transform:translate(-50%,-50%);white-space:nowrap}
+.spreads.pagemode .spread .bar .pgnum.stack:not([hidden]){position:relative;top:auto;left:auto;right:auto;grid-column:1/-1;height:12px;margin:-4px 0 6px}
+.spreads.pagemode .spread .bar .pgnum.stack span{transform:translateX(-50%)}
 .pgpeek{position:absolute;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);z-index:1}
 .pgpeek[hidden]{display:none}
 .pagenav{display:flex;align-items:center;justify-content:center;margin-top:8px;font-size:12px;color:var(--muted)}
@@ -2896,10 +2898,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const bar = ui.card.querySelector('.bar');
     let pn = bar.querySelector('.pgnum'); if(!pn){ document.querySelectorAll('.pgnum').forEach(e => e.remove()); pn = document.createElement('div'); pn.className = 'pgnum'; bar.prepend(pn); }
     // 各ページの下に、それぞれのページ番号（写真の横の真ん中に）
-    const nums = [...ui.card.querySelectorAll('.bar .bside .pn')].map(e => e.textContent.trim()).filter(Boolean);
-    pn.hidden = !nums.length; pn.textContent = '';
+    const side = c => { const e = ui.card.querySelector(`.bar .bside.${c} .pn`); return e ? e.textContent.trim() : ''; };
+    const L = side('l'), R = side('r'), one = wide.has(allPairs()[pagePos]) && !!L !== !!R;
+    pn.hidden = !L && !R; pn.textContent = '';
     const x0 = cv.getBoundingClientRect().left - pn.getBoundingClientRect().left, w = cv.offsetWidth;
-    nums.forEach((t, k) => { const sp = document.createElement('span'); sp.textContent = t; sp.style.left = (x0 + (nums.length === 1 ? w / 2 : w * (k ? .75 : .25))) + 'px'; pn.appendChild(sp); });
+    [[L, one ? .5 : .25], [R, one ? .5 : .75]].forEach(([t, f]) => { if(!t) return; const sp = document.createElement('span'); sp.textContent = t; sp.style.left = (x0 + w * f) + 'px'; pn.appendChild(sp); });
+    // ボタンと重なるとき（スマホなど）は、ボタンの上の行に出す
+    pn.classList.remove('stack');
+    { const ctr = bar.querySelector('.ctr'), cr = ctr && ctr.getBoundingClientRect();
+      if(cr && [...pn.children].some(sp => { const r = sp.getBoundingClientRect(); return r.right > cr.left - 6 && r.left < cr.right + 6; })){
+        pn.classList.add('stack'); const x1 = cv.getBoundingClientRect().left - pn.getBoundingClientRect().left;
+        [...pn.children].forEach((sp, k) => { const f = parseFloat(sp.style.left) - x0; sp.style.left = (x1 + f) + 'px'; }); } }
     // パソコン：下に余白が残るときは、そのぶん写真を縦に大きく（画面の下までぴったりに）
     if(!COARSE){
       const root = document.documentElement, cur = parseFloat(getComputedStyle(root).getPropertyValue('--pgExtra')) || 170;
