@@ -2509,7 +2509,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   if(WEB){ const li = document.getElementById('stHowCont'); if(li) li.innerHTML = MOBILE
     ? '<b>保存先は Google ドライブ</b>BOOKは自分の Google ドライブに保存され、「Google ドライブ」に並びます。<br>パソコンでも iPad でもスマホでも、どの端末からでも続きから編集できます。'
     : '<b>保存先を選べます</b><span class="howopt"><em>Google ドライブにつなぐ</em>BOOKは自分の Google ドライブに保存され、「Google ドライブ」に並びます。パソコンでも iPad でもスマホでも、どの端末からでも続きから編集できます。</span>'
-    + '<span class="howopt"><em>つながずに使う</em>このパソコンだけで使います。作業はこのブラウザに自動で一時保存され、「続きから作る」に並びます。BOOKファイル（.pbmk）に保存したものは、右下の「パソコンのBOOKファイルを開く」から開けます。</span>'; }
+    + '<span class="howopt"><em>つながないとき</em>このパソコンだけで使います。作業はこのブラウザに自動で一時保存され、「続きから作る」に並びます。BOOKファイル（.pbmk）に保存したものは、右下の「パソコンのBOOKファイルを開く」から開けます。</span>'; }
   // iPhone・iPad では .pbmk が選べない（灰色になる）ことがあるので、種類をしぼらずに選べるようにする（中身は開くときに確かめる）
   if(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)){ const wf = document.getElementById('workFile'); if(wf) wf.removeAttribute('accept'); }
   { const ic = document.querySelector('#stOpenFile svg'); if(ic && DEVN !== 'パソコン') ic.innerHTML = DEVN === 'iPad' ? '<rect x="3" y="1.8" width="10" height="12.4" rx="1.4"/><path d="M7 12.2h2"/>' : '<rect x="4.5" y="1.5" width="7" height="13" rx="1.4"/><path d="M7.2 12.4h1.6"/>'; }
@@ -7207,7 +7207,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   try{ GD.email = localStorage.getItem('pbm-gacct') || ''; const t = JSON.parse(sessionStorage.getItem('pbm-gtok') || 'null'); if(t && t.exp > Date.now() + 60000){ GD.tok = t.tok; GD.exp = t.exp; } }catch(e){}
   const gValid = () => !!GD.tok && GD.exp > Date.now() + 30000;
   // 「つながずに使う」を選んだ人は、ローカル版と同じ動き（このブラウザ＋BOOKファイル）
-  const gSkipped = () => { try{ return localStorage.getItem('pbm-gskip') === '1'; }catch(e){ return false; } };
+  try{ localStorage.removeItem('pbm-gskip'); }catch(e){}   // 「つながずに使う」はやめた（前に選んだ人の記録も消す）
+  const gSkipped = () => false;
   function WD(){ return WEB && (MOBILE || gValid() || !!GD.email || !gSkipped()); }
   function gInit(){
     if(!WEB || GD.client || !(window.google && google.accounts && google.accounts.oauth2)) return !!GD.client;
@@ -7654,15 +7655,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       $('stDriveOff').addEventListener('click', () => { closeM();
         askYesNo('Google ドライブとの接続を解除しますか？', `<p>ドライブに保存したBOOKは、そのまま残ります。<br>もう一度つなげば、また表示されます。</p>`, () => { const em = GD.email; gForget(); styFileId = ''; renderRecent(); status(`「${em}」の Google ドライブとの接続を解除しました。`); }, '解除する', 'キャンセル'); }); }
     const connect = async () => { if(await gEnsure(true)){ renderRecent(); status(`「${GD.email}」のGoogle ドライブと連携しました。`); } };
-    // はじめて：Google ドライブをおすすめ（つながずに使うこともできる）
-    if(!gValid() && !GD.email && (!gSkipped() || MOBILE)){
-      $('stDriveList').innerHTML = `<div class="ginvite"><p><b>${MOBILE ? 'Google ドライブとつないで使います' : 'Google ドライブとつなぐのがおすすめです'}</b>作ったBOOKを、あなたの Google ドライブに保存できます。<br>同じ Google アカウントなら、パソコン・iPad・スマホ、どの端末からでも続きを編集できます。<span class="gsafe"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7"/></svg><span>写真は、端末からあなたの Google ドライブへ直接保存するので、安心してお使いいただけます。</span></span></p><div class="gbtns"><button type="button" class="stopen" id="stDriveConn">${cloud}Google ドライブとつなぐ</button>${MOBILE ? '' : '<button type="button" class="stopen" id="stDriveSkip">つながずに使う</button>'}</div></div>`;
-      $('stDriveConn').addEventListener('click', connect);
-      if(!MOBILE) $('stDriveSkip').addEventListener('click', () => { try{ localStorage.setItem('pbm-gskip', '1'); }catch(e){} renderDriveStart(); });
-      return;
-    }
+    // つながっていないとき：Google ドライブをおすすめ
     if(!gValid() && !GD.email){
-      $('stDriveList').innerHTML = `<div class="gquiet"><button type="button" class="stopen" id="stDriveConn">${cloud}Google ドライブとつなぐ</button><small>つながなくても、このブラウザの一時保存と BOOKファイル（.pbmk）で使えます。</small></div>`;
+      $('stDriveList').innerHTML = `<div class="ginvite"><p><b>${MOBILE ? 'Google ドライブとつないで使います' : 'Google ドライブとつなぐのがおすすめです'}</b>作ったBOOKを、あなたの Google ドライブに保存できます。<br>同じ Google アカウントなら、パソコン・iPad・スマホ、どの端末からでも続きを編集できます。<span class="gsafe"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7"/></svg><span>写真は、端末からあなたの Google ドライブへ直接保存するので、安心してお使いいただけます。</span></span></p><div class="gbtns"><button type="button" class="stopen" id="stDriveConn">${cloud}Google ドライブとつなぐ</button></div></div>`;
       $('stDriveConn').addEventListener('click', connect);
       return;
     }
