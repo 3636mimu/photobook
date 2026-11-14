@@ -7657,7 +7657,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const connect = async () => { if(await gEnsure(true)){ renderRecent(); status(`「${GD.email}」のGoogle ドライブと連携しました。`); } };
     // つながっていないとき：Google ドライブをおすすめ
     if(!gValid() && !GD.email){
-      $('stDriveList').innerHTML = `<div class="ginvite"><p><b>${MOBILE ? 'Google ドライブとつないで使います' : 'Google ドライブとつなぐのがおすすめです'}</b>作ったBOOKを、あなたの Google ドライブに保存できます。<br>同じ Google アカウントなら、パソコン・iPad・スマホ、どの端末からでも続きを編集できます。<span class="gsafe"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7"/></svg><span>写真は、端末からあなたの Google ドライブへ直接保存するので、安心してお使いいただけます。</span></span></p><div class="gbtns"><button type="button" class="stopen" id="stDriveConn">${cloud}Google ドライブとつなぐ</button></div></div>`;
+      $('stDriveList').innerHTML = `<div class="ginvite"><p><b>${MOBILE ? 'Google ドライブとつないで使います' : 'Google ドライブとつなぐのがおすすめです'}</b>作ったBOOKを、あなたの Google ドライブに保存できます。<br>同じ Google アカウントなら、パソコン・iPad・スマホ、どの端末からでも編集できます。<br>もちろん、複数のアカウントを使い分けることもできます。<span class="gsafe"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7"/></svg><span>写真は、端末からあなたの Google ドライブへ直接保存されるので、安心してお使いいただけます。</span></span></p><div class="gbtns"><button type="button" class="stopen" id="stDriveConn">${cloud}Google ドライブとつなぐ</button></div></div>`;
       $('stDriveConn').addEventListener('click', connect);
       return;
     }
