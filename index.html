@@ -1564,6 +1564,10 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
 
 /* 横向き：‹ › は写真の外の左右の余白に、「〇ページを調整」はその上に縦書き */
 #tStage.tvert .cnav{width:34px;height:34px;border-radius:50%;font-size:22px;top:50%}
+/* パソコン：‹ › を大きく、見やすく */
+/* 写真の調整画面の ‹ › と同じ形・大きさ（暗い背景の上なので、色だけ少し明るく） */
+#tStage.tvert.tbig .cnav{width:44px;height:72px;border-radius:6px;font-size:34px;padding:0 0 4px;background:rgba(255,255,255,.24);border:0}
+#tStage.tvert.tbig .cnav:hover:not(:disabled){background:rgba(255,255,255,.36)}
 #tStage.tvert .cnav.prev{left:6px}#tStage.tvert .cnav.next{right:6px}
 #tStage.tvert .tpbtn{transform:translate(-50%,-100%);padding:9px 5px;font-size:11.5px;line-height:1.1}
 #tStage.tvert .tpbtn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 5px}
@@ -4909,10 +4913,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // せまい画面では ‹ › を写真の上に小さく重ねるので、左右の余白はわずかに
     // 横向き（スマホ・タブレット）：「〇ページを調整」は ‹ › の上に縦書きで置くので、写真の上の余白はいらない
     // パソコン（広い画面）も、スマホ・タブレットの横向きと同じく、縦書きボタンを ‹ › の上に
-    const tVert = COARSE ? matchMedia('(orientation:landscape)').matches : bw >= 640; $('tStage').classList.toggle('tvert', tVert);
+    const tVert = COARSE ? matchMedia('(orientation:landscape)').matches : bw >= 640; $('tStage').classList.toggle('tvert', tVert); $('tStage').classList.toggle('tbig', tVert && !COARSE);
     const narrow = bw < 640, ar = off.width / off.height, PT = tVert ? 2 : 34, PB = tVert ? 2 : narrow ? 4 : 8,
       // 横向きは高さいっぱいの大きさを優先。横に余りがあればそこに ‹ › と縦書きボタンを置き、なければ写真の端に重ねる
-      PX = tVert ? 44 : narrow ? 10 : 58;   // 横向き：‹ › と縦書きの「〇ページを調整」は写真の外の左右に置く
+      PX = tVert ? (COARSE ? 44 : 56) : narrow ? 10 : 58;   // 横向き：‹ › と縦書きの「〇ページを調整」は写真の外の左右に置く
     // パソコン：写真が高さいっぱいで左右に余りが出るときは、その分を右の調整欄に回す（330〜440px）
     if(!COARSE && !narrowBox){
       const lay = box.closest('.tlayout'), cur = parseFloat(getComputedStyle(lay).getPropertyValue('--tpw')) || 330;
