@@ -133,7 +133,8 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 .spreads.pagemode .spread .bar .bside .vopen.pn{visibility:hidden}
 #pageNav{display:none !important}
 .pgnum{display:none}
-.spreads.pagemode .spread .bar .pgnum:not([hidden]){display:block;grid-column:1/-1;justify-self:center;font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;margin:-6px 0 6px;line-height:1}
+.spreads.pagemode .spread .bar .pgnum:not([hidden]){display:block;grid-column:1/-1;justify-self:stretch;position:relative;height:12px;margin:-6px 0 8px;font-size:12px;color:var(--muted);line-height:1;font-variant-numeric:tabular-nums}
+.spreads.pagemode .spread .bar .pgnum span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
 .pgpeek{position:absolute;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);z-index:1}
 .pgpeek[hidden]{display:none}
 .pagenav{display:flex;align-items:center;justify-content:center;margin-top:8px;font-size:12px;color:var(--muted)}
@@ -2894,9 +2895,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // ページ番号は写真の下の真ん中に（例：10 - 11）
     const bar = ui.card.querySelector('.bar');
     let pn = bar.querySelector('.pgnum'); if(!pn){ document.querySelectorAll('.pgnum').forEach(e => e.remove()); pn = document.createElement('div'); pn.className = 'pgnum'; bar.prepend(pn); }
+    // 各ページの下に、それぞれのページ番号（写真の横の真ん中に）
     const nums = [...ui.card.querySelectorAll('.bar .bside .pn')].map(e => e.textContent.trim()).filter(Boolean);
-    pn.textContent = nums.join(' - '); pn.hidden = !nums.length;
+    pn.hidden = !nums.length; pn.textContent = '';
+    const x0 = cv.getBoundingClientRect().left - pn.getBoundingClientRect().left, w = cv.offsetWidth;
+    nums.forEach((t, k) => { const sp = document.createElement('span'); sp.textContent = t; sp.style.left = (x0 + (nums.length === 1 ? w / 2 : w * (k ? .75 : .25))) + 'px'; pn.appendChild(sp); });
+    // パソコン：下に余白が残るときは、そのぶん写真を縦に大きく（画面の下までぴったりに）
+    if(!COARSE){
+      const root = document.documentElement, cur = parseFloat(getComputedStyle(root).getPropertyValue('--pgExtra')) || 170;
+      const left = window.innerHeight - ui.card.getBoundingClientRect().bottom - 14 + window.scrollY * 0;
+      if(Math.abs(left) > 4 && pgFitN < 3){ pgFitN++; root.style.setProperty('--pgExtra', Math.max(60, cur - left) + 'px'); requestAnimationFrame(renderAll); }
+      else pgFitN = 0;
+    }
   }
+  let pgFitN = 0;
   // 前後の見開きを、左右の端から少しのぞかせる（写真の大きさは変えない。写真の外の余白に置く）
   function placePeeks(st, cv, over){
     const list = allPairs(), P = [list[pagePos - 1], list[pagePos + 1]];
