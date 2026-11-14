@@ -803,6 +803,25 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .sdopt .sdgo{position:absolute;right:12px;top:50%;transform:translateY(-50%);min-width:66px;padding:8px 14px;border-radius:999px;background:var(--accent);color:#fff;font-size:13.5px;font-weight:700;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:filter .15s}
 .sdopt:hover .sdgo,.sdopt:focus-visible .sdgo{filter:brightness(1.08)}
 .sdopt:active .sdgo{filter:brightness(.92)}
+/* BOOKの扱いを選ぶ画面：読みやすく */
+#bookDelModal .bdname{margin:0;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:14px;font-weight:600;color:var(--ink)}
+#bookDelModal .bdopt{width:100%;margin:0;padding:13px 92px 13px 15px}
+#bookDelModal .bdopt b{font-size:15px}
+#bookDelModal .bdopt small{font-size:12.5px;line-height:1.65}
+.sdopt .sdgo.sub{background:transparent;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
+.sdopt:hover .sdgo.sub{border-color:var(--accent);color:var(--accent);filter:none}
+.sdopt .sdgo.del{background:#C8473A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bdopt.danger b{color:#FF8A7A}}
+:root[data-theme="dark"] .bdopt.danger b{color:#FF8A7A}
+/* Google ドライブの見出し：狭いときは2行に（1行目 名前・保存先／2行目 容量・切り替え） */
+@media (max-width:1100px){
+  #stDrive .strhead{flex-wrap:wrap;row-gap:6px}
+  #stDrive .strhead::after{content:"";order:8;flex-basis:100%;height:0}
+  #stDrive .strhead small{flex:1 1 0}
+  #stDrive .gquota{margin-left:0;padding-left:0;border-left:0}
+}
+@media (max-width:600px){#stDrive .strhead small{flex-basis:100%;white-space:normal}#stDrive .strhead .gwhere{white-space:normal}}
+
 .spread canvas,.spread .slot{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .ghost.touch{transform:translate(-50%,-60%) scale(1.06);box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .ilaymulti{margin-left:auto;border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;cursor:pointer;white-space:nowrap}
@@ -2082,8 +2101,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   <div class="sheet" style="max-width:440px">
     <h3 id="bookDelTitle">このBOOKをどうしますか？</h3>
     <p class="bdname" id="bookDelName"></p>
-    <button type="button" class="bdopt" id="bookDelHide"><b>一覧から外す</b><small>表示だけを消します。Google ドライブのデータはそのまま残り、「すべて見る」からいつでも戻せます。</small></button>
-    <button type="button" class="bdopt danger" id="bookDelTrash"><b>Google ドライブから削除</b><small>写真ごと Google ドライブのゴミ箱に移します。30日のあいだは、ドライブのゴミ箱から戻せます。</small></button>
+    <button type="button" class="bdopt sdopt" id="bookDelHide"><b>一覧から外す</b><small>表示だけを消します。Google ドライブのデータはそのまま残り、「すべて見る」からいつでも戻せます。</small><span class="sdgo sub">外す</span></button>
+    <button type="button" class="bdopt sdopt danger" id="bookDelTrash"><b>Google ドライブから削除</b><small>写真ごと Google ドライブのゴミ箱に移します。30日のあいだは、ドライブのゴミ箱から戻せます。</small><span class="sdgo del">削除</span></button>
     <div class="actions" style="justify-content:flex-end"><button class="outline" id="bookDelCancel" type="button" style="min-width:90px">キャンセル</button></div>
   </div>
 </div>
