@@ -1072,6 +1072,18 @@ aside{box-shadow:0 1px 3px rgba(0,0,0,.05)}
 #cropModal.cpc .croppanel{grid-area:p;overflow-y:auto;min-height:0}
 #cropModal.cpc .cropacts2{grid-area:a;justify-content:flex-end;margin:0}
 #cropModal.cpc .sheet > .zoompair,#cropModal.cpc .sheet > .rotrow{display:none !important}
+#cropModal.cpc .cpreset{display:flex;justify-content:center;padding:4px 0 2px}
+#cropModal.cpc .cpreset button{border:0;background:none;color:var(--ilab);font:inherit;font-size:12.5px;padding:6px 10px;border-radius:8px;cursor:pointer}
+#cropModal.cpc .cpreset button:hover{background:var(--ic);color:inherit}
+#cropModal.cpc .cropacts2{display:flex;flex-wrap:nowrap;align-items:center;gap:10px}
+#cropModal.cpc .cropacts2 .rsep{display:none}
+#cropModal.cpc .chint{order:0;flex:1 1 auto;min-width:0;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cropModal.cpc .cropacts2 .cgrid{order:1}
+#cropModal.cpc .cropacts2 .cdeco{order:2;display:inline-flex;align-items:center;gap:6px;flex-direction:row-reverse}
+#cropModal.cpc #cropToText{border:0;background:none;color:var(--accent);padding:0 6px;font-size:13px;font-weight:600}
+#cropModal.cpc #cropToText:hover{text-decoration:underline}
+#cropModal.cpc #cropDelete{order:3;margin-left:14px}
+#cropModal.cpc #cropDone{order:4}
 #cropModal.cpc .croppanel .ipos{flex-wrap:wrap}
 #cropModal.cpc .croppanel .ipos > span:first-child{min-width:3.6em}
 .lowwarn{margin:0;color:#C0392B;font-size:15px;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -4140,11 +4152,18 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const row = (label, els) => { const r = document.createElement('div'); r.className = 'irow ipos'; r.innerHTML = `<span>${label}</span>`; els.forEach(e => r.appendChild(take(e, ['ichip'], ['icon-btn']))); return r; };
       panel.appendChild(sec('大きさ・位置', [take(zr[0], ['irow']), row('合わせる', [$('fitW'), $('fitH'), $('fitC')])]));
       panel.appendChild(sec('回転・傾き', [take(zr[1], ['irow']), row('回転', [$('rotL'), $('rotR')]), row('反転', [$('flipH'), $('flipV')])]));
+      // リセットは調整の仲間なので、調整欄の一番下へ
+      { const r = document.createElement('div'); r.className = 'cpreset'; const b = take($('cropReset')); b.dataset.t = b.textContent; b.textContent = '↺ この写真の調整をリセット'; r.appendChild(b); panel.appendChild(r); }
       cm.querySelector('.sheet').insertBefore(panel, cm.querySelector('.cropacts2'));
-      cpcMoved = { panel, mv };
+      // 下の行：左にヒント、真ん中に見え方（グリッド・装飾）、右に［写真削除］［完了］（装飾画面と同じ並び）
+      const hint = document.createElement('span'); hint.className = 'chint'; hint.textContent = 'ドラッグで位置・ホイールで拡大縮小・矢印キーで前後の写真へ';
+      cm.querySelector('.cropacts2').prepend(hint);
+      const tt = $('cropToText'); tt.dataset.t = tt.textContent; tt.textContent = '装飾を編集 ›';
+      cpcMoved = { panel, mv, hint };
     } else if(!on && cpcMoved){
       for(let k = cpcMoved.mv.length - 1; k >= 0; k--){ const m = cpcMoved.mv[k]; m.el.className = m.cls; m.p.insertBefore(m.el, m.n); }
-      cpcMoved.panel.remove(); cpcMoved = null;
+      [$('cropReset'), $('cropToText')].forEach(b => { if(b.dataset.t){ b.textContent = b.dataset.t; delete b.dataset.t; } });
+      cpcMoved.hint.remove(); cpcMoved.panel.remove(); cpcMoved = null;
       cm.style.removeProperty('--cpw'); $('cropPrev').style.left = ''; $('cropNext').style.right = '';
     }
     cm.classList.toggle('dk', !stageCol().light);
