@@ -692,8 +692,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .gconn svg{fill:none!important;stroke:currentColor;stroke-width:1.5}
 .gconn.off{color:#9a8a80}
 .gconn em{font-style:normal;color:var(--accent);font-weight:700;margin-left:4px}
-.savename{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;font-size:12.5px;font-weight:600;color:var(--muted)}
-.savename input{font:inherit;font-size:15px;font-weight:500;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.savename{display:flex;flex-direction:column;gap:6px;margin:0 0 8px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.savename input{font:inherit;font-size:15px;font-weight:500;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:#111;color-scheme:light}
 .savename input:focus{outline:none;border-color:var(--accent)}
 .driveacct{margin:-4px 0 12px;font-size:12.5px;color:var(--muted)}
 .drivelist{flex-wrap:wrap;max-height:60vh;overflow-y:auto}
@@ -746,7 +746,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .savekind .pc i{font-style:normal;font-size:11px;font-weight:700;width:14px;flex:none;text-align:center}
 .savekind .pro{color:#2E9C8F}.savekind .con{color:#C98A12}
 #saveModal .actions button{flex:0 0 auto;width:90px;min-width:90px;height:38px;padding:0;font-size:14px;border-radius:12px}
-.savesize{margin:0 0 4px;padding:9px 12px;border-radius:10px;background:#FFF6F2;font-size:13px;font-weight:600;color:#6b5a4f}
+.savesize{margin:0 0 4px;padding:8px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-size:12.5px;font-weight:500;color:var(--muted)}
 .savemeta{margin:10px 2px 0;font-size:12px;color:var(--muted)}
 .saveauto{display:flex;gap:8px;align-items:center;margin:8px 2px 0;font-size:12.5px;cursor:pointer}
 .saveauto input{accent-color:var(--accent)}
@@ -799,6 +799,10 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .sdopt b svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round;flex:none}
 .sdopt .sdnow{font-style:normal;font-size:10.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-left:4px}
 .sdopt:focus-visible{outline:none;border-color:var(--accent)}
+.sdopt{position:relative;padding-right:92px}
+.sdopt .sdgo{position:absolute;right:12px;top:50%;transform:translateY(-50%);min-width:66px;padding:8px 14px;border-radius:999px;background:var(--accent);color:#fff;font-size:13.5px;font-weight:700;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:filter .15s}
+.sdopt:hover .sdgo,.sdopt:focus-visible .sdgo{filter:brightness(1.08)}
+.sdopt:active .sdgo{filter:brightness(.92)}
 .spread canvas,.spread .slot{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .ghost.touch{transform:translate(-50%,-60%) scale(1.06);box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .ilaymulti{margin-left:auto;border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;cursor:pointer;white-space:nowrap}
@@ -2042,11 +2046,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   <div class="sheet" style="max-width:480px">
     <h3 id="saveTitle">BOOKを保存</h3>
     <p id="saveLead" class="savelead" hidden></p>
-    <label class="savename" id="saveNameRow"><span>BOOKの名前</span><input type="text" id="saveName" maxlength="60" autocomplete="off"></label>
+    <label class="savename" id="saveNameRow"><span>BOOKの保存名</span><input type="text" id="saveName" maxlength="60" autocomplete="off"></label>
     <p class="savesize" id="saveSize"></p>
     <div class="savedest">
-      <button type="button" class="bdopt sdopt" id="saveToDrive"><b><img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">Google ドライブに保存<i class="sdnow" hidden>いまの保存先</i></b><small>どの端末からでも、続きから編集できます。</small></button>
-      <button type="button" class="bdopt sdopt" id="saveToPc"><b><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 3.8h9.6v6.9H3.2z"/><path d="M1.5 12.6h13"/></svg><span><span class="devn">パソコン</span>に保存</span><i class="sdnow" hidden>いまの保存先</i></b><small>写真ごと、BOOKファイル（.pbmk）1つにまとめて保存します。</small></button>
+      <button type="button" class="bdopt sdopt" id="saveToDrive"><b><img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">Google ドライブに保存<i class="sdnow" hidden>いまの保存先</i></b><small>どの端末からでも、続きから編集できます。</small><span class="sdgo">保存</span></button>
+      <button type="button" class="bdopt sdopt" id="saveToPc"><b><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 3.8h9.6v6.9H3.2z"/><path d="M1.5 12.6h13"/></svg><span><span class="devn">パソコン</span>に保存</span><i class="sdnow" hidden>いまの保存先</i></b><small>写真ごと、BOOKファイル（.pbmk）1つにまとめて保存します。</small><span class="sdgo">保存</span></button>
     </div>
     <div class="actions" style="justify-content:flex-end">
       <button type="button" class="saveas" id="saveAsBtn" hidden></button><button type="button" class="saveas" id="saveLocal" hidden></button><button class="primary" id="saveYes" type="button" hidden></button>
