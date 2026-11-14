@@ -21,7 +21,7 @@
 <style>
 :root{
   --bg:#F5F5F3; --panel:#FFFFFF; --ink:#1B1C1F; --muted:#6B6B6B; --line:#E3E3E0;
-  --accent:#2D4A73; --accent-ink:#FFFFFF; --stage:#F5F5F3; --drop:#EFEFED;
+  --accent:#2D4A73; --accent-ink:#FFFFFF; --stage:#F5F5F3; --drop:#EFEFED; --stage2:#E7E6E2;
   --display:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
   --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
@@ -31,7 +31,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#131416; --panel:#1C1D20; --ink:#E9E8E4; --muted:#9A9993; --line:#2E2F33;
-    --accent:#8FB0DE; --accent-ink:#101318; --stage:#0C0D0E; --drop:#232428;
+    --accent:#8FB0DE; --accent-ink:#101318; --stage:#0C0D0E; --drop:#232428; --stage2:#1C1D20;
     color-scheme:dark;
   }
 }
@@ -44,7 +44,7 @@ header:has(#modeLine),#modeLine,.ginvite,.sthead2,#stStep2 .stsum{
 :root[data-theme="dark"] .stfoot .sthow{background:var(--panel)} :root[data-theme="dark"] .startsheet .stsub{color:var(--muted)}
 :root[data-theme="dark"]{
   --bg:#131416; --panel:#1C1D20; --ink:#E9E8E4; --muted:#9A9993; --line:#2E2F33;
-  --accent:#8FB0DE; --accent-ink:#101318; --stage:#0C0D0E; --drop:#232428;
+  --accent:#8FB0DE; --accent-ink:#101318; --stage:#0C0D0E; --drop:#232428; --stage2:#1C1D20;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -258,7 +258,7 @@ body.moving,body.moving *{cursor:grabbing!important;user-select:none}
 .stfoot button{width:auto;padding:9px 18px;font-size:13.5px}
 @media (max-width:560px){.stchoices{grid-template-columns:1fr}}
 .sheet h3 span{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
-.cropstage{background:var(--stage);border-radius:3px;display:flex;justify-content:center;padding:0;position:relative}
+.cropstage{background:var(--stage2);border-radius:3px;display:flex;justify-content:center;padding:0;position:relative}
 .cnav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:72px;border:0;border-radius:6px;background:rgba(27,28,31,.55);color:#fff;font-size:34px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 0 4px}
 .cnav:hover:not(:disabled){background:rgba(27,28,31,.8)}
 .cnav:disabled{opacity:.18;cursor:default}
@@ -421,7 +421,7 @@ button{font:inherit}
 .icon-btn.txtbtn.on{background:#2F8F6B;color:#fff;border-color:#2F8F6B}   /* 装飾あり: green, apart from the navy buttons and the red warnings */
 .tsheet{max-width:min(2000px,100%);width:100%;height:calc(100vh - 32px)}
 .tlayout{display:grid;grid-template-columns:minmax(0,1fr) var(--tpw,330px);gap:14px;min-height:0;flex:1}
-.tstage{background:#202124;border-radius:3px;display:flex;align-items:center;justify-content:center;padding:8px;min-height:0;min-width:0;overflow:hidden;position:relative}
+.tstage{background:var(--stage2);border-radius:3px;display:flex;align-items:center;justify-content:center;padding:8px;min-height:0;min-width:0;overflow:hidden;position:relative}
 .tpbtn{position:absolute;transform:translate(-50%,-100%);border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:12px;line-height:1;padding:5px 10px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .tpbtn:hover:not(:disabled){background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.7)}
 .tpbtn:disabled{opacity:.4;cursor:default}
@@ -1064,6 +1064,16 @@ aside{box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .cbtn.outline:hover{background:color-mix(in srgb,var(--accent) 8%,transparent)}
 @media (max-width:640px){#cropModal .zoompair{grid-template-columns:1fr}}
 .sheet h3 #cropLabel{font-size:15px;font-weight:700;color:var(--ink);margin-left:0}
+/* パソコン：写真の調整を、装飾と同じ画面構成に（左に写真、右に調整欄） */
+#cropModal.cpc .sheet{max-width:min(2000px,100%);width:100%;height:calc(100vh - 32px);max-height:none;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) var(--cpw,330px);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"h h" "s p" "w p" "a a";gap:10px 14px}
+#cropModal.cpc .crophead{grid-area:h}
+#cropModal.cpc .cropstage{grid-area:s;min-height:0;min-width:0;overflow:hidden;align-items:center;padding:8px}
+#cropModal.cpc .lowwarn{grid-area:w;font-size:13px}
+#cropModal.cpc .croppanel{grid-area:p;overflow-y:auto;min-height:0}
+#cropModal.cpc .cropacts2{grid-area:a;justify-content:flex-end;margin:0}
+#cropModal.cpc .sheet > .zoompair,#cropModal.cpc .sheet > .rotrow{display:none !important}
+#cropModal.cpc .croppanel .ipos{flex-wrap:wrap}
+#cropModal.cpc .croppanel .ipos > span:first-child{min-width:3.6em}
 .lowwarn{margin:0;color:#C0392B;font-size:15px;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ios .ialign .irow{gap:8px}
 .ios .ialign .alab{width:4.2em;flex-shrink:0;font-size:13px;color:var(--ilab)}
@@ -1566,8 +1576,12 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
 #tStage.tvert .cnav{width:34px;height:34px;border-radius:50%;font-size:22px;top:50%}
 /* パソコン：‹ › を大きく、見やすく */
 /* 写真の調整画面の ‹ › と同じ形・大きさ（暗い背景の上なので、色だけ少し明るく） */
-#tStage.tvert.tbig .cnav{width:44px;height:72px;border-radius:6px;font-size:34px;padding:0 0 4px;background:rgba(255,255,255,.24);border:0}
-#tStage.tvert.tbig .cnav:hover:not(:disabled){background:rgba(255,255,255,.36)}
+#tStage.tvert.tbig .cnav{width:44px;height:72px;border-radius:6px;font-size:34px;padding:0 0 4px;background:rgba(27,28,31,.55);border:0}
+#tStage.tvert.tbig .cnav:hover:not(:disabled){background:rgba(27,28,31,.8)}
+#tStage:not(.light) .cnav,#cropModal.dk .cnav{background:rgba(255,255,255,.22) !important}
+/* 明るい背景：ページボタンを濃い色で */
+#tStage.light:not(.tvert) .tpbtn{color:#333;border-color:rgba(0,0,0,.28);background:rgba(255,255,255,.7)}
+#tStage.light:not(.tvert) .tpbtn:hover:not(:disabled){background:#fff;border-color:rgba(0,0,0,.5)}
 #tStage.tvert .cnav.prev{left:6px}#tStage.tvert .cnav.next{right:6px}
 #tStage.tvert .tpbtn{transform:translate(-50%,-100%);padding:9px 5px;font-size:11.5px;line-height:1.1}
 #tStage.tvert .tpbtn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 5px}
@@ -4110,8 +4124,35 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   let cropOrigin = [0,0];
   // fixed frame (the finished page) in the middle; the photo moves and grows behind it
   const CROP_PAD = 0;   // no dark margin around the frame: the photo area is as large as it can be
+  // パソコン（広い画面）：調整のつまみを右の調整欄（装飾と同じカード）に移す。せまくなったら元の場所に戻す
+  const CPC = matchMedia('(pointer:fine) and (min-width:901px)');
+  let cpcMoved = null;
+  function applyCropPC(){
+    const on = CPC.matches;
+    cm.classList.toggle('cpc', on);
+    if(on && !cpcMoved){
+      const zr = cm.querySelectorAll('.zoompair .zoomrow'), mv = [];
+      const take = (el, addCls, rmCls) => { mv.push({ el, p: el.parentNode, n: el.nextSibling, cls: el.className }); if(rmCls) el.classList.remove(...rmCls); if(addCls) el.classList.add(...addCls); return el; };
+      const panel = document.createElement('div'); panel.className = 'tpanel ios croppanel';
+      const sec = (title, rows) => { const d = document.createElement('details'); d.className = 'isec'; d.open = true;
+        d.innerHTML = `<summary class="ilabel"><span class="sn">${title}</span><span class="chev" aria-hidden="true"></span></summary>`;
+        const c = document.createElement('div'); c.className = 'icard'; rows.forEach(r => c.appendChild(r)); d.appendChild(c); return d; };
+      const row = (label, els) => { const r = document.createElement('div'); r.className = 'irow ipos'; r.innerHTML = `<span>${label}</span>`; els.forEach(e => r.appendChild(take(e, ['ichip'], ['icon-btn']))); return r; };
+      panel.appendChild(sec('大きさ・位置', [take(zr[0], ['irow']), row('合わせる', [$('fitW'), $('fitH'), $('fitC')])]));
+      panel.appendChild(sec('回転・傾き', [take(zr[1], ['irow']), row('回転', [$('rotL'), $('rotR')]), row('反転', [$('flipH'), $('flipV')])]));
+      cm.querySelector('.sheet').insertBefore(panel, cm.querySelector('.cropacts2'));
+      cpcMoved = { panel, mv };
+    } else if(!on && cpcMoved){
+      for(let k = cpcMoved.mv.length - 1; k >= 0; k--){ const m = cpcMoved.mv[k]; m.el.className = m.cls; m.p.insertBefore(m.el, m.n); }
+      cpcMoved.panel.remove(); cpcMoved = null;
+      cm.style.removeProperty('--cpw'); $('cropPrev').style.left = ''; $('cropNext').style.right = '';
+    }
+    cm.classList.toggle('dk', !stageCol().light);
+  }
+  CPC.addEventListener('change', () => { applyCropPC(); if(!cm.hidden) drawCrop(); });
   function drawCrop(){
     const it = slots[cropIdx]; if(!it) return;
+    if(!cpcMoved !== !CPC.matches) applyCropPC();
     { const k = lowK(cropIdx), gap = hasGap(it), cut = cutOf(it), w = $('cropWarn'), msg = [];
       if(gap) msg.push(['', '⚠ 枠の中に写真のない部分があります（余白の色になります）']);
       if(cut) msg.push(['cutnote', `✂ ${cut}`]);
@@ -4121,7 +4162,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const src = srcOf(it), [w,h] = dims(src);
     const [fx,fy,fw,fh] = cropRect(it);
     const outW = fw*(1+2*CROP_PAD), outH = fh*(1+2*CROP_PAD);
-    const maxW = cm.querySelector('.cropstage').clientWidth || 600;
+    let maxW = cm.querySelector('.cropstage').clientWidth || 600;
     // the photo area gets whatever height the window has left after the buttons, sliders and text
     const sheet = cm.querySelector('.sheet'), stg = cm.querySelector('.cropstage');
     const other = sheet.scrollHeight - stg.offsetHeight;
@@ -4131,11 +4172,22 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(sideBy){ const cs = getComputedStyle(sheet); maxH = Math.max(120, stableH() - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 4); }
     // スマホ・タブレット：開いているあいだは、写真の枠の高さを変えない（ブラウザの枠が出入りしても大きさがゆれないように）
     if(COARSE && !cm.hidden){ if(cropHold && cropHold.w === window.innerWidth) maxH = cropHold.h; else cropHold = { w: window.innerWidth, h: maxH }; }
+    let NAVW = 0;
+    if(cpcMoved){
+      // 写真の左右に ‹ › を置く余白。写真が高さいっぱいで横に余るときは、右の調整欄を広げる（330〜440px）
+      const cs2 = getComputedStyle(stg), sw0 = stg.clientWidth - parseFloat(cs2.paddingLeft) - parseFloat(cs2.paddingRight);
+      maxH = stg.clientHeight - parseFloat(cs2.paddingTop) - parseFloat(cs2.paddingBottom); NAVW = 56;
+      const cur = parseFloat(cm.style.getPropertyValue('--cpw')) || 330, w0 = sw0 + (cur - 330) - 2*NAVW;
+      const want = Math.round(Math.max(330, Math.min(440, 330 + (w0 - outW * Math.min(w0 / outW, maxH / outH)) - 24)));
+      if(Math.abs(want - cur) > 2){ cm.style.setProperty('--cpw', want + 'px'); requestAnimationFrame(drawCrop); return; }
+      maxW = sw0 - 2*NAVW;
+    }
     cropScale = Math.min(maxW / outW, maxH / outH);
     const dpr = window.devicePixelRatio || 1, cs = cropScale;
     const cw = Math.round(outW*cs), ch = Math.round(outH*cs);
     if(ccv.style.width !== cw + 'px') ccv.style.width = cw + 'px';
     if(ccv.style.height !== ch + 'px') ccv.style.height = ch + 'px';
+    if(cpcMoved){ const L = ccv.offsetLeft, R = stg.clientWidth - (ccv.offsetLeft + ccv.offsetWidth); $('cropPrev').style.left = Math.max(4, L - 50) + 'px'; $('cropNext').style.right = Math.max(4, R - 50) + 'px'; }
     ccv.width = Math.round(cw*dpr); ccv.height = Math.round(ch*dpr);
     cctx.setTransform(dpr,0,0,dpr,0,0);
     cctx.imageSmoothingQuality = 'high';
@@ -4943,20 +4995,29 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const toLocal = (px, py) => { const dx = px - cx, dy = py - cy; return [dx * Math.cos(-a) - dy * Math.sin(-a), dx * Math.sin(-a) + dy * Math.cos(-a)]; };
     return { cx, cy, w, h, a, toCanvas, toLocal, corners, scale: toCanvas(w/2, h/2), rotH: toCanvas(0, -h/2 - 24 * dpr), top: toCanvas(0, -h/2) };
   }
+  // 写真の背景（写真の調整・装飾で共通）。明るいテーマかどうかで線や文字の色を変える
+  function stageCol(){
+    const c = (getComputedStyle(document.documentElement).getPropertyValue('--stage2') || '#E7E6E2').trim();
+    const m = /^#([0-9a-f]{6})$/i.exec(c), n = m ? parseInt(m[1], 16) : 0xE7E6E2;
+    const light = ((n >> 16) * .299 + ((n >> 8) & 255) * .587 + (n & 255) * .114) > 140;
+    $('tStage') && $('tStage').classList.toggle('light', light);
+    return { c: m ? c : '#E7E6E2', light };
+  }
   function tDraw(){
     if(!tBase || !tGeo) return;
     const g = tcv.getContext('2d'), { ox, oy, sw, sh, dpr } = tGeo, W = tcv.width, H = tcv.height, G = coverGeom;
     g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,W,H);
-    g.fillStyle = '#202124'; g.fillRect(0,0,W,H);
+    const SC = stageCol(), LT = SC.light;
+    g.fillStyle = SC.c; g.fillRect(0,0,W,H);
     g.imageSmoothingQuality = 'high'; g.drawImage(tBase, ox, oy, sw, sh);
     coverTexts.forEach(t => drawTextItem(g, t, ox, oy, sw, sh, (G.wa + G.gapPx / 2) / G.W));
     // whatever lies outside the cover is cut off in the PDF: show it dimmed
-    g.fillStyle = 'rgba(32,33,36,.74)';
+    g.fillStyle = LT ? SC.c + 'C4' : 'rgba(32,33,36,.74)';
     g.fillRect(0,0,W,oy); g.fillRect(0,oy+sh,W,H-oy-sh); g.fillRect(0,oy,ox,sh); g.fillRect(ox+sw,oy,W-ox-sw,sh);
-    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = dpr; g.strokeRect(ox+.5, oy+.5, sw-1, sh-1);
+    g.strokeStyle = LT ? 'rgba(0,0,0,.22)' : 'rgba(255,255,255,.35)'; g.lineWidth = dpr; g.strokeRect(ox+.5, oy+.5, sw-1, sh-1);
     const sx = ox + (G.wa + G.gapPx / 2) / G.W * sw;
-    g.save(); g.setLineDash([6*dpr, 5*dpr]); g.strokeStyle = 'rgba(255,255,255,.6)'; g.beginPath(); g.moveTo(sx, oy - 10*dpr); g.lineTo(sx, oy + sh + 10*dpr); g.stroke(); g.restore();
-    g.fillStyle = 'rgba(255,255,255,.8)'; g.font = `${12*dpr}px "Zen Kaku Gothic New", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'bottom';
+    g.save(); g.setLineDash([6*dpr, 5*dpr]); g.strokeStyle = LT ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.6)'; g.beginPath(); g.moveTo(sx, oy - 10*dpr); g.lineTo(sx, oy + sh + 10*dpr); g.stroke(); g.restore();
+    g.fillStyle = LT ? 'rgba(0,0,0,.6)' : 'rgba(255,255,255,.8)'; g.font = `${12*dpr}px "Zen Kaku Gothic New", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'bottom';
     const pn = i => isCover(tPair) ? slotLabel(i) : !booklet ? `${i+1}ページ` : slotLabel(i);
     // page names are buttons: they open 写真の調整 for that page's photo
     // 縦書きのとき：‹ › は写真のすぐ外に（ステージの端ではなく、写真の左右の余白の中）
