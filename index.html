@@ -7464,7 +7464,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const b = $('gConn'); b.hidden = false;
     b.innerHTML = `<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">` + (gValid() ? '' : GD.email ? '<em>つなぐ</em>' : '<span>Google ドライブとつなぐ</span>');   // つないでいるときはロゴだけ（アカウントはマウスを乗せると出る）
     b.classList.toggle('off', !gValid());
-    b.title = gValid() ? `Google ドライブ（${GD.email}）と連携中。押すと、アカウントの切り替えができます` : 'Google ドライブとつなぐ（ログインして、保存先のアカウントを選びます）';
+    b.title = gValid() ? `Google ドライブ（${GD.email}）と連携中。押すと、ドライブのフォルダを開きます` : 'Google ドライブとつなぐ（ログインして、保存先のアカウントを選びます）';
     mergeDriveName();
   }
   // ドライブのBOOKを編集中は、ロゴのボタンとファイル名を1つにまとめる（ファイル名を押すと、ロゴのボタンと同じ動き）
@@ -7474,7 +7474,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     n.classList.toggle('wclick', merged); n.classList.toggle('woff', merged && !gValid());
     if(merged){
       n.setAttribute('role', 'button'); n.tabIndex = 0;
-      n.title = (gValid() ? `Google ドライブ（${GD.email}）の「${bookFile}」を編集中。押すと、アカウントの切り替えができます` : `「${bookFile}」を編集中。Google ドライブとのつながりが切れています。押すと、つなぎ直します`);
+      n.title = (gValid() ? `Google ドライブ（${GD.email}）の「${bookFile}」を編集中。押すと、ドライブのフォルダを開きます` : `「${bookFile}」を編集中。Google ドライブとのつながりが切れています。押すと、つなぎ直します`);
       const sm = n.querySelector('.wfn small'), re = n.querySelector('.wre');
       if(gValid()){ if(re) re.remove(); } else if(sm && !re) sm.insertAdjacentHTML('beforeend', '<em class="wre">・つなぎ直す</em>');
     } else { n.removeAttribute('role'); n.removeAttribute('tabindex'); }
@@ -7483,7 +7483,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('workName').addEventListener('click', () => { if($('workName').classList.contains('wclick')) $('gConn').click(); });
     $('workName').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && $('workName').classList.contains('wclick')){ e.preventDefault(); $('gConn').click(); } });
     $('gConn').addEventListener('click', async () => {
-      if(gValid()) askYesNo('アカウントを切り替えますか？', `<p>いまは「${esc2(GD.email)}」のGoogle ドライブと連携しています。<br>YES を押すと、別のアカウントを選び直せます。</p>`, async () => { if(await gSwitch()) renderDriveStart(); });
+      if(gValid()){
+        const book = !!(fileHandle && fileHandle.drive && fileHandle.folderId && bookFile);
+        askYesNo('Google ドライブを開きますか？', `<p>${book ? `「${esc2(bookFile)}」を保存している` : '「PHOTO BOOK MAKER」の'}フォルダを、新しいタブで開きます。</p>`, async () => {
+          const url = id => `https://drive.google.com/drive/folders/${encodeURIComponent(id)}?authuser=${encodeURIComponent(GD.email)}`;
+          const id = book ? fileHandle.folderId : GD.root;
+          if(id){ window.open(url(id), '_blank', 'noopener'); return; }
+          const w = window.open('about:blank', '_blank');   // 押した直後に開かないと、ブラウザに止められるため先に開いておく
+          try{ const r = await gRoot(); if(w) w.location.href = url(r); }catch(e){ if(w) w.close(); status('フォルダを開けませんでした。'); }
+        }, '開く', 'キャンセル');
+      }
       else if(await gEnsure(true)) status(`「${GD.email}」のGoogle ドライブと連携しました。`);
     });
     gSync();
