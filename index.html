@@ -639,6 +639,10 @@ button{font:inherit}
 .ios .ibackup{display:grid;grid-template-columns:1fr 1fr;gap:5px 6px;border-top:1px solid var(--isep);padding-top:6px;margin-top:3px}
 .ios .isavelab{font-size:11px;color:var(--ilab);border-top:1px solid var(--isep);padding-top:6px;margin-top:2px}
 .ios .ibackup .iblab{grid-column:1/-1;font-size:11px;color:var(--ilab)}
+.ios .ibktog{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:none;padding:0;font:inherit;text-align:left;cursor:pointer}
+.ios .ibktog svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.ios .ibackup.closed .ibktog svg{transform:rotate(-90deg)}
+.ios .ibackup.closed .ibtn{display:none}
 .ios .ibackup .ibtn.plain{height:26px;padding:0 6px;font-size:12px;border-radius:6px;white-space:nowrap}
 .ios .ibtn.plain{background:rgba(118,118,128,.12);color:var(--accent)}
 .ios .inote{margin:0;font-size:11px;color:var(--ilab);line-height:1.5}
@@ -1995,7 +1999,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <li>「文字・画像の調整」の <b>反転</b> で、文字を左右（鏡文字）・上下に反転できます。影や縁取りのずれの向きは反転しても変わりません。</li>
       <li>このツールのスライダーはすべて、つまみ（またはスライダー）をダブルクリックすると初期値に戻ります（設定の影の幅・画質、写真の調整の傾き補正・拡大縮小、文字の編集画面の各項目など）。</li>
       <li>文字の編集画面のスライダーには、右側に数値の入力欄があります。数値を直接入力（Enter で確定）するか、入力欄で ↑↓ キーを押して細かく調整できます。</li>
-      <li><b>マイスタイル</b>（文字の編集画面の「＋ 文字」の下）：お気に入りの文字を保存しておけます。<span class="btn">パーツを保存</span> は選んでいる文字や画像1つ（内容・見た目・位置）を、<span class="btn">ページ一式を保存</span> はその見開きの文字・画像ぜんぶを一式で保存します（別の見開きでも読み込めます）。保存した文字1つは <span class="btn">追加</span> でそのまま入れたり、<span class="btn">適用</span> で選んでいる文字に見た目（フォント・色・大きさ・縁取り・影など）だけを当てはめたりできます。一式は <span class="btn">読み込む</span> で今の文字と入れ替わります。名前は自由に付けられ、いくつでも保存できます。保存先はこのブラウザです（Web版で Google ドライブにつないでいるときは、ドライブにも保存され、どの端末でも同じマイスタイルになります）。また、<span class="btn">ファイルに書き出す</span> で JSON ファイルにしておけば、バックアップや別のパソコン・ブラウザへの持ち出しができます。<span class="btn">ファイルから読み込む</span> でそのファイルを選ぶと、今のマイスタイルに追加されます（同じものは重複しません）。</li>
+      <li><b>マイスタイル</b>（文字の編集画面の「＋ 文字」の下）：お気に入りの文字を保存しておけます。<span class="btn">パーツを登録</span> は選んでいる文字や画像1つ（内容・見た目・位置）を、<span class="btn">ページ一式を登録</span> はその見開きの文字・画像ぜんぶを一式でマイスタイルに登録します（別の見開きでも読み込めます）。保存した文字1つは <span class="btn">追加</span> でそのまま入れたり、<span class="btn">適用</span> で選んでいる文字に見た目（フォント・色・大きさ・縁取り・影など）だけを当てはめたりできます。一式は <span class="btn">読み込む</span> で今の文字と入れ替わります。名前は自由に付けられ、いくつでも保存できます。保存先はこのブラウザです（Web版で Google ドライブにつないでいるときは、ドライブにも保存され、どの端末でも同じマイスタイルになります）。「ファイルで受け渡し」の <span class="btn">↓ 書き出す</span> で JSON ファイルにしておけば、人に渡したり、別のブラウザに持っていったりできます。<span class="btn">↑ 読み込む</span> でそのファイルを選ぶと、今のマイスタイルに追加されます（同じものは重複しません）。Google ドライブにつないでいるときは、ドライブで自動で共有されるので、この欄はたたんであります。</li>
     </ul>
     <p><b>横の表示</b>（ノドの影のスイッチの下）：画面に横に並べる写真の枚数を、4枚（2見開き）・8枚（4見開き）・10枚（5見開き、パソコンのみ）から選べます。保存する画像には影響しません。画面の幅が狭いときは 4枚になります。選んだ表示は記憶されます。（初期値：4枚）</p>
     <p><b>テンプレート</b>（横の表示の下。押すと開きます。右の ON / OFF スイッチで、写真の下の値の表示をまとめて出したり消したりできます。OFF にしても選んだテンプレートは残ります）：上の行から順番に写真が割り当てられます。①〜③は8枚ぶん、④距離は6枚ぶんで、行の見出し（例：1〜6枚目）は自動で変わります。ページ数に足りないときは行が自動で増え、増えた行は上の行と同じテンプレートから始まります。選ぶと、各写真の下に値と構図（例：<span class="tv"><b>後0.5</b> 全身</span>、<span class="tv"><b>右2</b> 胸上</span>）が出ます。構図は数値で決まります（5 顎上／4 鎖骨上／3・2 胸上／1.5 膝上／0.5 全身／0.2 風景）。画面に表示するだけで、保存画像には入りません。（初期値：すべて「なし」）</p>
@@ -2236,23 +2240,23 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           <div class="stybody">
             <p class="inote" id="tStyNone">お気に入りの文字を保存しておくと、「追加」でそのまま入れたり、「適用」で選んでいる文字に見た目だけ当てはめたりできます。</p>
             <div id="tStyList" class="stylist"></div>
-            <span class="iblab isavelab" title="このブラウザに保存されます。ブラウザのデータを消すと消えるので、大事なものはバックアップしておいてください。">一時保存</span>
-            <input type="text" id="tStyName" maxlength="30" placeholder="保存名（省略すると文字の内容）">
+            <span class="iblab isavelab" title="選んでいるパーツや、この見開きの装飾に名前を付けて、マイスタイルに登録します。">マイスタイルに登録</span>
+            <input type="text" id="tStyName" maxlength="30" placeholder="登録名（省略すると文字の内容）">
             <div class="ibtnrow isaverow">
-              <button class="ibtn isave" id="tStySave" type="button" title="選んでいる文字・画像1つの内容・見た目・位置を保存">パーツを保存</button>
-              <button class="ibtn isave" id="tSetSave" type="button" title="この見開きの文字・画像を全部まとめて保存">ページ一式を保存</button>
+              <button class="ibtn isave" id="tStySave" type="button" title="選んでいる文字・画像1つの内容・見た目・位置を登録">パーツを登録</button>
+              <button class="ibtn isave" id="tSetSave" type="button" title="この見開きの文字・画像を全部まとめて登録">ページ一式を登録</button>
             </div>
-            <div class="ibackup">
-              <span class="iblab">バックアップ</span>
-              <button class="ibtn plain" id="tStyExport" type="button" title="マイスタイルを1つのファイルにして保存（別のパソコンにも持っていけます）">↓ ファイルに保存</button>
-              <button class="ibtn plain" id="tStyImport" type="button" title="保存したファイルから、マイスタイルに追加">↑ ファイルから追加</button>
+            <div class="ibackup" id="tStyBk">
+              <button type="button" class="iblab ibktog" id="tStyBkTog" aria-expanded="true" title="マイスタイルをファイルにして、人に渡したり、別のブラウザに持っていったりできます">ファイルで受け渡し<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+              <button class="ibtn plain" id="tStyExport" type="button" title="マイスタイルを1つのファイル（.json）に書き出します">↓ 書き出す</button>
+              <button class="ibtn plain" id="tStyImport" type="button" title="書き出したファイルを読み込んで、マイスタイルに追加します">↑ 読み込む</button>
               <input type="file" id="tStyFile" accept=".json,application/json" hidden>
             </div>
             <p class="inote accent" id="tStyMsg" aria-live="polite"></p>
           </div>
         </details>
         <div class="icard ilayer">
-        <div class="ilayhd"><button type="button" class="ilaytog" id="tLayTog" aria-expanded="true" aria-controls="tChips" title="パーツの一覧を開く・閉じる"><span>パーツレイヤー</span><em class="ilaycnt" id="tLayCnt"></em></button><small>上にあるほど前面表示</small><button type="button" class="ilaymulti" id="tMulti" aria-pressed="false" title="オンにすると、押したパーツを次々に選べます（Shift／Ctrl＋クリックと同じ）">複数選択</button><button type="button" class="ilaychev" id="tLayChev" aria-label="パーツの一覧を開く・閉じる" aria-controls="tChips"><span class="chev" aria-hidden="true"></span></button></div>
+        <div class="ilayhd"><button type="button" class="ilaytog" id="tLayTog" aria-expanded="true" aria-controls="tChips" title="パーツの一覧を開く・閉じる（上にあるパーツほど、手前に重なって表示されます）"><span>パーツレイヤー</span><em class="ilaycnt" id="tLayCnt"></em></button><button type="button" class="ilaymulti" id="tMulti" aria-pressed="false" title="オンにすると、押したパーツを次々に選べます（Shift／Ctrl＋クリックと同じ）">複数選択</button><button type="button" class="ilaychev" id="tLayChev" aria-label="パーツの一覧を開く・閉じる" aria-controls="tChips"><span class="chev" aria-hidden="true"></span></button></div>
         <div class="ihead"><div class="iheadbtns"><button class="iadd" id="tAdd" type="button" aria-label="文字を追加">＋ 文字</button><label class="isml" id="tAddImg" title="ロゴなどの画像を追加（PNG の透過もそのまま使えます）">＋ 画像<input type="file" id="tImgFile" accept="image/*" hidden></label><button class="isml" id="tDup" type="button" title="選んでいる文字を複製">複製</button><button class="isml danger" id="tDel" type="button" title="選んでいる文字を削除">削除</button></div></div>
           <div class="ilist" id="tChips"></div>
           <div class="titxt" id="tTextWrap" hidden><textarea id="tText" rows="1" placeholder="文字を入力（改行もできます）"></textarea></div>
@@ -5600,6 +5604,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   })();
   const STYLE_KEYS = ['spill','font','bold','italic','flipH','flipV','sx','sy','size','color','op','rot','ls','lh','align','valign','vert','shadow','shC','shA','shB','shD','shS','shX','shY','strokeOn','stroke','stA','stB','stD','stG','stX','stY','stJ','stLJ','stShape','sc','scLink','shLink','ilOn','ilC','ilLink','ilW'];
   const clone = o => JSON.parse(JSON.stringify(o));
+  // 「ファイルで受け渡し」：ドライブにつないでいるときは、たたんでおく（ドライブで自動で共有されるので、ふだんは使わない）
+  let styBkUser = null;
+  function styBkSync(){ const el = $('tStyBk'); if(!el) return; const shut = styBkUser !== null ? !styBkUser : (() => { try{ return WEB && gValid(); }catch(e){ return false; } })(); el.classList.toggle('closed', shut); $('tStyBkTog').setAttribute('aria-expanded', String(!shut)); }
+  $('tStyBkTog').addEventListener('click', () => { styBkUser = $('tStyBk').classList.contains('closed'); styBkSync(); });
   function styMsg(t){ $('tStyMsg').textContent = t; clearTimeout(styMsg.t); styMsg.t = setTimeout(() => { $('tStyMsg').textContent = ''; }, 4000); }
   // drag ≡ to reorder マイスタイル (the new order is saved)
   function styDragStart(e, row){
@@ -7472,6 +7480,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const esc2 = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function gSync(){
     if(!WEB) return;
+    styBkSync();
     const b = $('gConn'); b.hidden = false;
     b.innerHTML = `<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">` + (gValid() ? '' : GD.email ? '<em>つなぐ</em>' : '<span>Google ドライブとつなぐ</span>');   // つないでいるときはロゴだけ（アカウントはマウスを乗せると出る）
     b.classList.toggle('off', !gValid());
