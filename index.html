@@ -7182,7 +7182,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         let k = 2; const stem = handle.name; while(taken.has(`${stem} (${k})`.toLowerCase())) k++;
         const alt = `${stem} (${k})`;
         const pick = await askPick('同じ名前のBOOKがあります',
-          `<span class="apname">${esc2(handle.name)}</span>ドライブにすでにあるので、同じ名前では保存できません。元のBOOKは、そのまま残ります。`,
+          `<span class="apname">${esc2(handle.name)}</span>ドライブにすでにあるので、同じ名前では保存できません。`,
           [{ k: 'num', title: '番号を付けて保存', desc: esc2(alt), go: '保存', main: true },
            { k: 'rename', title: '名前を変える', desc: '保存の画面で入れ直します', go: '変える' }]);
         if(pick === 'rename'){ closeAfterSave = false; $('workSave').click(); $('saveName').value = handle.name; $('saveName').focus(); $('saveName').select(); return; }
