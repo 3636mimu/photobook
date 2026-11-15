@@ -1094,7 +1094,7 @@ aside{box-shadow:0 1px 3px rgba(0,0,0,.05)}
 @media (max-width:640px){#cropModal .zoompair{grid-template-columns:1fr}}
 .sheet h3 #cropLabel{font-size:15px;font-weight:700;color:var(--ink);margin-left:0}
 /* パソコン：写真の調整を、装飾と同じ画面構成に（左に写真、右に調整欄） */
-#cropModal.cpc .sheet{max-width:min(2000px,100%);width:100%;height:calc(100vh - 32px);max-height:none;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) var(--cpw,330px);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"h h" "s p" "w p" "a a";gap:10px 14px}
+#cropModal.cpc .sheet{max-width:min(2000px,100%);width:100%;height:calc(100vh - 32px);max-height:none;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) var(--cpw,330px);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"h h" "s p" "s a" "w a";gap:10px 14px}
 #cropModal.cpc .crophead{grid-area:h;display:grid;grid-template-columns:minmax(0,1fr) var(--cpw,330px);column-gap:14px;align-items:center}
 /* パソコン：左に画面名、写真の真上の真ん中に［一覧｜見開き｜プレビュー］、右端に写真の情報 */
 #cropModal.cpc #cropTitle,#cropModal.cpc #cropLabel{display:contents}
@@ -1104,20 +1104,20 @@ aside{box-shadow:0 1px 3px rgba(0,0,0,.05)}
 #cropModal.cpc .cropstage{grid-area:s;min-height:0;min-width:0;overflow:hidden;align-items:center;padding:8px}
 #cropModal.cpc .lowwarn{grid-area:w;font-size:13px}
 #cropModal.cpc .croppanel{grid-area:p;overflow-y:auto;min-height:0}
-#cropModal.cpc .cropacts2{grid-area:a;justify-content:flex-end;margin:0}
-#cropModal.cpc .sheet > .zoompair,#cropModal.cpc .sheet > .rotrow{display:none !important}
-#cropModal.cpc .cpreset{display:flex;justify-content:center;padding:4px 0 2px}
-#cropModal.cpc .cpreset button{border:0;background:var(--ic);color:inherit;font:inherit;font-size:12.5px;padding:7px 12px;border-radius:8px;cursor:pointer}
-#cropModal.cpc .cpreset button:hover{background:var(--ic);color:var(--accent);box-shadow:0 0 0 1px var(--isep)}
-#cropModal.cpc .cropacts2{display:flex;flex-wrap:nowrap;align-items:center;gap:10px}
+#cropModal.cpc .cropacts2{grid-area:a;display:flex;flex-direction:column;align-items:stretch;gap:12px;margin:0}
 #cropModal.cpc .cropacts2 .rsep{display:none}
-#cropModal.cpc .chint{order:0;flex:1 1 auto;min-width:0;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#cropModal.cpc .cropacts2 .cgrid{order:1}
-#cropModal.cpc .cropacts2 .cdeco{order:2;display:inline-flex;align-items:center;gap:6px;flex-direction:row-reverse}
-#cropModal.cpc #cropToText{border:0;background:none;color:var(--accent);padding:0 6px;font-size:13px;font-weight:600}
-#cropModal.cpc #cropToText:hover{text-decoration:underline}
-#cropModal.cpc #cropDelete{order:3;margin-left:14px}
-#cropModal.cpc #cropDone{order:4}
+#cropModal.cpc .sheet > .zoompair,#cropModal.cpc .sheet > .rotrow{display:none !important}
+#cropModal.cpc .cropacts2 .cgrid{width:100%;box-sizing:border-box;display:flex;align-items:center;gap:8px}
+#cropModal.cpc .cropacts2 .cgrid select{flex:1 1 auto;min-width:0}
+#cropModal.cpc #cropDone{width:100%;height:40px}
+/* 調整のカードの下のボタン（iPad の横向きと同じ並び） */
+#cropModal.cpc .cpcacts{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+#cropModal.cpc .cpcacts .cbtn{flex:1 1 0;height:38px;min-width:0;padding:0 8px;white-space:nowrap}
+#cropModal.cpc .cpcacts .cdeco{display:contents}
+#cropModal.cpc .cpcacts .cdeco .toggle{flex:1 0 100%;order:3}
+#cropModal.cpc .cpcacts #cropDelete{order:0}
+#cropModal.cpc .cpcacts .cdeco #cropToText{order:1}
+#cropModal.cpc .cpcacts #cropReset{flex:1 0 100%;order:2}
 #cropLabel .cmode{display:none}
 #cropModal.cpc #cropLabel .cmode{display:inline;font-size:16px}
 #cropModal.cpc #cropLabel .cpg{display:none}
@@ -4291,18 +4291,18 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const row = (label, els) => { const r = document.createElement('div'); r.className = 'irow ipos'; r.innerHTML = `<span>${label}</span>`; els.forEach(e => r.appendChild(take(e, ['ichip'], ['icon-btn']))); return r; };
       panel.appendChild(sec('大きさ・位置', [take(zr[0], ['irow']), row('合わせる', [$('fitW'), $('fitH'), $('fitC')])]));
       panel.appendChild(sec('回転・傾き', [take(zr[1], ['irow']), row('回転', [$('rotL'), $('rotR')]), row('反転', [$('flipH'), $('flipV')])]));
-      // リセットは調整の仲間なので、調整欄の一番下へ
-      { const r = document.createElement('div'); r.className = 'cpreset'; const b = take($('cropReset')); b.dataset.t = b.textContent; b.textContent = '↺ この写真の調整をリセット'; r.appendChild(b); panel.appendChild(r); }
+      // iPad の横向きと同じ並び：調整のカードの下に［写真を解除］［装飾を編集］、その下に横幅いっぱいの［↺ この写真の調整をリセット］
+      { const r = document.createElement('div'); r.className = 'cpcacts';
+        const rb = $('cropReset'), tb = $('cropToText');
+        [$('cropDelete'), $('cropTextRow'), rb].forEach(el => r.appendChild(take(el)));
+        rb.dataset.t = rb.textContent; rb.textContent = '↺ この写真の調整をリセット'; tb.dataset.t = tb.textContent; tb.textContent = '装飾を編集';
+        panel.appendChild(r); }
       cm.querySelector('.sheet').insertBefore(panel, cm.querySelector('.cropacts2'));
-      // 下の行：左にヒント、真ん中に見え方（グリッド・装飾）、右に［写真を解除］［完了］（装飾画面と同じ並び）
-      const hint = document.createElement('span'); hint.className = 'chint'; hint.textContent = 'ドラッグで位置・ホイールで拡大縮小・矢印キーで前後の写真へ';
-      cm.querySelector('.cropacts2').prepend(hint);
-      const tt = $('cropToText'); tt.dataset.t = tt.textContent; tt.textContent = '装飾を編集 ›';
-      cpcMoved = { panel, mv, hint };
+      cpcMoved = { panel, mv, hint: null };
     } else if(!on && cpcMoved){
       for(let k = cpcMoved.mv.length - 1; k >= 0; k--){ const m = cpcMoved.mv[k]; m.el.className = m.cls; m.p.insertBefore(m.el, m.n); }
       [$('cropReset'), $('cropToText')].forEach(b => { if(b.dataset.t){ b.textContent = b.dataset.t; delete b.dataset.t; } });
-      cpcMoved.hint.remove(); cpcMoved.panel.remove(); cpcMoved = null;
+      cpcMoved.panel.remove(); cpcMoved = null;
       cm.style.removeProperty('--cpw'); $('cropPrev').style.left = ''; $('cropNext').style.right = '';
     }
     cm.classList.toggle('dk', !stageCol().light);
