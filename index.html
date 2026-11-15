@@ -387,6 +387,9 @@ button{font:inherit}
 .vgrid.light .vitem:focus-visible{outline-color:var(--accent)}
 .viewer.gridmode .vstage,.viewer.gridmode .vstrip{display:none}
 .viewer:not(.gridmode) .vgrid{display:none}
+/* iPad の全画面：上の時計・電池の下にバーをさげ、見出しは左上の ✕ の右へ */
+.viewer.vfs{padding-top:max(env(safe-area-inset-top,0px),26px)}
+.viewer.vfs .vbar .vt{padding-left:84px}
 .vstrip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:10px 16px 14px}
 .vstrip button{min-width:32px;height:28px;border:1px solid #3A3B40;background:none;color:#9A9993;border-radius:3px;font-family:var(--mono);font-size:12px;cursor:pointer}
 .vstrip button[aria-current="true"]{background:#8FB0DE;color:#101318;border-color:#8FB0DE}
@@ -3902,7 +3905,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   let vFs = false;
   function vFsEnter(){
     if(fsEl()) return;
-    const d = document.documentElement, rq = d.requestFullscreen || d.webkitRequestFullscreen;
+    // ページ全体ではなく、プレビューの画面だけを全画面に（iPad で回転しても、いつも画面いっぱいになる）
+    const d = viewer, rq = d.requestFullscreen || d.webkitRequestFullscreen;
     if(!rq) return;
     try{ vFs = true; const r = rq.call(d); if(r && r.catch) r.catch(() => { vFs = false; }); }catch(e){ vFs = false; }
   }
@@ -3914,7 +3918,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // PC：Esc などで全画面が終わったら、プレビューも一緒に閉じる（Esc 1回で元の画面へ）
   // タッチの端末（iPad の下スワイプ、Android の戻る操作など）では、全画面が終わってもプレビューはそのまま
-  const vFsChange = () => { if(fsEl() || !vFs) return; vFs = false; if(!COARSE && !viewer.hidden) closeViewer(); };
+  // iPad の全画面は、上の時計・電池と左上の ✕ が残るので、そのぶんバーと見出しをずらす
+  const IPAD = COARSE && navigator.maxTouchPoints > 1 && /iPad|Macintosh/.test(navigator.userAgent);
+  const vFsChange = () => {
+    viewer.classList.toggle('vfs', IPAD && fsEl() === viewer);
+    if(fsEl() || !vFs) return; vFs = false; if(!COARSE && !viewer.hidden) closeViewer(); };
   document.addEventListener('fullscreenchange', vFsChange);
   document.addEventListener('webkitfullscreenchange', vFsChange);
   function openViewer(startPair, grid){
@@ -3929,8 +3937,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       b.addEventListener('click', () => showSpread(k));
       strip.appendChild(b);
     });
-    vFsEnter();
     viewer.hidden = false;
+    vFsEnter();
     document.body.style.overflow = 'hidden';
     if(grid) showGrid(); else { setGrid(false); showSpread(vPos, true); }
     $('vClose').focus();
