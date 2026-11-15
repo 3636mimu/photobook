@@ -1814,7 +1814,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
         <button class="primary" id="saveSheet" disabled>一覧書き出し</button>
         <button class="primary" id="saveSingles" disabled title="調整した写真を1枚ずつ JPG で保存">1枚ずつ書き出し</button>
         <input type="file" id="workFile" class="vh" accept=".pbmk">
-        <div id="pgTip" class="pgtip" aria-hidden="true">配置写真を調整</div>
+        <div id="pgTip" class="pgtip" aria-hidden="true">配置写真を調整</div><div id="dTapTip" class="pgtip" aria-hidden="true"></div>
         <input type="file" id="fileRelink" class="vh" accept="image/*" multiple>
         <input type="file" id="dirRelink" class="vh" webkitdirectory multiple>
         <p class="status" id="status"></p>
@@ -1890,7 +1890,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
             <option value="#000000">黒</option>
           </select>
         </div>
-        <p class="hint">写真をクリックすると、拡大・回転・位置の調整ができます。</p>
+        <p class="hint">写真をクリック（iPad・スマホはダブルタップ）すると、拡大・回転・位置の調整ができます。</p>
           </div>
           <div class="sec">
             <h2>一覧書き出し仕様</h2>
@@ -1923,7 +1923,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
             <p class="howlead">写真を2枚ずつ並べて見開きにし、JPG・PDF で書き出すツールです。</p>
             <ol>
               <li><b>写真を入れる</b>右の「写真を選ぶ」を押すか、見開きに直接ドロップします。</li>
-              <li><b>写真を整える</b>写真をクリックすると、拡大・回転・削除ができます。</li>
+              <li><b>写真を整える</b>写真をクリック（iPad・スマホはダブルタップ）すると、拡大・回転・削除ができます。</li>
               <li><b>並べ替える</b>写真をドラッグして移動します。<br>写真のある側に落とすと入れ替わります。<br>見開きごと動かすときは、カードの上に出る「≡」をつかんでドラッグします。</li>
               <li><b>文字やロゴを入れる</b>カードの「装飾」から入れられます。</li>
               <li><b>書き出す</b>右の書き出しボタンで保存します。</li>
@@ -2713,7 +2713,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const r = ui.cv.getBoundingClientRect();
       const idx = p*2 + (wide.has(p) || (e.clientX - r.left) / r.width < ui.seam ? 0 : 1);
       if(isLocked(idx)) return;
-      if(!sample && slots[idx]) openCrop(idx); else openOne(idx);
+      const go = () => { if(!sample && slots[idx]) openCrop(idx); else openOne(idx); };
+      if(tapTouch) dblTap(idx, e, go, !sample && slots[idx] ? 'ダブルタップで調整' : 'ダブルタップで写真を選ぶ'); else go();
     });
     [sL,sR].forEach((el, k) => {
       const idx = p*2+k;
@@ -2723,7 +2724,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         startDrag(e, idx, el);
       });
       el.addEventListener('touchstart', e => { if(e.touches.length === 1 && !e.target.closest('.clear,.trim')) startTouchDrag(e.touches[0], idx); }, { passive: true });
-      el.addEventListener('click', () => { if(justDragged){ justDragged = false; return; } openOne(idx); });
+      el.addEventListener('click', e => { if(justDragged){ justDragged = false; return; } if(tapTouch) dblTap(idx, e, () => openOne(idx), 'ダブルタップで写真を選ぶ'); else openOne(idx); });
       el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openOne(idx); }});
       el.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); el.classList.add('dragover'); });
       el.addEventListener('dragleave', () => el.classList.remove('dragover'));
@@ -2776,6 +2777,22 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // ---------- loading ----------
   let pendingIdx = 0;
   function openOne(idx){ pendingIdx = idx; $('fileOne').click(); }
+  // iPad・スマホ：ページの写真は「ダブルタップ」で開く（スクロール中のタップで、いちいち調整画面が開かないように）
+  let tapTouch = false, dTap = null, dTipT = 0;
+  document.addEventListener('pointerdown', e => { tapTouch = e.pointerType === 'touch'; }, true);
+  function dblTap(idx, e, go, hint){
+    const now = Date.now(), x = e.clientX, y = e.clientY, tip = $('dTapTip');
+    if(dTap && dTap.idx === idx && now - dTap.t < 450 && Math.hypot(x - dTap.x, y - dTap.y) < 40){
+      dTap = null; clearTimeout(dTipT); tip.classList.remove('show');
+      const ok = +(localStorage.getItem('pbm-dtap') || 0); if(ok < 9) try{ localStorage.setItem('pbm-dtap', ok + 1); }catch(_){}
+      go(); return;
+    }
+    dTap = { idx, t: now, x, y };
+    // 1回だけのタップには小さな案内（ダブルタップを2回使うまで）
+    if(+(localStorage.getItem('pbm-dtap') || 0) >= 2) return;
+    tip.textContent = hint; tip.style.left = x + 'px'; tip.style.top = Math.max(4, y - 44) + 'px';
+    clearTimeout(dTipT); tip.classList.add('show'); dTipT = setTimeout(() => tip.classList.remove('show'), 1400);
+  }
   $('fileOne').addEventListener('change', e => { if(e.target.files[0]) setSlot(pendingIdx, e.target.files[0]); e.target.value=''; });
   // two-step delete: first press arms the button, second press within 4 s clears everything
   $('clearAll').addEventListener('click', () => {
@@ -6916,7 +6933,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const TOUR = [
     { el: () => { const b = $('setBtn'); return b && !b.hidden && b.offsetParent ? b : $('modeLine'); }, t: '作るものの設定', x: 'サイズ・ページ数・解像度・保存形式は、ここでいつでも変えられます。' },
     { el: () => $('pickMany'), t: '写真を入れる', x: 'ここから写真を選びます。\n見開きに直接ドラッグ＆ドロップしても入れられます。' },
-    { el: () => inCard('.stage'), t: '写真を整える・並べ替える', x: '写真をクリックすると、拡大・回転・削除ができます。\nドラッグすると別のページへ移動できます。' },
+    { el: () => inCard('.stage'), t: '写真を整える・並べ替える', x: COARSE ? '写真をダブルタップすると、拡大・回転・削除ができます。\n長押ししてから動かすと、別のページへ移動できます。' : '写真をクリックすると、拡大・回転・削除ができます。\nドラッグすると別のページへ移動できます。' },
     { el: () => inCard('.spine'), spine: true, t: '見開きごと並べ替える', x: 'カードの上に出る「≡」をつかんでドラッグすると、見開きごと順番を入れ替えられます。\nマウスを乗せると表示されます。' },
     { el: () => inCard('.lay'), t: '1枚で見開きにする', x: 'このボタンを押すと、1枚の写真を左右2ページにまたがって大きく使えます。\nもう一度押すと2枚の見開きに戻ります。' },
     { el: () => inCard('.txtbtn'), t: '文字やロゴを入れる', x: '「装飾」から、タイトルや日付、ロゴなどを重ねられます。' },
