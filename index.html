@@ -1056,6 +1056,21 @@ body.sidedrawer .sidehd{display:flex;align-items:center;justify-content:space-be
 @media (max-width:820px){.tacts{grid-template-columns:1fr}}
 .tacts .tctr{display:flex;gap:10px;justify-content:center;align-items:center}
 .tacts .tleft{display:flex;align-items:center;justify-content:space-between;gap:12px}
+/* パソコンの装飾：右の欄の一番下に［このページの装飾をリセット］、その下に［グリッド］［完了］（iPad の横向きと同じ並び） */
+#textModal.tpc .tpcacts{display:flex;padding:6px 0 10px}
+#textModal.tpc .tpcacts .cbtn{flex:1 1 auto;height:38px}
+#textModal.tpc .tacts{grid-template-columns:minmax(0,1fr) var(--tpw,330px);grid-template-rows:auto auto;row-gap:10px;align-items:center}
+#textModal.tpc .tacts .tleft{display:contents}
+#textModal.tpc .tacts .tleft .hint{display:none}
+/* 写真を下まで広げる：グリッド・完了を右の欄の下に重ねて置く */
+#textModal.tpc .tpanel{margin-bottom:96px}
+#textModal.tpc .tacts{margin-top:-96px;position:relative;z-index:1;pointer-events:none}
+#textModal.tpc .tacts > *,#textModal.tpc .tacts .tleft > *{pointer-events:auto}
+#textModal.tpc .tacts .cgrid{grid-column:2;grid-row:1;width:100%;box-sizing:border-box;display:flex;align-items:center;gap:8px}
+#textModal.tpc .tacts .cgrid select{flex:1 1 auto;min-width:0}
+#textModal.tpc .tacts .tctr{grid-column:2;grid-row:2;display:flex}
+#textModal.tpc .tacts #tDone{flex:1 1 auto;height:40px}
+
 .cgrid > span:first-child{white-space:nowrap}
 /* 装飾: ＋文字・＋画像・複製・削除 span the panel width, bigger */
 .ios .ihead{padding:0 0 10px}
@@ -2546,7 +2561,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <div class="actions tacts">
       <div class="left tleft"><span class="hint" style="font-size:11px">矢印キーで少しずつ動かせます（Shiftで大きく）。フォントはネットから読み込みます。</span><span class="cgrid" title="この画面のグリッド（一覧とは別に設定できます）"><span>グリッド</span><button class="toggle" id="tGrid" type="button" role="switch" aria-checked="false" aria-label="グリッドの表示をオン・オフ"><span class="knob"></span><span class="tl">OFF</span></button><select id="tGridType" class="cgridsel" aria-label="グリッドの種類"></select></span></div>
       <div class="tctr">
-        <button class="cbtn danger" id="tResetAll" type="button" title="この見開きの装飾を全部消す">装飾を全削除</button>
+        <button class="cbtn danger" id="tResetAll" type="button" title="この見開きの装飾を全部消す">↺ このページの装飾をリセット</button>
         <button class="cbtn fill" id="tDone" type="button">完了</button>
       </div>
     </div>
@@ -4295,7 +4310,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       { const r = document.createElement('div'); r.className = 'cpcacts';
         const rb = $('cropReset'), tb = $('cropToText');
         [$('cropDelete'), $('cropTextRow'), rb].forEach(el => r.appendChild(take(el)));
-        rb.dataset.t = rb.textContent; rb.textContent = '↺ この写真の調整をリセット'; tb.dataset.t = tb.textContent; tb.textContent = '装飾を編集';
+        rb.dataset.t = rb.textContent; rb.textContent = '↺ この写真の調整をリセット'; tb.dataset.t = tb.textContent; tb.textContent = 'aA 装飾を編集';
         panel.appendChild(r); }
       cm.querySelector('.sheet').insertBefore(panel, cm.querySelector('.cropacts2'));
       cpcMoved = { panel, mv, hint: null };
@@ -4321,7 +4336,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       cm.querySelector('.rotrow').after(cr);
       const tr = document.createElement('div'); tr.className = 'tpadacts';
       tr.appendChild(take($('tResetAll'))); $('textModal').querySelector('.tpanel').appendChild(tr);
-      [[$('cropReset'), '↺ この写真の調整をリセット'], [$('cropToText'), '装飾を編集']].forEach(([b, t]) => { b.dataset.pt = b.textContent; b.textContent = t; });
+      [[$('cropReset'), '↺ この写真の調整をリセット'], [$('cropToText'), 'aA 装飾を編集']].forEach(([b, t]) => { b.dataset.pt = b.textContent; b.textContent = t; });
       cm.classList.add('ipl'); padMoved = { mv, cr, tr };
     } else if(!on && padMoved){
       for(let k = padMoved.mv.length - 1; k >= 0; k--){ const m = padMoved.mv[k]; m.p.insertBefore(m.el, m.n); }
@@ -4330,6 +4345,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
   }
   PADL.addEventListener('change', () => { applyPadLand(); if(!cm.hidden) drawCrop(); });
+  // パソコン（広い画面）の装飾：iPad と同じく［↺ このページの装飾をリセット］は右の欄の一番下、［グリッド］［完了］は右の欄の下に
+  const TPC = matchMedia('(pointer:fine) and (min-width:901px)');
+  let tpcMoved = null;
+  function applyDecoPC(){
+    const on = TPC.matches;
+    if(on && !tpcMoved){ const b = $('tResetAll'), r = { p: b.parentNode, n: b.nextSibling }; const w = document.createElement('div'); w.className = 'tpadacts tpcacts'; w.appendChild(b); $('textModal').querySelector('.tpanel').appendChild(w); $('textModal').classList.add('tpc'); tpcMoved = { r, w }; }
+    else if(!on && tpcMoved){ tpcMoved.r.p.insertBefore($('tResetAll'), tpcMoved.r.n); tpcMoved.w.remove(); $('textModal').classList.remove('tpc'); tpcMoved = null; }
+  }
+  TPC.addEventListener('change', applyDecoPC); applyDecoPC();
   // タブレット：装飾と同じく「写真の調整（〇ページ）」の見出しを出す
   cm.classList.toggle('ctab', COARSE && !PHONE);
   applyPadLand();
@@ -5154,7 +5178,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       PX = tVert ? (COARSE ? 44 : 56) : narrow ? 10 : 58;   // 横向き：‹ › と縦書きの「〇ページを調整」は写真の外の左右に置く
     // パソコン：写真が高さいっぱいで左右に余りが出るときは、その分を右の調整欄に回す（330〜440px）
     if(!COARSE && !narrowBox){
-      const lay = box.closest('.tlayout'), cur = parseFloat(getComputedStyle(lay).getPropertyValue('--tpw')) || 330;
+      const lay = box.closest('.tsheet') || box.closest('.tlayout'), cur = parseFloat(getComputedStyle(lay).getPropertyValue('--tpw')) || 330;
       const bw0 = bw + (cur - 330), cw0 = Math.min(bw0 - 2*PX, (bh - PT - PB) * ar) + 2*PX, want = Math.round(Math.max(330, Math.min(440, 330 + (bw0 - cw0) - 24)));
       if(Math.abs(want - cur) > 2){ lay.style.setProperty('--tpw', want + 'px'); requestAnimationFrame(() => { tBuildBase(); tDraw(); }); return; }
     }
