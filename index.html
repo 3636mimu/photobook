@@ -1095,7 +1095,12 @@ aside{box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .sheet h3 #cropLabel{font-size:15px;font-weight:700;color:var(--ink);margin-left:0}
 /* パソコン：写真の調整を、装飾と同じ画面構成に（左に写真、右に調整欄） */
 #cropModal.cpc .sheet{max-width:min(2000px,100%);width:100%;height:calc(100vh - 32px);max-height:none;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) var(--cpw,330px);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"h h" "s p" "w p" "a a";gap:10px 14px}
-#cropModal.cpc .crophead{grid-area:h}
+#cropModal.cpc .crophead{grid-area:h;display:grid;grid-template-columns:minmax(0,1fr) var(--cpw,330px);column-gap:14px;align-items:center}
+/* パソコン：左に画面名、写真の真上の真ん中に［一覧｜見開き｜プレビュー］、右端に写真の情報 */
+#cropModal.cpc #cropTitle,#cropModal.cpc #cropLabel{display:contents}
+#cropModal.cpc #cropLabel .cmode{grid-row:1;grid-column:1;justify-self:start}
+#cropModal.cpc .crophead .cropvseg{grid-row:1;grid-column:1;justify-self:center;margin:0}
+#cropModal.cpc #cropLabel .cinfo{grid-row:1;grid-column:2;justify-self:end;margin-left:0 !important;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #cropModal.cpc .cropstage{grid-area:s;min-height:0;min-width:0;overflow:hidden;align-items:center;padding:8px}
 #cropModal.cpc .lowwarn{grid-area:w;font-size:13px}
 #cropModal.cpc .croppanel{grid-area:p;overflow-y:auto;min-height:0}
