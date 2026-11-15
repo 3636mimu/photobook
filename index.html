@@ -169,8 +169,9 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 @container (max-width:330px){.vals small{display:none}.meta{visibility:hidden;width:0;overflow:hidden}}
 @container (max-width:400px){.vals small{display:none}.bar .num{max-width:5.5em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 .spreads.cols4 .bar{gap:4px}
-.spreads .spine{padding:7px 18px}
-.spreads .spine .bars{width:22px;height:12px;background:linear-gradient(currentColor 0 0) top/100% 2px no-repeat,linear-gradient(currentColor 0 0) center/100% 2px no-repeat,linear-gradient(currentColor 0 0) bottom/100% 2px no-repeat}
+/* 見開きごと移動のボタン：前の大きさの70% */
+.spreads .spine{padding:5px 12.6px}
+.spreads .spine .bars{width:15.4px;height:8.4px;background:linear-gradient(currentColor 0 0) top/100% 1.5px no-repeat,linear-gradient(currentColor 0 0) center/100% 1.5px no-repeat,linear-gradient(currentColor 0 0) bottom/100% 1.5px no-repeat}
 @media (max-width:1400px){.spreads.cols5{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:1100px){.spreads.cols4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.spreads,.spreads.cols4{grid-template-columns:1fr}}
