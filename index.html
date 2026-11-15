@@ -1544,6 +1544,21 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
 }
 
 
+/* iPad の横向き：［リセット］［写真を解除］［装飾］は調整ボタンのすぐ下、［装飾を全削除］は装飾の欄の一番下へ */
+@media (pointer:coarse) and (orientation:landscape) and (min-height:600px){
+  #cropModal.ipl .sheet{grid-template-rows:auto auto auto auto auto minmax(0,1fr);grid-template-areas:"stage head" "stage warn" "stage zoom" "stage rot" "stage mid" "stage acts"}
+  #cropModal .cpadacts{grid-area:mid;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  #cropModal .cpadacts .cbtn{flex:1 1 0;height:38px;min-width:0;padding:0 8px;white-space:nowrap}
+  #cropModal .cpadacts .cdeco{display:contents}
+  #cropModal .cpadacts .cdeco .toggle{flex:1 0 100%}
+  #cropModal.ipl .cropacts2{flex-direction:column;flex-wrap:nowrap !important;align-items:stretch;row-gap:6px !important}
+  #cropModal.ipl .cropacts2 .cgrid{width:100% !important;box-sizing:border-box;order:0 !important}
+  #cropModal.ipl .cropacts2 #cropDone{width:100%;flex:none !important;height:40px;min-height:40px;order:1 !important}
+  #cropModal.ipl .cropacts2 .cgrid{flex:none !important}
+  #textModal .tpadacts{display:flex;justify-content:stretch;padding:4px 0 10px}
+  #textModal .tpadacts .cbtn{flex:1 1 auto;height:40px}
+}
+
 /* スマホを横向きにしたときの写真の調整：写真は左、調整のボタン類は右 */
 @media (pointer:coarse) and (orientation:landscape){
   #cropModal{padding:0}
@@ -4268,6 +4283,27 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     cm.classList.toggle('dk', !stageCol().light);
   }
   CPC.addEventListener('change', () => { applyCropPC(); if(!cm.hidden) drawCrop(); });
+  // iPad の横向き：右の欄の下に空いた所へ、［リセット］［写真を解除］［装飾］（写真の調整）・［装飾を全削除］（装飾）を移す。
+  // ［グリッド］［完了］は一番下のまま
+  const PADL = matchMedia('(pointer:coarse) and (orientation:landscape) and (min-height:600px)');
+  let padMoved = null;
+  function applyPadLand(){
+    const on = PADL.matches;
+    if(on && !padMoved){
+      const mv = [], take = el => { mv.push({ el, p: el.parentNode, n: el.nextSibling }); return el; };
+      const cr = document.createElement('div'); cr.className = 'cpadacts';
+      [$('cropReset'), $('cropDelete'), $('cropTextRow')].forEach(el => cr.appendChild(take(el)));
+      cm.querySelector('.rotrow').after(cr);
+      const tr = document.createElement('div'); tr.className = 'tpadacts';
+      tr.appendChild(take($('tResetAll'))); $('textModal').querySelector('.tpanel').appendChild(tr);
+      cm.classList.add('ipl'); padMoved = { mv, cr, tr };
+    } else if(!on && padMoved){
+      for(let k = padMoved.mv.length - 1; k >= 0; k--){ const m = padMoved.mv[k]; m.p.insertBefore(m.el, m.n); }
+      padMoved.cr.remove(); padMoved.tr.remove(); cm.classList.remove('ipl'); padMoved = null;
+    }
+  }
+  PADL.addEventListener('change', () => { applyPadLand(); if(!cm.hidden) drawCrop(); });
+  applyPadLand();
   function drawCrop(){
     const it = slots[cropIdx]; if(!it) return;
     if(!cpcMoved !== !CPC.matches) applyCropPC();
