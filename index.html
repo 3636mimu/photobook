@@ -1180,7 +1180,7 @@ header .howto summary{background:rgba(255,255,255,.75);border-color:transparent}
 button.outline:not(.bdopt),button.danger:not(.bdopt),button.primary,.cbtn,.cbtn.fill,.cbtn.outline,.cbtn.danger,.picks .outline,.picks .danger,a.outline{border-radius:4px}
 #saveModal .actions button#saveYes,#saveModal .actions button#saveNo,.modal .actions button.outline,.modal .actions button.danger:not(.bdopt),.modal .actions button.primary{border-radius:4px}
 .danger,.cbtn.outline,.cbtn.danger{border-width:1px}
-.picks .outline,.picks .danger{border-radius:12px}
+.picks .outline,.picks .danger{border-radius:4px}
 .vseg{border-radius:999px !important;border-color:rgba(0,0,0,.08) !important;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 .vseg button + button{border-left-color:rgba(0,0,0,.06) !important}
 .vseg button[aria-pressed=true]{background:var(--tint) !important;color:var(--accent) !important;font-weight:700}
@@ -3105,6 +3105,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const NARROW = matchMedia('(max-width:900px)');
   const compactOn = () => COARSE || NARROW.matches;
   {
+    // 右のメニューは、パソコンでも iPad と同じく「‹ メニュー」から開く（常に表示しない）
+    const drawerOn = () => true;
     const aside = document.querySelector('.grid>aside'), inner = aside.querySelector('.sidein');
     const tab = document.createElement('button'); tab.type = 'button'; tab.className = 'sidetab'; tab.setAttribute('aria-label', 'メニューを開く');
     tab.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>メニュー';
@@ -3121,10 +3123,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     aside.addEventListener('click', e => { if(e.target.closest('#saveAll,#saveSheet,#saveSingles,#clearAll')) setTimeout(() => sideOpen(false), 0); });
     $('fileMany').addEventListener('change', () => sideOpen(false));
     // 写真がないあいだ（はじめの画面）は出さない
-    const showTab = () => { tab.hidden = !compactOn() || !document.querySelector('.grid') || !document.querySelector('.grid').offsetParent; if(tab.hidden) sideOpen(false); };
-    const applyDrawer = () => { document.body.classList.toggle('sidedrawer', compactOn()); if(!compactOn()) aside.removeAttribute('aria-hidden'); showTab(); };
+    const showTab = () => { tab.hidden = !drawerOn() || !document.querySelector('.grid') || !document.querySelector('.grid').offsetParent; if(tab.hidden) sideOpen(false); };
+    const applyDrawer = () => { document.body.classList.toggle('sidedrawer', drawerOn()); if(!drawerOn()) aside.removeAttribute('aria-hidden'); showTab(); };
     NARROW.addEventListener('change', applyDrawer);
-    setInterval(showTab, 800); applyDrawer(); sideOpen(false); if(!compactOn()) aside.removeAttribute('aria-hidden');
+    setInterval(showTab, 800); applyDrawer(); sideOpen(false); if(!drawerOn()) aside.removeAttribute('aria-hidden');
   }
   // iPad・スマホ、またはせまい窓：上の設定は「設定」ボタンにまとめて、押したときだけ開く（いまの設定はボタンに短く表示）
   {
