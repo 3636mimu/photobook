@@ -799,6 +799,13 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .bdopt{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font:inherit;padding:12px 14px;cursor:pointer;transition:border-color .15s,background .15s}
 .bdopt b{font-size:14px}.bdopt small{font-size:12px;line-height:1.7;color:var(--muted)}
 .bdopt:hover{border-color:var(--accent)}
+/* 選択肢つきの確認（同じ名前のBOOKがあるときなど） */
+#pagesModal .apname{display:block;margin:2px 0 10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:14px;font-weight:600;color:var(--ink);word-break:break-all}
+#pagesModal .apick{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+#pagesModal .apopt{width:100%;margin:0;padding:13px 92px 13px 15px;font-size:14px}
+#pagesModal .apopt b{font-size:15px}
+#pagesModal .apopt small{font-size:12.5px;word-break:break-all}
+
 .bdopt.danger b{color:#B23A3A}.bdopt.danger:hover{border-color:#B23A3A;background:rgba(178,58,58,.04)}
 .drivehid{margin:-4px 0 0}.drivehid .saveas{margin:0}
 .strhid{opacity:.6}.strhid:hover{opacity:1}
@@ -6589,19 +6596,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('pagesNo').onclick = () => close(false, true);
   }
 
-  // 3つから選ぶ確認（いつもの確認の画面を使う）。選んだもののキーを返す（閉じたら 'cancel'）
-  function ask3(title, html, opts){
+  // 選択肢つきの確認（保存の画面と同じカードの形）。選んだもののキーを返す（キャンセル・閉じたら 'cancel'）
+  function askPick(title, html, opts){
     return new Promise(res => {
-      const m = $('pagesModal'), row = m.querySelector('.actions'), keep = [$('pagesNo'), $('pagesYes')];
-      $('pagesTitle').textContent = title; $('pagesMsg').innerHTML = html;
-      keep.forEach(b => b.hidden = true);
-      const sh = m.querySelector('.sheet'), mw = sh.style.maxWidth; sh.style.maxWidth = '520px';
-      const bs = opts.map(([k, label, kind]) => { const b = document.createElement('button'); b.type = 'button'; b.className = kind === 'primary' ? 'primary' : 'outline'; b.textContent = label; b.style.cssText = 'min-width:90px;white-space:nowrap;padding-left:16px;padding-right:16px'; b.dataset.k = k; row.appendChild(b); return b; });
-      const done = k => { m.hidden = true; sh.style.maxWidth = mw; bs.forEach(b => b.remove()); keep.forEach(b => b.hidden = false); document.removeEventListener('keydown', esc); res(k); };
+      const m = $('pagesModal'), sh = m.querySelector('.sheet'), mw = sh.style.maxWidth, yes = $('pagesYes'), no = $('pagesNo'), nl = no.textContent;
+      sh.style.maxWidth = '460px'; $('pagesTitle').textContent = title;
+      $('pagesMsg').innerHTML = html + '<div class="apick"></div>';
+      const box = $('pagesMsg').querySelector('.apick');
+      opts.forEach(o => { const b = document.createElement('button'); b.type = 'button'; b.className = 'bdopt sdopt apopt' + (o.main ? ' main' : '');
+        b.innerHTML = `<b>${o.title}</b><small>${o.desc}</small><span class="sdgo${o.main ? '' : ' sub'}">${o.go}</span>`; b.addEventListener('click', () => done(o.k)); box.appendChild(b); });
+      yes.hidden = true; no.textContent = 'キャンセル';
+      const done = k => { m.hidden = true; sh.style.maxWidth = mw; yes.hidden = false; no.textContent = nl; no.onclick = null; document.removeEventListener('keydown', esc); res(k); };
       const esc = e => { if(e.key === 'Escape') done('cancel'); };
-      bs.forEach(b => b.addEventListener('click', () => done(b.dataset.k)));
-      document.addEventListener('keydown', esc);
-      m.hidden = false; (bs.find(b => b.dataset.k === 'cancel') || bs[0]).focus();
+      no.onclick = () => done('cancel'); document.addEventListener('keydown', esc);
+      m.hidden = false; no.focus();
     });
   }
 
@@ -7173,9 +7181,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         // 同じ名前では保存しない：名前を変えるか、番号を付けた名前で保存する
         let k = 2; const stem = handle.name; while(taken.has(`${stem} (${k})`.toLowerCase())) k++;
         const alt = `${stem} (${k})`;
-        const pick = await ask3(`ドライブに同じ名前のBOOK「${handle.name}」があります`,
-          `<p>同じ名前では保存できません。<br>名前を変えるか、番号を付けた「${esc2(alt)}」で保存してください。<br>元の「${esc2(handle.name)}」は、そのまま残ります。</p>`,
-          [['rename', '名前を変える', 'outline'], ['num', `「${alt}」で保存`, 'primary'], ['cancel', 'キャンセル', 'outline']]);
+        const pick = await askPick('同じ名前のBOOKがあります',
+          `<span class="apname">${esc2(handle.name)}</span>ドライブにすでにあるので、同じ名前では保存できません。元のBOOKは、そのまま残ります。`,
+          [{ k: 'num', title: '番号を付けて保存', desc: esc2(alt), go: '保存', main: true },
+           { k: 'rename', title: '名前を変える', desc: '保存の画面で入れ直します', go: '変える' }]);
         if(pick === 'rename'){ closeAfterSave = false; $('workSave').click(); $('saveName').value = handle.name; $('saveName').focus(); $('saveName').select(); return; }
         if(pick !== 'num'){ closeAfterSave = false; status('保存しませんでした。'); return; }
         handle.name = alt;
