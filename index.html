@@ -1176,6 +1176,10 @@ header .howto summary{background:rgba(255,255,255,.75);border-color:transparent}
 .primary:not(:disabled):hover{transform:translateY(-1px);filter:brightness(1.05)}
 .primary:disabled{box-shadow:none}
 .outline{border-radius:12px}
+/* ボタンの枠のディテールをそろえる（角丸4px・線1px）：枠線ボタン・赤い枠線ボタン・塗りボタン（［完了］の形が基準） */
+button.outline:not(.bdopt),button.danger:not(.bdopt),button.primary,.cbtn,.cbtn.fill,.cbtn.outline,.cbtn.danger,.picks .outline,.picks .danger,a.outline{border-radius:4px}
+#saveModal .actions button#saveYes,#saveModal .actions button#saveNo,.modal .actions button.outline,.modal .actions button.danger:not(.bdopt),.modal .actions button.primary{border-radius:4px}
+.danger,.cbtn.outline,.cbtn.danger{border-width:1px}
 .picks .outline,.picks .danger{border-radius:12px}
 .vseg{border-radius:999px !important;border-color:rgba(0,0,0,.08) !important;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 .vseg button + button{border-left-color:rgba(0,0,0,.06) !important}
