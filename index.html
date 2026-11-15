@@ -1559,6 +1559,9 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
   #cropModal.ipl .zoompair{gap:26px !important;margin-top:18px}
   #cropModal.ipl .rotrow{gap:12px !important;row-gap:16px !important;margin-top:26px}
   #cropModal .cpadacts .cdeco{display:contents}
+  #cropModal .cpadacts #cropReset{flex:1 0 100%;order:2}
+  #cropModal .cpadacts #cropDelete{order:0}
+  #cropModal .cpadacts .cdeco > *{order:1}
   #cropModal .cpadacts .cdeco .toggle{flex:1 0 100%}
   #cropModal.ipl .cropacts2{flex-direction:column;flex-wrap:nowrap !important;align-items:stretch;row-gap:16px !important}
   #cropModal.ipl .cropacts2 .cgrid{width:100% !important;box-sizing:border-box;order:0 !important}
@@ -1566,6 +1569,19 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
   #cropModal.ipl .cropacts2 .cgrid{flex:none !important}
   #textModal .tpadacts{display:flex;justify-content:stretch;padding:4px 0 10px}
   #textModal .tpadacts .cbtn{flex:1 1 auto;height:40px}
+}
+
+/* タブレット：見出し「写真の調整（〇ページ）」、写真の情報は右端、［一覧｜見開き｜プレビュー］は写真の真ん中に */
+#cropModal.ctab #cropLabel .cmode{display:block}
+#cropModal.ctab .crophead h3 #cropLabel .cmode{font-size:14px !important;font-weight:700;color:var(--ink)}
+#cropModal.ctab #cropLabel .cpg{display:none}
+#cropModal.ctab #cropLabel .cinfo{font-weight:400;color:var(--muted)}
+@media (pointer:coarse) and (orientation:portrait){
+  #cropModal.ctab .crophead{display:grid !important;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:12px;row-gap:8px}
+  #cropModal.ctab #cropTitle,#cropModal.ctab #cropLabel{display:contents}
+  #cropModal.ctab #cropLabel .cmode{grid-row:1;grid-column:1;justify-self:start;white-space:nowrap}
+  #cropModal.ctab #cropLabel .cinfo{grid-row:1;grid-column:2;justify-self:end;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+  #cropModal.ctab .crophead .cropvseg{grid-row:2;grid-column:1/-1;justify-self:center;width:auto !important;margin:0}
 }
 
 /* スマホを横向きにしたときの写真の調整：写真は左、調整のボタン類は右 */
@@ -4305,13 +4321,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       cm.querySelector('.rotrow').after(cr);
       const tr = document.createElement('div'); tr.className = 'tpadacts';
       tr.appendChild(take($('tResetAll'))); $('textModal').querySelector('.tpanel').appendChild(tr);
+      [[$('cropReset'), '↺ この写真の調整をリセット'], [$('cropToText'), '装飾を編集']].forEach(([b, t]) => { b.dataset.pt = b.textContent; b.textContent = t; });
       cm.classList.add('ipl'); padMoved = { mv, cr, tr };
     } else if(!on && padMoved){
       for(let k = padMoved.mv.length - 1; k >= 0; k--){ const m = padMoved.mv[k]; m.p.insertBefore(m.el, m.n); }
+      [$('cropReset'), $('cropToText')].forEach(b => { if(b.dataset.pt != null){ b.textContent = b.dataset.pt; delete b.dataset.pt; } });
       padMoved.cr.remove(); padMoved.tr.remove(); cm.classList.remove('ipl'); padMoved = null;
     }
   }
   PADL.addEventListener('change', () => { applyPadLand(); if(!cm.hidden) drawCrop(); });
+  // タブレット：装飾と同じく「写真の調整（〇ページ）」の見出しを出す
+  cm.classList.toggle('ctab', COARSE && !PHONE);
   applyPadLand();
   function drawCrop(){
     const it = slots[cropIdx]; if(!it) return;
