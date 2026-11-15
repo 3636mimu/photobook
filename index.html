@@ -1552,11 +1552,18 @@ body:not(.sidedrawer) .sidetab,body:not(.sidedrawer) .sidescrim{display:none !im
 /* iPad の横向き：［リセット］［写真を解除］［装飾］は調整ボタンのすぐ下、［装飾を全削除］は装飾の欄の一番下へ */
 @media (pointer:coarse) and (orientation:landscape) and (min-height:600px){
   #cropModal.ipl .sheet{grid-template-rows:auto auto auto auto auto minmax(0,1fr);grid-template-areas:"stage head" "stage warn" "stage zoom" "stage rot" "stage mid" "stage acts"}
-  #cropModal .cpadacts{grid-area:mid;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
-  #cropModal .cpadacts .cbtn{flex:1 1 0;height:38px;min-width:0;padding:0 8px;white-space:nowrap}
+  #cropModal .cpadacts{grid-area:mid;display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:30px}
+  #cropModal .cpadacts .cbtn{flex:1 1 0;height:56px;min-width:0;padding:0 8px;white-space:nowrap}
+  /* ボタンの表示エリアを縦に広げて、ゆったり並べる */
+  #cropModal.ipl .sheet{row-gap:10px}
+  #cropModal.ipl .zoompair{gap:26px !important;margin-top:18px}
+  #cropModal.ipl .zoompair .zoomrow{font-size:14px}
+  #cropModal.ipl .rotrow{gap:12px !important;row-gap:16px !important;margin-top:26px}
+  #cropModal.ipl .rotrow .icon-btn{height:54px !important;font-size:13.5px}
+  #cropModal.ipl .rotrow #rotL,#cropModal.ipl .rotrow #rotR,#cropModal.ipl .rotrow #flipH,#cropModal.ipl .rotrow #flipV{font-size:12.5px}
   #cropModal .cpadacts .cdeco{display:contents}
   #cropModal .cpadacts .cdeco .toggle{flex:1 0 100%}
-  #cropModal.ipl .cropacts2{flex-direction:column;flex-wrap:nowrap !important;align-items:stretch;row-gap:6px !important}
+  #cropModal.ipl .cropacts2{flex-direction:column;flex-wrap:nowrap !important;align-items:stretch;row-gap:16px !important}
   #cropModal.ipl .cropacts2 .cgrid{width:100% !important;box-sizing:border-box;order:0 !important}
   #cropModal.ipl .cropacts2 #cropDone{width:100%;flex:none !important;height:40px;min-height:40px;order:1 !important}
   #cropModal.ipl .cropacts2 .cgrid{flex:none !important}
