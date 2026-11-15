@@ -3897,6 +3897,26 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // プレビュー（拡大）の背景は「一覧書き出し仕様」の背景に合わせる
   function syncViewerBg(){ const bg = $('sheetBg').value; viewer.style.background = bg; viewer.classList.toggle('vlight', bg === '#FFFFFF'); }
   $('sheetBg').addEventListener('change', () => { if(!viewer.hidden){ syncViewerBg(); if(viewer.classList.contains('gridmode')) showGrid(); } });
+  // プレビューは、できる端末（PC・Android・iPad）では全画面で表示する。iPhone は全画面の機能がないので今のまま
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  let vFs = false;
+  function vFsEnter(){
+    if(fsEl()) return;
+    const d = document.documentElement, rq = d.requestFullscreen || d.webkitRequestFullscreen;
+    if(!rq) return;
+    try{ vFs = true; const r = rq.call(d); if(r && r.catch) r.catch(() => { vFs = false; }); }catch(e){ vFs = false; }
+  }
+  function vFsExit(){
+    if(!vFs) return; vFs = false;
+    if(!fsEl()) return;
+    const ex = document.exitFullscreen || document.webkitExitFullscreen;
+    try{ const r = ex && ex.call(document); if(r && r.catch) r.catch(() => {}); }catch(e){}
+  }
+  // PC：Esc などで全画面が終わったら、プレビューも一緒に閉じる（Esc 1回で元の画面へ）
+  // タッチの端末（iPad の下スワイプ、Android の戻る操作など）では、全画面が終わってもプレビューはそのまま
+  const vFsChange = () => { if(fsEl() || !vFs) return; vFs = false; if(!COARSE && !viewer.hidden) closeViewer(); };
+  document.addEventListener('fullscreenchange', vFsChange);
+  document.addEventListener('webkitfullscreenchange', vFsChange);
   function openViewer(startPair, grid){
     vList = allPairs().filter(p => sample || hasPhoto(p) || hasDeco(p));
     syncViewerBg();
@@ -3909,6 +3929,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       b.addEventListener('click', () => showSpread(k));
       strip.appendChild(b);
     });
+    vFsEnter();
     viewer.hidden = false;
     document.body.style.overflow = 'hidden';
     if(grid) showGrid(); else { setGrid(false); showSpread(vPos, true); }
@@ -3946,7 +3967,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function closeViewer(){ if(typeof vzReset === 'function') vzReset(false);
     // the spread shown last in the preview becomes the one 'last opened' (ページ follows it too)
     if(vList && vList[vPos] != null){ lastPair = vList[vPos]; if(viewMode === 'page'){ const k = allPairs().indexOf(lastPair); if(k >= 0){ pagePos = k; renderAll(); } } }
-    endFlip(); showSpread.last = undefined; viewer.hidden = true; document.body.style.overflow = ''; $('openViewer').focus(); }
+    vFsExit(); endFlip(); showSpread.last = undefined; viewer.hidden = true; document.body.style.overflow = ''; $('openViewer').focus(); }
   function drawViewer(){
     warmNeighbours();
     const p = vList[vPos];
