@@ -6740,7 +6740,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const ta = $('gpDupName'), as = $('gpDupAs'), ov = $('gpDupOver'), note = $('gpDupNote'), asCard = $('gpDupAsCard'), clean = () => ta.value.replace(/\s*\n\s*/g, ' ').trim();
       $('gpDupCur').textContent = '「' + name + '」';
       ta.value = name; ta.readOnly = false; asCard.hidden = false; ov.disabled = false; ov.textContent = 'アルバムを開く'; ov.className = 'qbtn drop';
-      note.innerHTML = (count ? `現在 <b>${count}枚</b> の写真があり、新しく保存する写真と重複します。<br>` : '前の写真が残っていると、新しく保存する写真と重複します。<br>') + GPL + 'でアルバム内の写真を一度全て削除してください。';
+      note.innerHTML = (count ? `現在 <b>${count}枚</b> の写真があり、新しく保存する写真と重複します。<br>` : '前の写真が残っていると、新しく保存する写真と重複します。<br>') + GPL + ' アルバム内の写真を全て選択し、<br>⋮［ゴミ箱に移動］してください。';
       let opened = false;
       const sync = () => { const v = clean(); as.disabled = opened || !v || v === name; };
       ta.oninput = sync; sync();
