@@ -6550,6 +6550,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       imgs.push(img);
       if(!pdf) files.push({ name: `mihiraki_${st}_${isCover(p) ? 'cover' : String(p+1).padStart(2,'0')}.jpg`, blob: await withExif(img.blob, exifAt(t0, files.length)) });
     }
+    // JPG のときは、見開きの最後に一覧（index）を足す（一覧書き出しと同じ設定：列数・背景色）
+    if(!pdf){
+      status('一覧を書き出し中…');
+      const sh = buildSheet(), sb = sh && await new Promise(r => sh.toBlob(r, 'image/jpeg', params().q));
+      if(sb) files.push({ name: `mihiraki_${st}_index.jpg`, blob: await withExif(sb, exifAt(t0, files.length)) });
+    }
     if(dest && !pdf){ await gpUpload(files, dest); return; }
     if(pdf){
       // one PDF holding every spread, one spread per page
