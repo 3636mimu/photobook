@@ -1308,6 +1308,8 @@ button.outline:not(.bdopt),button.danger:not(.bdopt),button.primary,.cbtn,.cbtn.
 .stfixnote{align-self:center;font-size:12px;color:var(--muted);margin-left:4px}
 .qnote{margin:4px 0 0;font-size:11px;line-height:1.55}
 /* 最初の画面：小さい画面では中をスクロールできるように */
+/* 起動時の背景：和紙（描けるまでは無地の紙の色）。端末が暗い設定でも、いつも明るい紙 */
+#startModal{background:#EDE6DA 0 0/512px 512px}
 #startModal .startsheet{max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto}
 /* iPad 縦：最初の画面がスクロールしないで全部見えるように、縦の余白を少しずつ詰める（画面の高さが足りないときだけ） */
 @media (pointer:coarse) and (orientation:portrait) and (min-width:601px) and (max-height:1180px){
@@ -6953,6 +6955,45 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       : '<button type="button" data-v="a">A・B判</button><button type="button" data-v="2:3">2:3</button><span class="stfixnote">' + (stCrop === '2:3' ? '写真の形のまま、デジタルで見る用' : '印刷にも使える形') + '</span>';
     $('stOutRow').hidden = stCrop !== '2:3';   // 2:3 のときだけ、ページの解像度を選べる
   }
+  // ---------- 起動時の背景：美濃の手漉き和紙 ----------
+  // 画像は持たず、その場で描く。細い繊維がむらなく絡み、簀の目（横のうすい筋）と糸目（縦のうすい筋）がかすかに見える。明るさは端末の設定によらず、いつも明るい紙の色
+  function makeWashi(){
+    const S = 1024, k = .8, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+    let seed = 20261116; const R = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+    // つなぎ目が見えないよう、端にかかるものだけ反対側にも描く
+    const wrap = (x0, y0, x1, y1, fn) => { for(const dx of [-S, 0, S]) for(const dy of [-S, 0, S]){ if(x1 + dx < 0 || x0 + dx > S || y1 + dy < 0 || y0 + dy > S) continue; g.save(); g.translate(dx, dy); fn(); g.restore(); } };
+    g.fillStyle = '#E9E1D3'; g.fillRect(0, 0, S, S);
+    // 厚みのむら
+    for(let i = 0; i < 90; i++){ const x = R()*S, y = R()*S, r = 60 + R()*220, lite = R() < .55, a = .09 * k * (.4 + R()) * .55;
+      wrap(x - r, y - r, x + r, y + r, () => { const gr = g.createRadialGradient(x, y, 0, x, y, r), col = lite ? '255,253,248' : '150,132,105';
+        gr.addColorStop(0, `rgba(${col},${a})`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); }); }
+    // 繊維：向きを少しずつ変えながら進む、やわらかい線。両端は細く、まわりはにじむ
+    const fiber = (len, w, a, wob) => { let x = R()*S, y = R()*S, t = R()*Math.PI*2; const n = Math.max(6, Math.round(len / 7)), st = len / n, pts = [[x, y]];
+      const drift = (R() - .5) * wob * .5; let x0 = x, y0 = y, x1 = x, y1 = y;
+      for(let i = 0; i < n; i++){ t += drift / n * 6 + (R() - .5) * wob; x += Math.cos(t) * st; y += Math.sin(t) * st; pts.push([x, y]); x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+      wrap(x0 - 4, y0 - 4, x1 + 4, y1 + 4, () => { g.lineCap = g.lineJoin = 'round';
+        for(const [mw, ma] of [[4.2, .10], [2.2, .22], [1, 1]]){
+          for(let i = 1; i < pts.length - 1; i++){ const u = i / (pts.length - 1), tp = Math.pow(Math.sin(Math.PI * u), .55);
+            const m0 = [(pts[i-1][0] + pts[i][0]) / 2, (pts[i-1][1] + pts[i][1]) / 2], m1 = [(pts[i][0] + pts[i+1][0]) / 2, (pts[i][1] + pts[i+1][1]) / 2];
+            g.beginPath(); g.moveTo(m0[0], m0[1]); g.quadraticCurveTo(pts[i][0], pts[i][1], m1[0], m1[1]);
+            g.lineWidth = Math.max(.35, w * mw * tp); g.strokeStyle = `rgba(255,254,251,${a * ma * (.55 + .45 * tp)})`; g.stroke(); } } }); };
+    for(let i = 0; i < 5200; i++) fiber(16 + R()*44, .32 + R()*.3, (.07 + R()*.13) * k * 2.2, .5);
+    for(let i = 0; i < 900; i++) fiber(60 + R()*120, .4 + R()*.4, (.08 + R()*.14) * k * 2.4, .2);
+    // 簀の目（横）と糸目（縦。弱め）
+    for(let y = 0; y < S; y += S / 128){ const a = .024 * k * (.5 + R()); g.fillStyle = `rgba(120,102,76,${a})`; g.fillRect(0, y + (R()-.5)*.6, S, 2.2); g.fillStyle = `rgba(255,254,251,${a*1.2})`; g.fillRect(0, y + 3.4, S, 1.8); }
+    for(let x = S / 16; x < S; x += S / 8){ const gr = g.createLinearGradient(x - 5, 0, x + 5, 0), a = .035 * k * .4;
+      gr.addColorStop(0, 'rgba(120,102,76,0)'); gr.addColorStop(.5, `rgba(120,102,76,${a})`); gr.addColorStop(1, 'rgba(120,102,76,0)'); g.fillStyle = gr; g.fillRect(x - 5, 0, 10, S); }
+    // 表面のこまかい凹凸
+    const im = g.getImageData(0, 0, S, S), d = im.data;
+    for(let i = 0; i < d.length; i += 4){ const v = (R() - .5) * 11; d[i] += v; d[i+1] += v; d[i+2] += v; }
+    g.putImageData(im, 0, 0);
+    return c.toDataURL('image/jpeg', .9);
+  }
+  // 最初は無地の紙の色で出し、描けたら和紙に差し替える（起動を待たせない）
+  // 描くのは最初の1回だけ。2回目からは、この端末に覚えておいたものをすぐ使う
+  { const KEY = 'pbm-washi-v1', put = u => { $('startModal').style.backgroundImage = `url(${u})`; };
+    let u = null; try{ u = localStorage.getItem(KEY); }catch(e){}
+    if(u) put(u); else setTimeout(() => { try{ const w = makeWashi(); put(w); try{ localStorage.setItem(KEY, w); }catch(e){} }catch(e){} }, 400); }
   let stClose = function(){ $('startModal').hidden = true; };
   function stApply(){
     const c = START[stK];
