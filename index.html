@@ -6680,15 +6680,32 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }catch(e){ console.warn(e); }
     gBusyOff();
     const found = names.get(title);
+    let k2 = 2; while(names.has(`${title} (${k2})`)) k2++;   // 「名前 (2)」「名前 (3)」…と、空いている番号を付ける
+    const t2 = `${title} (${k2})`;
+    const empty = a => !(+a.mediaItemsCount > 0);
+    if(found && empty(found)){ saveAllSpreads({ title, albumId: found.id, url: found.productUrl }); return; }   // 空のアルバムなら、そのまま入れる
     if(found){
-      let k2 = 2; while(names.has(`${title} (${k2})`)) k2++;   // 「名前 (2)」「名前 (3)」…と、空いている番号を付ける
-      const t2 = `${title} (${k2})`;
       const k = await askPick('同じ名前のアルバムがあります', `<p>「${esc2(title)}」</p>`, [
         { k: 'new', main: true, title: '新しく作る', desc: `「${esc2(t2)}」として作ります`, go: '作る' },
         { k: 'open', title: '前のアルバムを開く', desc: 'Google フォトで、前の写真をゴミ箱に入れられます', go: '開く' }]);
-      if(k === 'open'){ if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); return; }
-      if(k !== 'new') return;
-      title = t2;
+      if(k === 'new'){ saveAllSpreads({ title: t2 }); return; }
+      if(k !== 'open') return;
+      if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener');
+      // Google フォトで片付けてもらうあいだ、ここで待つ
+      const go = await new Promise(r => askYesNo('前の写真をゴミ箱に入れたら', `<p>Google フォトのタブで「${esc2(title)}」の写真をすべてゴミ箱に入れてから、［続ける］を押してください。<br>空になった同じアルバムに、新しい写真を入れます。</p>`, () => r(true), '続ける', 'やめる', () => r(false)));
+      if(!go) return;
+      let cur = found;
+      try{ gBusy('Google フォトに保存しています', 'アルバムを確かめています…', null); cur = await gpJson('/albums/' + encodeURIComponent(found.id)); }catch(e){ console.warn(e); }
+      gBusyOff();
+      if(!empty(cur)){
+        const k3 = await askPick('まだ前の写真が残っています', `<p>「${esc2(title)}」に ${+cur.mediaItemsCount || ''}枚 残っています。</p>`, [
+          { k: 'add', title: 'このまま追加', desc: '前の写真のあとに入れます', go: '追加' },
+          { k: 'new', main: true, title: '新しく作る', desc: `「${esc2(t2)}」として作ります`, go: '作る' }]);
+        if(k3 === 'add'){ saveAllSpreads({ title, albumId: found.id, url: found.productUrl }); return; }
+        if(k3 === 'new'){ saveAllSpreads({ title: t2 }); return; }
+        return;
+      }
+      saveAllSpreads({ title, albumId: found.id, url: found.productUrl }); return;
     }
     saveAllSpreads({ title });
   }
