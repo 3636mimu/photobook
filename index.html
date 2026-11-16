@@ -7721,14 +7721,25 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // BOOKファイルに保存していない・保存後に変えたときは、閉じる前に保存をすすめる（Esc でやめる）
     if(!unsavedBook()){ closeEditor(); return; }
     const why = bookFile ? `BOOKファイル（${bookFile.replace(/[<>&]/g, '')}）に保存したあと、変更があります。` : 'このBOOKは、まだBOOKファイルに保存していません。';
-    // 保存して閉じる／保存せずに閉じる／編集に戻る（Esc・ブラウザの戻るも「編集に戻る」）
-    askPick('編集画面を閉じますか？', `<p>${why}</p>`, [
-      { k: 'save', main: true, title: '保存してから閉じる', desc: 'BOOKを保存して、最初の画面に戻ります。', go: '保存して閉じる' },
-      { k: 'drop', title: '保存せずに閉じる', desc: '「続きから作る」に一時保存されますが、消えることもあります。', go: '閉じる' }
-    ], '編集に戻る').then(k => {
+    // 保存して終了／保存せずに終了／編集にもどる：同じ形のボタン3つだけ（Esc・ブラウザの戻るは「編集にもどる」）
+    const m = $('pagesModal'), sh = m.querySelector('.sheet'), act = m.querySelector('.actions'), yes = $('pagesYes'), no = $('pagesNo');
+    $('pagesTitle').textContent = '編集画面を閉じますか？'; $('pagesMsg').innerHTML = why;
+    const keep = [yes.textContent, no.textContent, yes.className, yes.getAttribute('style'), no.getAttribute('style'), act.getAttribute('style')];
+    const drop = document.createElement('button'); drop.type = 'button'; drop.className = 'outline';
+    [no, drop, yes].forEach(b => b.setAttribute('style', 'min-width:0;flex:1 1 0;padding:10px 6px;white-space:nowrap;font-size:14px;font-weight:700;margin:0'));
+    act.setAttribute('style', 'justify-content:stretch;gap:8px');
+    no.textContent = '編集にもどる'; drop.textContent = '保存せずに終了'; yes.textContent = '保存して終了'; yes.className = 'primary';
+    no.after(drop);
+    const done = k => {
+      m.hidden = true; drop.remove(); document.removeEventListener('keydown', esc); yes.onclick = no.onclick = null;
+      [yes.textContent, no.textContent, yes.className] = keep; yes.setAttribute('style', keep[3]); no.setAttribute('style', keep[4]); act.setAttribute('style', keep[5]);
       if(k === 'drop') closeEditor();
       else if(k === 'save'){ closeAfterSave = true; if(fileHandle && bookFile) doSave(false); else $('workSave').click(); }
-    });
+    };
+    const esc = e => { if(e.key === 'Escape') done('back'); };
+    document.addEventListener('keydown', esc);
+    yes.onclick = () => done('save'); no.onclick = () => done('back'); drop.onclick = () => done('drop');
+    m.hidden = false; no.focus();
   });
   async function closeEditor(){
     if(hasWork()){ clearTimeout(autoT); dirty = true; await autoSave(); }
