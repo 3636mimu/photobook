@@ -8300,6 +8300,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         try{ blobs[uid] = await gGet(ids[uid]); }catch(e){ blobs[uid] = null; }
         if(canceled) return;
         status(`Google ドライブから写真を読み込んでいます…（${++done}/${total}）`); gBusy('', `写真 ${done} / ${total} 枚`, done / (total + 1));
+        if(blobs[uid] && /^image\//.test(blobs[uid].type || 'image/')) gBusyImg(blobs[uid]);   // 受け取った写真をそのつど見せる
       }
       if(canceled) return;
       // ここからは編集画面に入れるので、中止はできない
