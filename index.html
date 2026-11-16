@@ -8,6 +8,7 @@
 <meta name="author" content="YUJI MIMURA">
 <meta name="copyright" content="© 2026 YUJI MIMURA">
 <title>PHOTO BOOK MAKER</title>
+<script>/* 表示はいつも明るく。詳細設定の「暗い表示」を ON にした端末だけ暗くする */try{document.documentElement.dataset.theme=localStorage.getItem("pbm-dark")==="1"?"dark":"light"}catch(e){document.documentElement.dataset.theme="light"}</script>
 <!-- iPhone・iPad：メールアドレスや電話番号を勝手にリンクにしない（押すとメール作成が開いてしまうため） -->
 <meta name="format-detection" content="telephone=no,email=no,address=no,date=no">
 <!-- スマホ・iPad：ホーム画面に追加すると、ブラウザの枠なしの全画面で開く -->
@@ -1960,6 +1961,9 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
           </select>
         </div>
           </div>
+          <div class="sechead boxed" style="margin-bottom:10px"><span style="font-size:13px">暗い表示</span>
+            <button class="toggle" id="darkOn" type="button" role="switch" aria-checked="false" aria-label="暗い表示のオン・オフ"><span class="knob"></span><span class="tl">OFF</span></button>
+          </div>
           <button class="outline" id="tourAgain" type="button" style="width:100%;padding:9px;margin-bottom:8px">画面の案内をもう一度見る</button>
           <button class="outline" id="manualOpen2" type="button" style="width:100%;padding:9px;margin-bottom:8px">くわしい説明書を見る</button>
           <button class="outline" id="resetSettings" type="button" style="width:100%;padding:9px">設定を初期値に戻す</button>
@@ -2019,14 +2023,11 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
   --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#131416; --panel:#1C1D20; --ink:#E9E8E4; --muted:#9A9993; --line:#2E2F33;
-    --accent:#8FB0DE; --accent-ink:#101318; --soft:#232A35;
-    color-scheme:dark;
-  }
+:root[data-theme="dark"]{
+  --bg:#131416; --panel:#1C1D20; --ink:#E9E8E4; --muted:#9A9993; --line:#2E2F33;
+  --accent:#8FB0DE; --accent-ink:#101318; --soft:#232A35;
+  color-scheme:dark;
 }
-*{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.8}
 .wrap{max-width:760px;margin:0 auto;padding-inline:20px;padding-block:40px 64px}
 header{margin-bottom:28px}
@@ -2205,6 +2206,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   <section id="settings">
     <h2><span class="n">6</span>詳細設定<span class="small" style="font-weight:400">（ふだんは触らなくてOK）</span></h2>
     <p>画面上部の設定と、右側の「詳細設定」（押すと開きます）の中身です。</p>
+    <p>画面は、端末の設定に関係なく、いつも明るい表示です。「詳細設定」のいちばん下にある <b>暗い表示</b> のスイッチを ON にすると、その端末だけ暗い表示になります（初期値：OFF）。</p>
     <div class="tbl"><table>
       <tr><th colspan="3">画面上部の設定（画質だけは「詳細設定」の中）</th></tr>
       <tr><td>ページ数</td><td>4・8・16・24・36・48・60・72・96・120 ページ（写真集は 16・20・24・28・32・36・44・52・64・76・100・120 ページ。表紙・表紙の裏・裏表紙の裏・裏表紙の4ページを含んだ数で、A3 の紙1枚で4ページです）。2ページで1見開き。写真が入っているページより少なくすると「写真が消えますが本当にいいですか？」と確認が出て、YES で減らし、NO でそのままになります</td><td class="def">24ページ</td></tr>
@@ -7068,13 +7070,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   document.addEventListener('keydown', e => { if($('tour').hidden) return; if(e.key === 'Escape') tourEnd(); else if(e.key === 'ArrowRight' || e.key === 'Enter'){ e.preventDefault(); $('tourNext').click(); } else if(e.key === 'ArrowLeft') $('tourPrev').click(); }, true);
   addEventListener('resize', () => { if(!$('tour').hidden) tourShow(); });
   $('tourReplay').addEventListener('click', () => { document.querySelector('.howto').open = false; tourStart(); });
+  // 暗い表示：はじめは OFF（端末の設定によらず明るい表示）。ON にした端末だけ覚えておく
+  { const b = $('darkOn'), R = document.documentElement;
+    const sync = () => { const on = R.dataset.theme === 'dark'; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.querySelector('.tl').textContent = on ? 'ON' : 'OFF';
+      try{ const d = $('manualFrame').contentDocument; if(d && d.documentElement) d.documentElement.dataset.theme = R.dataset.theme; }catch(e){}
+      if(typeof renderAll === 'function') try{ renderAll(); }catch(e){} };
+    b.addEventListener('click', () => { const on = R.dataset.theme !== 'dark'; R.dataset.theme = on ? 'dark' : 'light'; try{ localStorage.setItem('pbm-dark', on ? '1' : '0'); }catch(e){} sync(); });
+    sync(); }
   // くわしい説明書（README を中に組み込み）
   function manualOpen(){
     document.querySelector('.howto').open = false; $('settings').open = false;
     const f = $('manualFrame');
     if(!f.dataset.ok){
       f.dataset.ok = '1';
-      f.addEventListener('load', () => { try{ const d = f.contentDocument;
+      f.addEventListener('load', () => { try{ const d = f.contentDocument; d.documentElement.dataset.theme = document.documentElement.dataset.theme;
         d.addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if(!a) return; e.preventDefault(); const t = d.getElementById(a.getAttribute('href').slice(1)); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); });
         d.addEventListener('keydown', e => { if(e.key === 'Escape') manualClose(); });
       }catch(e){} });
