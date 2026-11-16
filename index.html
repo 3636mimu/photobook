@@ -392,16 +392,18 @@ button{font:inherit}
 /* iPad の全画面：上の時計・電池の下にバーをさげ、見出しは左上の ✕ の右へ */
 .viewer.vfs{padding-top:max(env(safe-area-inset-top,0px),26px)}
 
-/* プレビュー：ページ番号のボタンは上のバーの真ん中に。下の行をなくしたぶん、写真を縦に大きく。「見開き 3 / 14」の表示はやめる（一覧のときの「一覧 ○組」は残す） */
+/* プレビュー：ページ番号のボタンは上のバーの真ん中に、［一覧／見開き］［閉じる］はいつも右端に。下の行をなくしたぶん、写真を縦に大きく。左上の「見開き 3 / 14」「一覧 ○組」の表示はやめる */
 .viewer{grid-template-rows:auto 1fr}
 .vbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr);align-items:center}
-.vbar .vbtns{justify-self:end}
+.vbar .vt{grid-column:1}.vbar .vstrip{grid-column:2}
+.vbar .vbtns{grid-column:3;justify-self:end}
 .vbar .vstrip{padding:0;min-width:0}
-.viewer:not(.gridmode) .vbar .vt{visibility:hidden;font-size:0}
+.viewer .vbar .vt{visibility:hidden;font-size:0}
 .viewer .vstage{padding-bottom:10px}
-.viewer.vfs.gridmode .vbar .vt{padding-left:84px}
 .viewer.vfs .vbar{grid-template-columns:minmax(72px,1fr) minmax(0,auto) minmax(0,1fr)}
 @media (max-width:640px){.vbar{grid-template-columns:minmax(0,1fr) auto}.vbar .vstrip{grid-column:1 / -1;grid-row:2;margin-top:6px}.vbar .vbtns{grid-column:2;grid-row:1}}
+/* スマホ・iPad の縦向き：写真に重なる ‹ › は出さない（左右のスワイプでめくれる）。横向きは今まで通り */
+@media (pointer:coarse) and (orientation:portrait){.viewer .varrow,.pgarrow{display:none !important}}
 .viewer.vfson{touch-action:none}
 .viewer.vfson .vgrid{touch-action:pan-y}
 .vstrip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:10px 16px 14px}
