@@ -721,15 +721,14 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 /* 書き出し先（パソコン／Google フォト） */
 #gpModal{z-index:58}
 #gpDup{z-index:59}
-#gpDup .gpsheet{max-width:460px;padding:26px 28px 22px}
+#gpDup .gpsheet{max-width:520px;padding:26px 28px 22px}
 #gpDup h3{margin:0 0 14px;font-size:15px;font-weight:500;text-align:center}
 #gpDup textarea{width:100%;box-sizing:border-box;resize:none;line-height:1.6;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;color:#111;background:#fff}
 #gpDup .actions{justify-content:center;gap:12px;margin-top:20px}
 #gpDup .qbtn{flex:0 1 120px}
 #gpDup .qbtn:disabled{opacity:.45;cursor:default;filter:none}
 #gpDup .qbtn[hidden]{display:none}
-#gpDup .gpnote img.gpl{margin-left:.25em}
-#gpDup .gpnote{margin:10px 2px 0;font-size:12.5px;color:var(--muted,#777);text-align:center;line-height:1.6}
+#gpDup .gpnote{margin:14px 2px 0;font-size:13.5px;line-height:1.75;text-align:left}
 #gpDup textarea[readonly]{background:#f6f5f2;color:#666}
 #gpModal .gpsheet{max-width:440px;padding:26px 28px 22px}
 #gpModal h3{margin:0 0 14px;font-size:15px;font-weight:500;text-align:center}
@@ -6739,7 +6738,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       const ta = $('gpDupName'), as = $('gpDupAs'), ov = $('gpDupOver'), note = $('gpDupNote'), clean = () => ta.value.replace(/\s*\n\s*/g, ' ').trim();
       ta.value = name; ta.readOnly = false; as.hidden = false; ov.textContent = '上書き'; ov.className = 'qbtn drop';
-      note.innerHTML = '上書きは、前の写真を' + GPL + 'でゴミ箱へ移してから';
+      const why = '上書きでこのまま書き出すと、前の写真と重複してしまいます。<br>' + GPL + 'の写真は、ここから削除できません。<br>';
+      note.innerHTML = why + '［上書き］でアルバムを開き、写真をすべて選んで<br>ゴミ箱へ移してください。';
       let opened = false;
       const sync = () => { const v = clean(); as.disabled = !v || v === name; };
       ta.oninput = sync; sync();
@@ -6750,7 +6750,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(opened) return fin({ k: 'over' });
         opened = true; if(url) window.open(url, '_blank', 'noopener');
         ta.readOnly = true; as.hidden = true; ov.textContent = '続ける'; ov.className = 'qbtn save';
-        note.textContent = 'ゴミ箱へ移したら、［続ける］を押してください。';
+        note.innerHTML = why + 'アルバムの写真をすべて選び、ゴミ箱へ移したら<br>［続ける］を押してください。';
       };
       as.onclick = () => { const v = clean(); if(v && v !== name) fin({ k: 'rename', name: v }); };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
