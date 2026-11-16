@@ -728,7 +728,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #gpModal .gpdest input{accent-color:#2A8C7F;margin:0}
 #gpModal .gpalbum{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:13px;color:var(--muted)}
 #gpModal .gpalbum[hidden]{display:none}
-#gpModal .gpalbum input{padding:9px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;color:#111;background:#fff}
+#gpModal .gpalbum textarea{resize:none;line-height:1.6;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;color:#111;background:#fff}
 #gpModal .actions{justify-content:center;gap:14px;margin-top:20px}
 #gpModal .qbtn{flex:0 1 128px}
 /* 編集を中断するときの3つのボタン：丸い塗りのボタン（続ける＝落ち着いたグレージュ、閉じる＝赤、保存＝アクセント色） */
@@ -6227,6 +6227,24 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const d = new Date(), z = n => String(n).padStart(2,'0');
     return `${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;
   }
+  // 書き出した JPG に日時を入れる（撮影日時＝書き出した日時、タイムゾーン付き）。Google フォトやパソコンで正しい日時・ページ順に並ぶよう、1枚ごとに1秒ずつ進める
+  async function withExif(blob, when){
+    if(!blob || blob.type !== 'image/jpeg') return blob;
+    const z = n => String(n).padStart(2, '0'), d = when;
+    const dt = `${d.getFullYear()}:${z(d.getMonth()+1)}:${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}\0`;
+    const o = -d.getTimezoneOffset(), off = `${o < 0 ? '-' : '+'}${z(Math.floor(Math.abs(o) / 60))}:${z(Math.abs(o) % 60)}\0`;
+    const T = new Uint8Array(180), v = new DataView(T.buffer), str = (at, t) => { for(let i = 0; i < t.length; i++) T[at + i] = t.charCodeAt(i); };
+    str(0, 'II'); v.setUint16(2, 42, true); v.setUint32(4, 8, true);
+    const ent = (at, tag, type, cnt, val) => { v.setUint16(at, tag, true); v.setUint16(at + 2, type, true); v.setUint32(at + 4, cnt, true); v.setUint32(at + 8, val, true); };
+    v.setUint16(8, 2, true); ent(10, 0x0132, 2, 20, 104); ent(22, 0x8769, 4, 1, 38); v.setUint32(34, 0, true);
+    v.setUint16(38, 5, true); ent(40, 0x9000, 7, 4, 0); str(48, '0232'); ent(52, 0x9003, 2, 20, 124); ent(64, 0x9004, 2, 20, 144); ent(76, 0x9010, 2, 7, 164); ent(88, 0x9011, 2, 7, 172); v.setUint32(100, 0, true);
+    str(104, dt); str(124, dt); str(144, dt); str(164, off); str(172, off);
+    const head = new Uint8Array(10); head.set([0xFF, 0xE1, 0, 0, 0x45, 0x78, 0x69, 0x66, 0, 0]); new DataView(head.buffer).setUint16(2, 2 + 6 + T.length);
+    const b = new Uint8Array(await blob.arrayBuffer());
+    if(b[0] !== 0xFF || b[1] !== 0xD8) return blob;
+    return new Blob([b.subarray(0, 2), head, T, b.subarray(2)], { type: 'image/jpeg' });
+  }
+  const exifAt = (t0, i) => new Date(t0.getTime() + i * 1000);
   // 写真集モードの「写真集書き出し」と「Photoback 入稿用」は、画質スライダーにかかわらず 100%
   async function render(p, withSize, q){
     await coverFontsReady();
@@ -6344,14 +6362,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   async function savePairs(list){
     list = list.filter(pairReady);
     if(!list.length) return;
-    const st = stamp();
+    const st = stamp(), t0 = new Date();
     let done = 0;
     for(const p of list){
       status(`見開き ${p+1} を書き出し中…`);
       const img = await render(p, true);
       if(!img){ status(`見開き ${p+1} の書き出しに失敗しました。ページの解像度を下げてください。`); return; }
       const pdf = isPdf();
-      const blob = pdf ? await makePdf([img]) : img.blob;
+      const blob = pdf ? await makePdf([img]) : await withExif(img.blob, exifAt(t0, done));
       const filename = `mihiraki_${st}_${isCover(p) ? 'cover' : String(p+1).padStart(2,'0')}.${pdf ? 'pdf' : 'jpg'}`;
       if(downloads){
         try{ await downloads.save({filename, data:blob}); done++; }
@@ -6522,7 +6540,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!list.length) return;
     let toDir;
     if(!dest) try{ toDir = await ensureDir(); }catch(e){ status('保存しませんでした。フォルダを選んだあと「このサイトにファイルの編集を許可しますか？」で「許可する」を押すと保存できます。'); return; }
-    const st = stamp(), files = [];
+    const st = stamp(), files = [], t0 = new Date();
     const pdf = isPdf(), imgs = [];
     if(pdf && booklet){ await saveBookletPdf(st, toDir); return; }
     for(const p of list){
@@ -6530,7 +6548,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const img = await render(p, true, booklet ? 1 : null);
       if(!img){ status('書き出しに失敗しました。ページの解像度を下げてください。'); return; }
       imgs.push(img);
-      if(!pdf) files.push({ name: `mihiraki_${st}_${isCover(p) ? 'cover' : String(p+1).padStart(2,'0')}.jpg`, blob: img.blob });
+      if(!pdf) files.push({ name: `mihiraki_${st}_${isCover(p) ? 'cover' : String(p+1).padStart(2,'0')}.jpg`, blob: await withExif(img.blob, exifAt(t0, files.length)) });
     }
     if(dest && !pdf){ await gpUpload(files, dest); return; }
     if(pdf){
@@ -6613,7 +6631,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       m.innerHTML = `<div class="sheet gpsheet"><h3>書き出し先</h3>
         <div class="gpdest"><label><input type="radio" name="gpd" value="local"><span>${MOBILE ? 'この端末' : 'パソコン'}に保存</span></label>
         <label><input type="radio" name="gpd" value="photos"><span>Google フォトのアルバムに保存</span></label></div>
-        <div class="gpalbum"><span>アルバム名</span><input type="text" id="gpTitle" maxlength="500" autocomplete="off"></div>
+        <div class="gpalbum"><span>アルバム名</span><textarea id="gpTitle" rows="3" maxlength="500" autocomplete="off" spellcheck="false"></textarea></div>
         <div class="actions"><button type="button" class="qbtn keep" id="gpNo">キャンセル</button><button type="button" class="qbtn save" id="gpGo">書き出す</button></div></div>`;
       document.body.append(m);
       const sync = () => { const ph = m.querySelector('input[name=gpd]:checked').value === 'photos'; m.querySelector('.gpalbum').hidden = !ph; };
@@ -6621,11 +6639,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const close = () => { m.hidden = true; };
       $('gpNo').onclick = close;
       m.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
+      $('gpTitle').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.isComposing) e.preventDefault(); });   // アルバム名は1行（折り返して見えるだけ）
       $('gpGo').onclick = () => {
         const ph = m.querySelector('input[name=gpd]:checked').value === 'photos';
         try{ localStorage.setItem('pbm-gpdest', ph ? 'photos' : 'local'); }catch(e){}
         if(!ph){ close(); saveAllSpreads(); return; }
-        const title = $('gpTitle').value.trim() || bookTitle();
+        const title = $('gpTitle').value.replace(/\s*\n\s*/g, ' ').trim() || bookTitle();
+        gpAlbumName(title);
         const tk = gpToken();   // 押したその場で（Google の窓）
         close();
         tk.then(ok => ok ? gpStart(title) : status('Google フォトにつながりませんでした。'));
@@ -6634,27 +6654,37 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
     let last = 'local'; try{ last = localStorage.getItem('pbm-gpdest') || 'local'; }catch(e){}
     m.querySelector(`input[value=${last}]`).checked = true; m._sync();
-    $('gpTitle').value = bookTitle();
+    $('gpTitle').value = gpAlbumName() || bookTitle();
     m.hidden = false; $('gpGo').focus();
+  }
+  // BOOK ごとに、前回入れたアルバム名を覚えておく（BOOK に一緒に保存するので、ドライブや BOOK ファイルを通して別の端末でも同じ名前から始まる）
+  function gpAlbumName(set){
+    if(set === undefined) return gpAlbumCur;
+    if(set === gpAlbumCur) return;
+    gpAlbumCur = set; markDirty();
   }
   function bookTitle(){ return (bookFile || '').replace(/\.pbmk$/i, '') || `PHOTO BOOK ${stamp()}`; }
   async function gpStart(title){
-    // ツールが前に作った同じ名前のアルバムがあれば、そこに足すか、新しく作るかを選ぶ
-    let found = null;
+    // ツールが前に作った同じ名前のアルバムがあるときは、「追加」はしない（古いページと混ざるため）
+    // 番号を付けた名前で新しく作るか、前のアルバムを開いて手で片付けるかを選ぶ（ツールから写真を消すことは Google の決まりでできない）
+    const names = new Map();
     try{ gBusy('Google フォトに保存しています', '準備しています…', null);
       let tok = '';
-      do{ const r = await gpJson('/albums?pageSize=50' + (tok ? '&pageToken=' + encodeURIComponent(tok) : '')); found = (r.albums || []).find(a => a.title === title) || found; tok = found ? '' : r.nextPageToken || ''; }while(tok);
+      do{ const r = await gpJson('/albums?pageSize=50' + (tok ? '&pageToken=' + encodeURIComponent(tok) : '')); (r.albums || []).forEach(a => { if(!names.has(a.title)) names.set(a.title, a); }); tok = r.nextPageToken || ''; }while(tok);
     }catch(e){ console.warn(e); }
     gBusyOff();
-    let dest = { title };
+    const found = names.get(title);
     if(found){
+      let k2 = 2; while(names.has(`${title} (${k2})`)) k2++;   // 「名前 (2)」「名前 (3)」…と、空いている番号を付ける
+      const t2 = `${title} (${k2})`;
       const k = await askPick('同じ名前のアルバムがあります', `<p>「${esc2(title)}」</p>`, [
-        { k: 'add', main: true, title: 'このアルバムに追加', desc: '', go: '追加' },
-        { k: 'new', title: '新しいアルバムを作る', desc: '', go: '作る' }]);
-      if(!k) return;
-      if(k === 'add') dest = { title, albumId: found.id, url: found.productUrl };
+        { k: 'new', main: true, title: '新しく作る', desc: `「${esc2(t2)}」として作ります`, go: '作る' },
+        { k: 'open', title: '前のアルバムを開く', desc: 'Google フォトで、前の写真をゴミ箱に入れられます', go: '開く' }]);
+      if(k === 'open'){ if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); return; }
+      if(k !== 'new') return;
+      title = t2;
     }
-    saveAllSpreads(dest);
+    saveAllSpreads({ title });
   }
   async function gpUpload(files, d){
     gBusy('Google フォトに保存しています', '準備しています…', null);
@@ -6753,13 +6783,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!list.length) return;
     let toDir;
     try{ toDir = await ensureDir(); }catch(e){ status('保存しませんでした。フォルダを選んだあと「このサイトにファイルの編集を許可しますか？」で「許可する」を押すと保存できます。'); return; }
-    const st = stamp(), files = [];
+    const st = stamp(), files = [], t0 = new Date();
     let k = 0;
     for(const i of list){
       status(`写真 ${files.length + 1} / ${list.length} を書き出し中…`);
       const blob = await renderSingle(i);
       if(!blob){ status('書き出しに失敗しました。ページの解像度を下げてください。'); return; }
-      files.push({ name: singleName(st, i, singleSpecial(i) ? 0 : k++), blob });
+      files.push({ name: singleName(st, i, singleSpecial(i) ? 0 : k++), blob: await withExif(blob, exifAt(t0, files.length)) });
     }
     if(toDir){
       try{
@@ -7311,7 +7341,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const workKind = () => !booklet ? 'spread' : $('crop').value === 'life' ? 'life' : $('crop').value === '2220' ? 'graph' : 'conv';
   const ADJ = ['ox', 'oy', 'z', 'rot', 'tilt', 'flipH', 'flipV'];
   const newId = () => 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  var workId = null, puid = 0, booted = false;
+  var workId = null, puid = 0, booted = false, gpAlbumCur = '';   // gpAlbumCur：この BOOK の Google フォトのアルバム名（BOOK に一緒に保存して、別の端末でも同じ名前から始める）
   // 同じ写真ファイルは、どの作品でも同じ uid（ブラウザの中に1回だけ保存して、容量がふくらまないように）
   const fileKey = f => { const k = `${f.name}|${f.size}|${f.lastModified}`; let h = 5381; for(let i = 0; i < k.length; i++) h = ((h << 5) + h + k.charCodeAt(i)) | 0; return 'f' + (h >>> 0).toString(36) + f.size.toString(36); };
   const uidOf = it => it.uid || (it.uid = it.file ? fileKey(it.file) : 'p' + Date.now().toString(36) + (puid++).toString(36) + Math.random().toString(36).slice(2, 6));
@@ -7326,7 +7356,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function buildProject(){
     return { app: 'PHOTO BOOK MAKER', v: 1, id: workId, savedAt: Date.now(), kind: workKind(), title: workTitle(), pages: pagesValue(),
-      settings: currentSettings(), tobiraLayout, slotsLen: slots.length, wide: [...wide], decos: JSON.parse(JSON.stringify(decos)),
+      settings: currentSettings(), tobiraLayout, ...(gpAlbumCur ? { gpAlbum: gpAlbumCur } : {}), slotsLen: slots.length, wide: [...wide], decos: JSON.parse(JSON.stringify(decos)),
       slots: slots.map(it => { if(!it) return null; const o = { uid: uidOf(it), name: it.name || '', type: (it.file && it.file.type) || 'image/jpeg', bytes: it.bytes || 0 }; ADJ.forEach(k => { if(it[k] != null) o[k] = it[k]; }); return o; }) };
   }
   const usedMyFonts = () => [...new Set(Object.values(decos).flat().map(t => t && t.font).filter(f => f && myFonts.includes(f)))];
@@ -7407,6 +7437,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
 
   // 保存した作業を、そのときの形（写真集モード・仕上がりサイズ・ページ数・扉奥付）ごと元に戻す
   async function restoreProject(P, getBlob){
+    gpAlbumCur = typeof P.gpAlbum === 'string' ? P.gpAlbum : '';
     for(let i = 0; i < slots.length; i++){ release(i); slots[i] = null; }
     sample = false; wide.clear(); lost = [];
     applySettings(Object.assign({}, P.settings || {}));
@@ -7462,7 +7493,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   addEventListener('resize', () => fitStartTitle());
   function syncedToFile(){ fileChanged = false; const P = buildProject(); fileSig = sigOf(P); fileSnap = { project: P, thumb: workThumb() }; dirty = true; clearTimeout(autoT); autoT = setTimeout(autoSave, 300); }
-  function startNewWork(){ workId = null; baseSavedAt = 0; fileSig = null; bookFile = ''; fileSnap = null; fileHandle = null; autoOn = false; autoAt = ''; fileAt = 0; fileChanged = false; syncAutoUI(); lost = []; if(Object.keys(decos).length){ decos = {}; saveDecos(); renderAll(); } }
+  function startNewWork(){ gpAlbumCur = ''; workId = null; baseSavedAt = 0; fileSig = null; bookFile = ''; fileSnap = null; fileHandle = null; autoOn = false; autoAt = ''; fileAt = 0; fileChanged = false; syncAutoUI(); lost = []; if(Object.keys(decos).length){ decos = {}; saveDecos(); renderAll(); } }
 
   // ---------- 自動保存（ブラウザの中：IndexedDB） ----------
   const IDB = (() => { let p = null; return () => p || (p = new Promise((res, rej) => {
