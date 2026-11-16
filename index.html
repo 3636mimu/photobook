@@ -392,6 +392,8 @@ button{font:inherit}
 /* iPad の全画面：上の時計・電池の下にバーをさげ、見出しは左上の ✕ の右へ */
 .viewer.vfs{padding-top:max(env(safe-area-inset-top,0px),26px)}
 .viewer.vfs .vbar .vt{padding-left:84px}
+.viewer.vfson{touch-action:none}
+.viewer.vfson .vgrid{touch-action:pan-y}
 .vstrip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:10px 16px 14px}
 .vstrip button{min-width:32px;height:28px;border:1px solid #3A3B40;background:none;color:#9A9993;border-radius:3px;font-family:var(--mono);font-size:12px;cursor:pointer}
 .vstrip button[aria-current="true"]{background:#8FB0DE;color:#101318;border-color:#8FB0DE}
@@ -3989,7 +3991,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const IPAD = COARSE && navigator.maxTouchPoints > 1 && /iPad|Macintosh/.test(navigator.userAgent);
   const vFsChange = () => {
     viewer.classList.toggle('vfs', IPAD && fsEl() === viewer);
-    if(fsEl() || !vFs) return; vFs = false; if(!COARSE && !viewer.hidden) closeViewer(); };
+    viewer.classList.toggle('vfson', fsEl() === viewer);
+    if(fsEl()){ vFsLost = false; return; }
+    if(!vFs) return; vFs = false; if(!COARSE && !viewer.hidden) closeViewer(); else if(!viewer.hidden) vFsLost = true; };
+  // iPad・スマホ：下へのスワイプなどで全画面が終わってしまったら、次のタップで全画面に戻す（［閉じる］は除く）
+  let vFsLost = false;
+  viewer.addEventListener('click', e => { if(!vFsLost || viewer.hidden || fsEl() || e.target.closest('#vClose')) return; vFsLost = false; vFsEnter(); }, true);
+  // 全画面のあいだは、プレビューの上での指の動きをツール側で受け止める（iPad が「下へスワイプ＝全画面を終わる」と受け取りにくいように）。一覧の縦スクロールだけは通す
+  viewer.addEventListener('touchmove', e => { if(fsEl() !== viewer || e.target.closest('.vgrid')) return; if(e.cancelable) e.preventDefault(); }, { passive: false });
   document.addEventListener('fullscreenchange', vFsChange);
   document.addEventListener('webkitfullscreenchange', vFsChange);
   function openViewer(startPair, grid){
@@ -4042,7 +4051,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function closeViewer(){ if(typeof vzReset === 'function') vzReset(false);
     // the spread shown last in the preview becomes the one 'last opened' (ページ follows it too)
     if(vList && vList[vPos] != null){ lastPair = vList[vPos]; if(viewMode === 'page'){ const k = allPairs().indexOf(lastPair); if(k >= 0){ pagePos = k; renderAll(); } } }
-    vFsExit(); endFlip(); showSpread.last = undefined; viewer.hidden = true; document.body.style.overflow = ''; $('openViewer').focus(); }
+    vFsLost = false; vFsExit(); endFlip(); showSpread.last = undefined; viewer.hidden = true; document.body.style.overflow = ''; $('openViewer').focus(); }
   function drawViewer(){
     warmNeighbours();
     const p = vList[vPos];
