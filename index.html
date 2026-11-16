@@ -7072,7 +7072,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     box.hidden = !open; $('stHow').setAttribute('aria-expanded', open ? 'true' : 'false');
   });
   $('stKeep').addEventListener('click', () => { startNewWork(); stClose(); });
-  document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('startModal').hidden) stClose(); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && !e.pbmBack && !$('startModal').hidden) stClose(); });
   // ---------- はじめての案内（ツアー） ----------
   const TOUR_KEY = 'mihiraki-tour-v1';
   // ツアーで案内するカード：表紙ではない、≡・◫◫ が出ている最初の見開き（3〜7はこの1枚で順に案内）
@@ -7694,6 +7694,27 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(dirty){ clearTimeout(autoT); autoSave(); }
     e.preventDefault(); e.returnValue = '';
   });
+  // ---------- ブラウザの「戻る」（iPhone の左端スワイプも）＝ツールの中の「戻る」 ----------
+  // 開いている画面を閉じる → 編集画面ならスタート画面へ（作業は一時保存）→ スタート画面のときだけ、本当にツールから出る
+  {
+    const shown = el => el && !el.hidden && el.getClientRects().length > 0;
+    const layerOpen = () => shown($('tour')) || shown(viewer) || shown($('manual')) || shown($('setSheet')) || document.body.classList.contains('sideopen')
+      || [...document.querySelectorAll('.modal,[aria-modal="true"]')].some(el => el.id !== 'startModal' && !el.closest('#startModal .startsheet') && shown(el));
+    const guard = () => { try{ history.pushState({ pbm: 1 }, ''); }catch(e){} };
+    if(!(history.state && history.state.pbm)) guard();
+    addEventListener('popstate', () => {
+      if(layerOpen()){
+        const ev = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); ev.pbmBack = true;
+        (document.activeElement && document.activeElement !== document.body ? document.activeElement : document).dispatchEvent(ev);
+        guard(); return;
+      }
+      if(shown($('startModal'))){
+        if(shown($('stStep2'))){ $('stBack').click(); guard(); return; }
+        history.back(); return;   // スタート画面：ツールから出る
+      }
+      $('closeEditor').click(); guard();
+    });
+  }
   $('closeEditor').addEventListener('click', () => {
     // BOOKファイルに保存していない・保存後に変えたときは、閉じる前に保存をすすめる（Esc でやめる）
     if(!unsavedBook()){ closeEditor(); return; }
