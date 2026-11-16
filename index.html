@@ -727,6 +727,10 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #gpDup .actions{justify-content:center;gap:12px;margin-top:20px}
 #gpDup .qbtn{flex:0 1 120px}
 #gpDup .qbtn:disabled{opacity:.45;cursor:default;filter:none}
+#gpDup .qbtn[hidden]{display:none}
+#gpDup .gpnote img.gpl{margin-left:.25em}
+#gpDup .gpnote{margin:10px 2px 0;font-size:12.5px;color:var(--muted,#777);text-align:center;line-height:1.6}
+#gpDup textarea[readonly]{background:#f6f5f2;color:#666}
 #gpModal .gpsheet{max-width:440px;padding:26px 28px 22px}
 #gpModal h3{margin:0 0 14px;font-size:15px;font-weight:500;text-align:center}
 #gpModal .gpdest{display:flex;flex-direction:column;gap:8px}
@@ -6656,8 +6660,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!m){
       m = document.createElement('div'); m.className = 'modal'; m.id = 'gpModal'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
       m.innerHTML = `<div class="sheet gpsheet"><h3>書き出し先</h3>
-        <div class="gpdest"><label><input type="radio" name="gpd" value="local"><span>${MOBILE ? 'この端末' : 'パソコン'}に保存</span></label>
-        <label><input type="radio" name="gpd" value="photos"><span>${GPL}のアルバムに保存</span></label></div>
+        <div class="gpdest"><label><input type="radio" name="gpd" value="local"><span>この端末</span></label>
+        <label><input type="radio" name="gpd" value="photos"><span>${GPL}のアルバム</span></label></div>
         <div class="gpalbum"><span>アルバム名</span><textarea id="gpTitle" rows="3" maxlength="500" autocomplete="off" spellcheck="false"></textarea></div>
         <div class="actions"><button type="button" class="qbtn keep" id="gpNo">キャンセル</button><button type="button" class="qbtn save" id="gpGo">書き出す</button></div></div>`;
       document.body.append(m);
@@ -6706,14 +6710,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const found = names.get(t);
       if(!found){ if(t !== title) gpAlbumName(t); saveAllSpreads({ title: t }); return; }
       if(empty(found)){ saveAllSpreads({ title: t, albumId: found.id, url: found.productUrl }); return; }   // 空のアルバムなら、そのまま入れる
-      const r = await gpAskDup(t);
+      const r = await gpAskDup(t, found.productUrl);
       if(!r) return;
       if(r.k === 'rename'){ t = r.name; continue; }   // 別の名前：その名前もあれば、もう一度聞く
-      // 上書き：前の写真はツールから消せないので、Google フォトで手でゴミ箱へ → 空になった同じアルバムに入れる
-      const okGo = await new Promise(res0 => { const sh = $('pagesModal').querySelector('.sheet'), mw = sh.style.maxWidth; sh.style.maxWidth = '520px'; const res = v => { sh.style.maxWidth = mw; res0(v); }; askYesNo('Google フォトの、アルバムを空にしてください', `<p>このまま書き出すと、前の写真と重複してしまいます。<br>Google フォトの写真は、ここから削除できません。<br>アルバム「${esc2(t)}」の写真をすべて選び、<br>ゴミ箱へ移してください。</p>`, () => { if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); res(true); }, 'Google フォト アルバムを開く', 'キャンセル', () => res(false)); });
-      if(!okGo) return;
-      const go = await new Promise(res => askYesNo('写真を削除しましたか？', `<p>ゴミ箱に移動したら、［続ける］を押してください。</p>`, () => res(true), '続ける', 'キャンセル', () => res(false)));
-      if(!go) return;
+      // 上書き：窓の中でアルバムを開き、ゴミ箱へ移してもらってから［続ける］（gpAskDup）
       let cur = found;
       try{ gBusy('Google フォトに保存しています', 'アルバムを確かめています…', null); cur = await gpJson('/albums/' + encodeURIComponent(found.id)); }catch(e){ console.warn(e); }
       gBusyOff();
@@ -6725,24 +6725,33 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
   }
   // 同じ名前のアルバムがあるとき（Lightroom の「既に存在します」と同じ形）：名前はその場で直せる
-  function gpAskDup(name){
+  function gpAskDup(name, url){
     return new Promise(done => {
       let m = $('gpDup');
       if(!m){
         m = document.createElement('div'); m.className = 'modal'; m.id = 'gpDup'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
         m.innerHTML = `<div class="sheet gpsheet"><h3>以下のアルバムはすでに存在します</h3>
           <textarea id="gpDupName" rows="3" maxlength="500" spellcheck="false"></textarea>
+          <p class="gpnote" id="gpDupNote"></p>
           <div class="actions"><button type="button" class="qbtn keep" id="gpDupNo">キャンセル</button><button type="button" class="qbtn drop" id="gpDupOver">上書き</button><button type="button" class="qbtn save" id="gpDupAs">別名で保存</button></div></div>`;
         document.body.append(m);
         $('gpDupName').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.isComposing) e.preventDefault(); });
       }
-      const ta = $('gpDupName'), as = $('gpDupAs'), clean = () => ta.value.replace(/\s*\n\s*/g, ' ').trim();
-      ta.value = name;
+      const ta = $('gpDupName'), as = $('gpDupAs'), ov = $('gpDupOver'), note = $('gpDupNote'), clean = () => ta.value.replace(/\s*\n\s*/g, ' ').trim();
+      ta.value = name; ta.readOnly = false; as.hidden = false; ov.textContent = '上書き'; ov.className = 'qbtn drop';
+      note.innerHTML = '上書きは、前の写真を' + GPL + 'でゴミ箱へ移してから';
+      let opened = false;
       const sync = () => { const v = clean(); as.disabled = !v || v === name; };
       ta.oninput = sync; sync();
       const fin = r => { m.hidden = true; m.onkeydown = null; done(r); };
       $('gpDupNo').onclick = () => fin(null);
-      $('gpDupOver').onclick = () => fin({ k: 'over' });
+      // 上書き：その場でアルバムを開き、同じ窓のボタンを［続ける］に
+      ov.onclick = () => {
+        if(opened) return fin({ k: 'over' });
+        opened = true; if(url) window.open(url, '_blank', 'noopener');
+        ta.readOnly = true; as.hidden = true; ov.textContent = '続ける'; ov.className = 'qbtn save';
+        note.textContent = 'ゴミ箱へ移したら、［続ける］を押してください。';
+      };
       as.onclick = () => { const v = clean(); if(v && v !== name) fin({ k: 'rename', name: v }); };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
       m.hidden = false; ta.focus(); ta.select();
