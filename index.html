@@ -730,7 +730,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #gpDup .gpcard.off{opacity:.45}
 #gpDup:focus{outline:none}
 #gpDup .gprow{display:flex;justify-content:flex-end;margin-top:10px}
-#gpDup .gprow .qbtn{flex:0 0 116px}
+#gpDup .gprow .qbtn{flex:0 0 132px}
 #gpDup textarea{width:100%;box-sizing:border-box;resize:none;line-height:1.6;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;color:#111;background:#fff}
 #gpDup textarea[readonly]{background:#f6f5f2;color:#666}
 #gpDup .actions{justify-content:center;margin-top:16px}
@@ -6736,7 +6736,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!m){
         m = document.createElement('div'); m.className = 'modal'; m.id = 'gpDup'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
         m.innerHTML = `<div class="sheet gpsheet"><h3>このアルバムはすでに存在します</h3><p class="gpname" id="gpDupCur"></p>
-          <div class="gpcard" id="gpDupOverCard"><b>上書き</b><p id="gpDupNote"></p><div class="gprow"><button type="button" class="qbtn drop" id="gpDupOver">上書き</button></div></div>
+          <div class="gpcard" id="gpDupOverCard"><b>上書き</b><p id="gpDupNote"></p><div class="gprow"><button type="button" class="qbtn drop" id="gpDupOver">アルバムを開く</button></div></div>
           <div class="gpcard" id="gpDupAsCard"><b>別名で保存</b><textarea id="gpDupName" rows="2" maxlength="500" spellcheck="false"></textarea><div class="gprow"><button type="button" class="qbtn save" id="gpDupAs">別名で保存</button></div></div>
           <div class="actions"><button type="button" class="qbtn keep" id="gpDupNo">キャンセル</button></div></div>`;
         document.body.append(m);
@@ -6744,7 +6744,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       const ta = $('gpDupName'), as = $('gpDupAs'), ov = $('gpDupOver'), note = $('gpDupNote'), asCard = $('gpDupAsCard'), clean = () => ta.value.replace(/\s*\n\s*/g, ' ').trim();
       $('gpDupCur').textContent = '「' + name + '」';
-      ta.value = name; ta.readOnly = false; asCard.classList.remove('off'); ov.textContent = '上書き'; ov.className = 'qbtn drop';
+      ta.value = name; ta.readOnly = false; asCard.classList.remove('off'); ov.textContent = 'アルバムを開く'; ov.className = 'qbtn drop';
       const why = 'このアルバムに前の写真が残っていると、<br>新しい写真と重複してしまいます。<br>';
       note.innerHTML = why + '上書きする場合は、' + GPL + 'で<br>アルバム内の写真を一度すべて削除してください。';
       let opened = false;
