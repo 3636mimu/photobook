@@ -718,6 +718,19 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .ios .isec[open] > summary{border-radius:12px 12px 0 0}
 .ios .isec[open] > .icard{border-radius:0 0 12px 12px;border-top:1px solid var(--isep);margin-bottom:0}
 #pagesModal{z-index:60}
+/* 編集を中断するときの3つのボタン：丸い塗りのボタン（続ける＝落ち着いたグレージュ、閉じる＝赤、保存＝アクセント色） */
+.qbtn{border:0 !important;border-radius:999px !important;padding:10px 8px !important;font:inherit;font-size:14px !important;font-weight:500 !important;letter-spacing:.02em;white-space:nowrap;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.16);transition:filter .15s,transform .1s}
+.qbtn:hover{filter:brightness(1.05)}.qbtn:active{transform:translateY(1px)}
+.qbtn.keep{background:#B9AF9F !important;color:#3F3A33 !important}
+.qbtn.drop{background:#E05A55 !important;color:#fff !important}
+.qbtn.save{background:#2A8C7F !important;color:#fff !important}
+/* その確認の窓：真ん中ぞろえで、まわりにゆとり */
+#pagesModal.qdlg .sheet{max-width:500px !important;padding:28px 34px 26px;text-align:center}
+#pagesModal.qdlg h3{margin:0;font-size:15px;font-weight:500}
+#pagesModal.qdlg #pagesMsg{margin:20px 0 26px !important}
+#pagesModal.qdlg .actions{justify-content:center;gap:16px;margin:0}
+#pagesModal.qdlg .qbtn{flex:0 1 128px !important;padding:10px 12px !important}
+@media (max-width:480px){#pagesModal.qdlg .sheet{padding:24px 18px 20px}#pagesModal.qdlg .actions{gap:8px}#pagesModal.qdlg .qbtn{flex:1 1 0 !important;padding:10px 4px !important;font-size:13.5px !important}}
 .stopen{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #E8B4A2;background:#FFF6F2;color:#B4573A;font:inherit;font-size:12.5px;font-weight:700;border-radius:999px;padding:6px 16px 6px 13px;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
 .stopen svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
 .stopen:hover{border-color:#B4573A;background:#FFEDE5;transform:translateY(-1px)}
@@ -7725,13 +7738,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('pagesTitle').textContent = '編集を中断しますか？'; $('pagesMsg').innerHTML = why;
     const keep = [yes.textContent, no.textContent, yes.className, yes.getAttribute('style'), no.getAttribute('style'), act.getAttribute('style')];
     const drop = document.createElement('button'); drop.type = 'button'; drop.className = 'outline';
-    [no, drop, yes].forEach(b => b.setAttribute('style', 'min-width:0;flex:1 1 0;padding:10px 6px;white-space:nowrap;font-size:14px;font-weight:700;margin:0'));
-    act.setAttribute('style', 'justify-content:stretch;gap:8px');
-    no.textContent = '編集を続ける'; drop.textContent = 'このまま閉じる'; yes.textContent = '保存して終了'; yes.className = 'primary';
+    [no, drop, yes].forEach(b => b.setAttribute('style', 'min-width:0;flex:1 1 0;margin:0'));
+    const kc = [no.className, yes.className]; no.className = 'qbtn keep'; drop.className = 'qbtn drop';
+    act.setAttribute('style', ''); m.classList.add('qdlg');
+    no.textContent = '編集を続ける'; drop.textContent = 'このまま閉じる'; yes.textContent = '保存して終了'; yes.className = 'qbtn save';
     no.after(drop);
     const done = k => {
-      m.hidden = true; drop.remove(); document.removeEventListener('keydown', esc); yes.onclick = no.onclick = null;
-      [yes.textContent, no.textContent, yes.className] = keep; yes.setAttribute('style', keep[3]); no.setAttribute('style', keep[4]); act.setAttribute('style', keep[5]);
+      m.hidden = true; m.classList.remove('qdlg'); drop.remove(); document.removeEventListener('keydown', esc); yes.onclick = no.onclick = null;
+      [yes.textContent, no.textContent, yes.className] = keep; no.className = kc[0]; yes.setAttribute('style', keep[3]); no.setAttribute('style', keep[4]); act.setAttribute('style', keep[5]);
       if(k === 'drop') closeEditor();
       else if(k === 'save'){ closeAfterSave = true; if(fileHandle && bookFile) doSave(false); else $('workSave').click(); }
     };
