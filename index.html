@@ -1265,6 +1265,12 @@ button.outline:not(.bdopt),button.danger:not(.bdopt),button.primary,.cbtn,.cbtn.
 #stStep1 .sthero h3{position:absolute;left:26px;right:26px;top:50%;transform:translateY(-50%);margin:0;font-size:26px;line-height:1.4}
 #stStep1 .stsub{margin:26px 0 18px;font-size:14px}
 #stStep1 .stcard span{font-size:13.5px;line-height:1.6}
+/* 最初の画面のカード：名前 → ひと言（1行） → 小さな仕様。ひと言は言葉の切れ目でだけ折り返す */
+#stStep1 .stcard{grid-template-rows:1fr auto 1fr}
+#stStep1 .stcard .stic{grid-row:1 / 4}
+#stStep1 .stcard .stcatch{align-self:center}
+#stStep1 .stcard .ph{display:inline-block}
+#stStep1 .stcard .stspec{grid-column:2;align-self:start;font-size:11.5px;line-height:1.5;color:var(--muted);opacity:.8;letter-spacing:.04em;margin-top:2px}
 #stStep1 .stcard b{font-size:17px}
 #stStep1 .stchoices{gap:16px;margin-top:0}
 #stStep1 .stcard{padding:18px 16px}
@@ -1357,6 +1363,10 @@ header{border-radius:0 0 var(--r-lg) var(--r-lg) !important}
   #stStep1 .stcard .stic svg{width:28px;height:21px}
   #stStep1 .stcard b{grid-row:1;grid-column:2;align-self:center;font-size:clamp(11.5px,3.6vw,14px);line-height:1.25;letter-spacing:.01em;word-break:keep-all;overflow-wrap:normal}
   #stStep1 .stcard span{grid-row:2;grid-column:1 / -1;align-self:start;font-size:11px;line-height:1.55}
+  #stStep1 .stcard{grid-template-rows:auto auto auto}
+  #stStep1 .stcard .stic{grid-row:1}
+  #stStep1 .stcard .ph{grid-row:auto;grid-column:auto}
+  #stStep1 .stcard .stspec{grid-row:3;grid-column:1 / -1;font-size:10px;margin-top:-4px}
 }
 
 @media (pointer:coarse){
@@ -2237,10 +2247,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       </div>
       <p class="stsub">デジタルで楽しむか、印刷して質感ごと味わうか。</p>
       <div class="stchoices">
-        <button type="button" class="stcard c1" data-k="spread"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="4" y="8" width="27" height="34" rx="2" fill="#fff"/><rect x="33" y="8" width="27" height="34" rx="2" fill="#fff"/><path d="M8 36l7-9 5 6 4-4 5 7z" fill="currentColor" opacity=".55"/><circle cx="24" cy="16" r="3" fill="currentColor" opacity=".55"/><path d="M37 36l6-10 6 7 3-3 4 6z" fill="currentColor" opacity=".8"/><line x1="32" y1="8" x2="32" y2="42" stroke="currentColor" stroke-width="1.5" opacity=".35"/></svg></i><b>見開き<wbr>コラージュ</b><span>2枚の写真を、見開きの1枚に。<br>簡単にコラージュできます。</span></button>
-        <button type="button" class="stcard c2" data-k="conv"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="6" width="34" height="38" rx="2" fill="#fff" transform="rotate(-6 31 25)"/><rect x="16" y="6" width="34" height="38" rx="2" fill="#fff"/><rect x="20" y="11" width="26" height="18" rx="1" fill="currentColor" opacity=".6"/><rect x="20" y="33" width="16" height="3" rx="1.5" fill="currentColor" opacity=".45"/><rect x="20" y="38" width="10" height="2.5" rx="1.25" fill="currentColor" opacity=".3"/></svg></i><b>写真集</b><span>表紙もタイトルも、思いのままに。<br>コンビニの小冊子印刷でオリジナルの一冊が完成。</span></button>
-        <button type="button" class="stcard c3" data-k="life"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="20" y="4" width="26" height="40" rx="2" fill="#fff"/><rect x="18" y="4" width="4" height="40" rx="1.5" fill="currentColor" opacity=".7"/><circle cx="34" cy="20" r="7" fill="currentColor" opacity=".55"/><rect x="27" y="32" width="14" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback LIFE</b><span>編集・装飾・確認が手軽に出来ます。<br>ページごとに JPG を書き出して簡単入稿。</span></button>
-        <button type="button" class="stcard c4" data-k="graph"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="3" width="36" height="42" rx="2" fill="#fff"/><rect x="12" y="3" width="4.5" height="42" rx="1.5" fill="currentColor" opacity=".7"/><rect x="20" y="8" width="26" height="26" rx="1" fill="currentColor" opacity=".55"/><rect x="20" y="38" width="16" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback GRAPH</b><span>編集・装飾・確認が手軽に出来ます。<br>ページごとに JPG を書き出して簡単入稿。</span></button>
+        <button type="button" class="stcard c1" data-k="spread"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="4" y="8" width="27" height="34" rx="2" fill="#fff"/><rect x="33" y="8" width="27" height="34" rx="2" fill="#fff"/><path d="M8 36l7-9 5 6 4-4 5 7z" fill="currentColor" opacity=".55"/><circle cx="24" cy="16" r="3" fill="currentColor" opacity=".55"/><path d="M37 36l6-10 6 7 3-3 4 6z" fill="currentColor" opacity=".8"/><line x1="32" y1="8" x2="32" y2="42" stroke="currentColor" stroke-width="1.5" opacity=".35"/></svg></i><b>見開き<wbr>コラージュ</b><span class="stcatch"><span class="ph">2枚を、</span><span class="ph">見開き1枚に。</span></span><small class="stspec">JPG・PDF</small></button>
+        <button type="button" class="stcard c2" data-k="conv"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="6" width="34" height="38" rx="2" fill="#fff" transform="rotate(-6 31 25)"/><rect x="16" y="6" width="34" height="38" rx="2" fill="#fff"/><rect x="20" y="11" width="26" height="18" rx="1" fill="currentColor" opacity=".6"/><rect x="20" y="33" width="16" height="3" rx="1.5" fill="currentColor" opacity=".45"/><rect x="20" y="38" width="10" height="2.5" rx="1.25" fill="currentColor" opacity=".3"/></svg></i><b>写真集</b><span class="stcatch"><span class="ph">表紙もタイトルも、</span><span class="ph">自由に。</span></span><small class="stspec">JPG・PDF・コンビニ印刷</small></button>
+        <button type="button" class="stcard c3" data-k="life"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="20" y="4" width="26" height="40" rx="2" fill="#fff"/><rect x="18" y="4" width="4" height="40" rx="1.5" fill="currentColor" opacity=".7"/><circle cx="34" cy="20" r="7" fill="currentColor" opacity=".55"/><rect x="27" y="32" width="14" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback LIFE</b><span class="stcatch"><span class="ph">写真も言葉も、</span><span class="ph">たっぷりと。</span></span><small class="stspec">A5判・帯付き</small></button>
+        <button type="button" class="stcard c4" data-k="graph"><i class="stic"><svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="3" width="36" height="42" rx="2" fill="#fff"/><rect x="12" y="3" width="4.5" height="42" rx="1.5" fill="currentColor" opacity=".7"/><rect x="20" y="8" width="26" height="26" rx="1" fill="currentColor" opacity=".55"/><rect x="20" y="38" width="16" height="2.5" rx="1.25" fill="currentColor" opacity=".45"/></svg></i><b>Photoback GRAPH</b><span class="stcatch"><span class="ph">大判で、</span><span class="ph">写真を美しく。</span></span><small class="stspec">B5変形判・ジャケット付き</small></button>
       </div>
       <div class="strecent" id="stDrive" hidden><div class="gbar"><div class="gbrow"><b class="ghead"><img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">Google ドライブ</b><span id="stDriveAcct" class="gbfold"></span><span class="gacct" id="stDriveAcctBox" hidden><button type="button" class="gpill gacbtn" id="stDriveAcctBtn" aria-haspopup="menu" aria-expanded="false" title="Google アカウント"><i class="gav" id="stDriveAv"></i><span class="gem" id="stDriveEmail"></span><svg class="gchev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="gacmenu" id="stDriveMenu" role="menu" hidden><p class="gacinfo" id="stDriveMenuInfo"></p><button type="button" role="menuitem" id="stDriveSwitch"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5.5h9.5l-2.5-2.5M13 10.5H3.5L6 13"/></svg>アカウントを切り替え</button><button type="button" role="menuitem" id="stDriveOff" class="goff"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 9.5 9.5 6.5M7 4.5l1.3-1.3a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.3 1.3a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg>接続を解除</button></div></span></div><div class="gbrow2"><span class="gquota" id="stDriveQuota" hidden></span><span class="gmine" id="stDriveMine" hidden></span></div></div><div class="strlist" id="stDriveList"></div></div>
       <div class="strecent" id="stRecent" hidden><div class="strhead"><b id="stRecentTitle">続きから作る</b><small><span id="stRecentSub">このブラウザに一時保存（最近の8件まで）</span><span id="stRecentSize"></span></small></div><div class="strlist" id="stRecentList"></div><p class="strnote" id="stRecentNote">一時保存なので、消えることがあります。大切なBOOKは「BOOKを保存」でファイルにしておくと安心です。</p></div>
@@ -6866,7 +6876,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       : stK === 'conv' ? `表紙・裏表紙を含めて全${n}ページ（写真${n-2}枚＝中${n-4}枚＋表紙・裏表紙2枚、A3 ${n/4}枚）`
       : `中身${n}ページ＋表紙（写真${n-3}枚＝中${n-4}枚＋表紙1枚、扉・奥付つき）`;
     // the resolution the size brings with it (same table as the top bar)
-    const fx = START[stK].fixedOut, px = stPx(+stOut) + (fx === 'a3' ? '（A3 用。B4・A4・B5 の紙でもきれいに刷れます）' : fx === 'pb' ? '（Photoback の指定サイズ）' : '');
+    const fx = stK === 'conv' && stCrop !== 'a' ? '' : START[stK].fixedOut, px = stPx(+stOut) + (fx === 'a3' ? '（A3 用。B4・A4・B5 の紙でもきれいに刷れます）' : fx === 'pb' ? '（Photoback の指定サイズ）' : '');
     // 「保存形式」は上で選んだとおりなので、代わりに何ができあがるかを書く
     const out = fx === 'pb' ? '入稿：「Photoback 入稿用」で各ページを p01_tobira・p03… の名前で書き出し、Photoback の同じページへ'
       : stK === 'conv' ? (stFmt === 'pdf' ? `できあがり：PDF 1つ（全${n}ページ）。コンビニのマルチコピー機で「小冊子」を選んで刷るだけ` : `できあがり：見開きごとの JPG 画像 ${n/2}枚（表紙・裏表紙の見開きを含む）`)
@@ -6876,6 +6886,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const lines = !c.booklet ? [
         `並べ方：2枚の写真が向かい合って、見開き${n/2}組に。組み合わせしだいで物語が生まれます`,
         `大きさ：${!H ? '元の写真の大きさのまま。いちばん高画質です' : `見開き1枚 ${W ? `${W * 2}×${H}px` : `縦 ${H}px`}。${H >= 2400 ? '大きな画面や印刷にも負けません' : H >= 1600 ? 'スマホでもパソコンでもくっきり' : 'SNS にちょうどいい軽さ'}`}`]
+      : stK === 'conv' && stCrop === '2:3' ? [
+        `形：2:3。写真の形のまま、切れずに収まります（デジタルで見る用）`,
+        `大きさ：1ページ ${stPx(H)}。${H >= 2400 ? '大きな画面にも負けません' : H >= 1600 ? 'スマホでもパソコンでもくっきり' : 'SNS にちょうどいい軽さ'}`]
       : stK === 'conv' ? [
         `印刷：A3 の紙 ${n/4}枚に両面で。重ねて二つ折りにすれば A4 の一冊に`,
         `画質：A3 で刷っても 300dpi のくっきり仕上げ。元の写真は縦 ${H}px くらいあると安心です`]
@@ -6899,10 +6912,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('stOutRow').hidden = !!c.fixedOut;   // コンビニ印刷: A3 size (prints cleanly smaller too) / Photoback: the size Photoback asks for
     $('stCrops').innerHTML = (c.crops || []).map(([v, t]) => `<button type="button" data-v="${v}">${t}</button>`).join('');
     // 写真集：仕上がりサイズは A・B判で固定。選べないが、何が仕上がるかを見せるために表示だけ
-    if(stK === 'conv') $('stCrops').innerHTML = '<span class="stfixed">A・B判（小冊子）</span><span class="stfixnote">A3・B4・A4・B5 の紙で刷れます（A3 なら A4 の本に）</span>';
+    if(stK === 'conv') stConvCrops();
     $('stPages').innerHTML = c.pages.map(v => `<button type="button" data-v="${v}"><b>${v}ページ</b><small>${!c.booklet ? `（写真${v}枚）` : stK === 'conv' ? `写真${v - 2}枚（中${v - 4}＋表裏2）` : `写真${v - 3}枚（中${v - 4}＋表紙1）`}</small></button>`).join('');
     stSel($('stCrops'), stCrop); stSel($('stPages'), stPage); stSel($('stFmts'), stFmt); stOuts(); stSummary();
     $('stStep1').hidden = true; $('stStep2').hidden = false; $('stGo').focus();
+  }
+  // 写真集：PDF（印刷用）は A・B判だけ。JPG（デジタルで見る用）は A・B判か 2:3 を選べる
+  function stConvCrops(){
+    if(stK !== 'conv') return;
+    if(stFmt === 'pdf' && stCrop !== 'a'){ stCrop = 'a'; stOut = NATIVE_H.a; }
+    $('stCrops').innerHTML = stFmt === 'pdf'
+      ? '<span class="stfixed">A・B判（小冊子）</span><span class="stfixnote">A3・B4・A4・B5 の紙で刷れます（A3 なら A4 の本に）</span>'
+      : '<button type="button" data-v="a">A・B判</button><button type="button" data-v="2:3">2:3</button><span class="stfixnote">' + (stCrop === '2:3' ? '写真の形のまま、デジタルで見る用' : '印刷にも使える形') + '</span>';
+    $('stOutRow').hidden = stCrop !== '2:3';   // 2:3 のときだけ、ページの解像度を選べる
   }
   let stClose = function(){ $('startModal').hidden = true; };
   function stApply(){
@@ -6915,10 +6937,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     startNewWork(); saveSettings(); status(''); stClose();
   }
   document.querySelectorAll('#startModal .stcard').forEach(b => b.addEventListener('click', () => stShow2(b.dataset.k)));
-  $('stCrops').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; stCrop = b.dataset.v; stOut = NATIVE_H[stCrop] || '0'; stSel($('stCrops'), stCrop); stOuts(); stSummary(); });
+  $('stCrops').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; stCrop = b.dataset.v; stOut = NATIVE_H[stCrop] || '0'; stConvCrops(); stSel($('stCrops'), stCrop); stOuts(); stSummary(); });
   $('stOuts').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; stOut = b.dataset.v; stSel($('stOuts'), stOut); stSummary(); });
   $('stPages').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; stPage = +b.dataset.v; stSel($('stPages'), stPage); stSummary(); });
-  $('stFmts').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; stFmt = b.dataset.v; stSel($('stFmts'), stFmt); stSummary(); });
+  $('stFmts').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; stFmt = b.dataset.v; stSel($('stFmts'), stFmt); stConvCrops(); stSel($('stCrops'), stCrop); stOuts(); stSummary(); });
   $('stBack').addEventListener('click', () => { $('stStep2').hidden = true; $('stStep1').hidden = false; });
   $('stGo').addEventListener('click', stApply);
   // 使い方 inside the first question: how to use this start screen
