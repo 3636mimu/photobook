@@ -727,7 +727,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #gpDup .gpcard{border:1px solid var(--line);border-radius:10px;padding:13px 16px 12px;margin-top:10px;transition:opacity .2s}
 #gpDup .gpcard > b{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
 #gpDup .gpcard p{margin:0;font-size:13px;line-height:1.75}
-#gpDup .gpcard.off{opacity:.45}
+#gpDup .gpcard[hidden]{display:none}
 #gpDup:focus{outline:none}
 #gpDup .gprow{display:flex;justify-content:flex-end;margin-top:10px}
 #gpDup .gprow .qbtn{flex:0 0 132px}
@@ -6715,22 +6715,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const found = names.get(t);
       if(!found){ if(t !== title) gpAlbumName(t); saveAllSpreads({ title: t }); return; }
       if(empty(found)){ saveAllSpreads({ title: t, albumId: found.id, url: found.productUrl }); return; }   // 空のアルバムなら、そのまま入れる
-      const r = await gpAskDup(t, found.productUrl);
+      // 残りの枚数を確かめる（確かめられないときは 0 として進める）
+      const left = async () => { try{ const a = await gpJson('/albums/' + encodeURIComponent(found.id)); return +a.mediaItemsCount || 0; }catch(e){ console.warn(e); return 0; } };
+      const r = await gpAskDup(t, found.productUrl, left);
       if(!r) return;
       if(r.k === 'rename'){ t = r.name; continue; }   // 別の名前：その名前もあれば、もう一度聞く
-      // 上書き：窓の中でアルバムを開き、ゴミ箱へ移してもらってから［続ける］（gpAskDup）
-      let cur = found;
-      try{ gBusy('Google フォトに保存しています', 'アルバムを確かめています…', null); cur = await gpJson('/albums/' + encodeURIComponent(found.id)); }catch(e){ console.warn(e); }
-      gBusyOff();
-      if(!empty(cur)){
-        const add = await new Promise(res => askYesNo('まだ前の写真が残っています', `<p>「${esc2(t)}」に ${+cur.mediaItemsCount || ''}枚 残っています。</p>`, () => res(true), 'このまま追加', 'キャンセル', () => res(false)));
-        if(!add) return;
-      }
+      // 上書き：窓の中でアルバムを開き、空になったのを確かめてから入れる（gpAskDup）
       saveAllSpreads({ title: t, albumId: found.id, url: found.productUrl }); return;
     }
   }
   // 同じ名前のアルバムがあるとき（Lightroom の「既に存在します」と同じ形）：名前はその場で直せる
-  function gpAskDup(name, url){
+  function gpAskDup(name, url, left){
     return new Promise(done => {
       let m = $('gpDup');
       if(!m){
@@ -6744,7 +6739,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       const ta = $('gpDupName'), as = $('gpDupAs'), ov = $('gpDupOver'), note = $('gpDupNote'), asCard = $('gpDupAsCard'), clean = () => ta.value.replace(/\s*\n\s*/g, ' ').trim();
       $('gpDupCur').textContent = '「' + name + '」';
-      ta.value = name; ta.readOnly = false; asCard.classList.remove('off'); ov.textContent = 'アルバムを開く'; ov.className = 'qbtn drop';
+      ta.value = name; ta.readOnly = false; asCard.hidden = false; ov.disabled = false; ov.textContent = 'アルバムを開く'; ov.className = 'qbtn drop';
       const why = 'このアルバムに前の写真が残っていると、<br>新しい写真と重複してしまいます。<br>';
       note.innerHTML = why + '上書きする場合は、' + GPL + 'で<br>アルバム内の写真を一度すべて削除してください。';
       let opened = false;
@@ -6754,10 +6749,18 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       $('gpDupNo').onclick = () => fin(null);
       // 上書き：その場でアルバムを開き、同じカードのボタンを［続ける］に
       ov.onclick = () => {
-        if(opened) return fin({ k: 'over' });
+        if(opened){   // ［保存］：アルバムが空になったか確かめる。残っていれば、削除をお願いし直す
+          ov.disabled = true; ov.textContent = '確認中…';
+          left().then(n => {
+            if(!n) return fin({ k: 'over' });
+            ov.disabled = false; ov.textContent = '保存';
+            note.innerHTML = `まだ前の写真が <b>${n}枚</b> 残っています。<br>アルバム内の写真をすべて削除してから、［保存］を押してください。`;
+          });
+          return;
+        }
         opened = true; if(url) window.open(url, '_blank', 'noopener');
-        ta.readOnly = true; asCard.classList.add('off'); sync(); ov.textContent = '続ける'; ov.className = 'qbtn save';
-        note.innerHTML = why + '削除したら、［続ける］を押してください。';
+        ta.readOnly = true; asCard.hidden = true; sync(); ov.textContent = '保存'; ov.className = 'qbtn save';
+        note.textContent = '削除が完了したら、［保存］を押してください。';
       };
       as.onclick = () => { const v = clean(); if(v && v !== name) fin({ k: 'rename', name: v }); };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
