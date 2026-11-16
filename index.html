@@ -140,7 +140,11 @@ body.tourspine .spreads .spine.tourme{opacity:1 !important}   /* no spread swapp
 .spreads.pagemode .spread .bar .pgnum.stack span{transform:translateX(-50%)}
 .pgtip{position:fixed;z-index:60;pointer-events:none;transform:translate(-50%,4px);background:rgba(40,41,44,.88);color:#fff;font-size:12px;line-height:1;padding:6px 9px;border-radius:5px;white-space:nowrap;opacity:0;visibility:hidden;transition:opacity .18s ease,transform .18s ease,visibility 0s linear .18s}
 .pgtip.show{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .18s ease,transform .18s ease,visibility 0s}
-.pgpeek{position:absolute;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);z-index:1}
+.pgpeek{position:absolute;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);z-index:1;transition:opacity .25s}
+/* 見開きのページ送り：すべっているあいだは、写真をカードの中だけに見せる。端の「のぞき」はいったん隠す */
+.stage.pgslide{overflow:hidden}
+.stage.pgslide .pgpeek{opacity:0;transition:none}
+.pgghost{position:absolute;z-index:2;pointer-events:none;display:block}
 .pgpeek[hidden]{display:none}
 .pagenav{display:flex;align-items:center;justify-content:center;margin-top:8px;font-size:12px;color:var(--muted)}
 .pagenav[hidden]{display:none}
@@ -3133,7 +3137,32 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   $('vmPage').addEventListener('click', () => setViewMode('page'));
   // 上の「プレビュー」は、いつも最初の写真（表紙に写真があれば表紙）から
   $('vmZoom').addEventListener('click', () => openViewer());
-  const pageStep = d => { pagePos += d; renderAll(); lastPair = allPairs()[Math.max(0, Math.min(allPairs().length - 1, pagePos))]; };
+  // 見開き表示で前後へ移るときは、写真が横にすべって入れ替わる（今の写真が出ていき、次の写真が入ってくる）
+  let pgSlide = null;
+  const pageStep = d => {
+    const list = allPairs(), to = pagePos + d;
+    if(to < 0 || to >= list.length) return;
+    if(pgSlide) pgSlide();   // 前のすべりが途中なら、すぐ終わらせる
+    const from = pairUI[list[pagePos]], fcv = from && from.cv;
+    let ghost = null;
+    if(fcv && fcv.width && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+      ghost = document.createElement('canvas'); ghost.className = 'pgghost'; ghost.width = fcv.width; ghost.height = fcv.height;
+      ghost.style.width = fcv.offsetWidth + 'px'; ghost.style.height = fcv.offsetHeight + 'px';
+      try{ ghost.getContext('2d').drawImage(fcv, 0, 0); }catch(e){ ghost = null; }
+    }
+    pagePos = to; renderAll(); lastPair = allPairs()[pagePos];
+    const ui = pairUI[allPairs()[pagePos]];
+    if(!ghost || !ui || !ui.cv.animate) return;
+    const st = ui.card.querySelector('.stage'), cv = ui.cv, W = st.clientWidth;
+    ghost.style.left = (cv.offsetLeft + (cv.offsetWidth - parseFloat(ghost.style.width)) / 2) + 'px';
+    ghost.style.top = (cv.offsetTop + (cv.offsetHeight - parseFloat(ghost.style.height)) / 2) + 'px';
+    st.classList.add('pgslide'); st.appendChild(ghost);
+    const opt = { duration: 340, easing: 'cubic-bezier(.22,.8,.24,1)' };
+    const aIn = cv.animate([{ transform: `translateX(${d * W}px)` }, { transform: 'translateX(0)' }], opt);
+    const aOut = ghost.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${-d * W}px)` }], opt);
+    const done = () => { if(pgSlide !== done) return; pgSlide = null; try{ aIn.cancel(); aOut.cancel(); }catch(e){} ghost.remove(); st.classList.remove('pgslide'); };
+    pgSlide = done; aOut.onfinish = done;
+  };
   $('pgPrev').addEventListener('click', () => pageStep(-1));
   $('pgNext').addEventListener('click', () => pageStep(1));
   document.addEventListener('keydown', e => {
