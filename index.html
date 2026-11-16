@@ -6708,9 +6708,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!r) return;
       if(r.k === 'rename'){ t = r.name; continue; }   // 別の名前：その名前もあれば、もう一度聞く
       // 上書き：前の写真はツールから消せないので、Google フォトで手でゴミ箱へ → 空になった同じアルバムに入れる
-      const okGo = await new Promise(res => askYesNo('前の写真をゴミ箱に入れます', `<p>Google フォトで「${esc2(t)}」を開きます。<br>写真をすべてゴミ箱に入れたら、このタブに戻って［続ける］を押してください。</p>`, () => { if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); res(true); }, 'ゴミ箱に入れに行く', 'やめる', () => res(false)));
+      const okGo = await new Promise(res => askYesNo('上書きするには、アルバムを空にしてください', `<p>このまま書き出すと、前の写真と重複します。<br>このツールからは Google フォトの写真を削除できないため、<br>アルバム「${esc2(t)}」の写真を全て選択して、ゴミ箱に移動してください。</p>`, () => { if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); res(true); }, 'アルバムを開く', 'キャンセル', () => res(false)));
       if(!okGo) return;
-      const go = await new Promise(res => askYesNo('ゴミ箱に入れたら［続ける］', `<p>Google フォトのタブで「${esc2(t)}」の写真をすべてゴミ箱に入れてから、［続ける］を押してください。</p>`, () => res(true), '続ける', 'やめる', () => res(false)));
+      const go = await new Promise(res => askYesNo('写真を削除しましたか？', `<p>ゴミ箱に移動したら、［続ける］を押してください。</p>`, () => res(true), '続ける', 'キャンセル', () => res(false)));
       if(!go) return;
       let cur = found;
       try{ gBusy('Google フォトに保存しています', 'アルバムを確かめています…', null); cur = await gpJson('/albums/' + encodeURIComponent(found.id)); }catch(e){ console.warn(e); }
