@@ -6781,7 +6781,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(!r.ok) throw new Error('uploads ' + r.status + ' ' + (await r.text().catch(() => '')).slice(0, 160));
         items.push({ description: '', simpleMediaItem: { uploadToken: await r.text(), fileName: files[i].name } });
       }
-      gBusyImg(null); gBusy('', '仕上げています…', .99);
+      gBusyImg(null); gBusy('', 'アルバムに収めています…', .99);
       let ng = 0;
       for(let i = 0; i < items.length; i += 50){
         let r;
@@ -8265,7 +8265,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       usedA.add(key); P.drive.assets[key] = h.assetIds[key]; t.img = 'asset:' + key;
     }
     for(const key of Object.keys(h.assetIds)) if(!usedA.has(key)){ try{ await gPatch(h.assetIds[key], { trashed: true }); }catch(e){} delete h.assetIds[key]; }
-    if(show) gBusy('', need ? `写真 ${need} / ${need} 枚・仕上げています…` : '変更を保存しています…', need ? need / (need + 1) : null);
+    if(show) gBusy('', need ? `写真 ${need} / ${need} 枚・BOOKを綴じています…` : '変更を保存しています…', need ? need / (need + 1) : null);
     const json = new Blob([JSON.stringify(P)], { type: 'application/json' });
     h.jsonId = (await gUpload(h.jsonId ? {} : { name: 'book.json', parents: [h.folderId], appProperties: { pbm: 'json' } }, json, h.jsonId)).id;
     const th = workThumb();
@@ -8311,7 +8311,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       if(canceled) return;
       // ここからは編集画面に入れるので、中止はできない
-      $('gBusyCancel').hidden = true; gBusy('', '仕上げています…', total ? total / (total + 1) : null);
+      $('gBusyCancel').hidden = true; gBusy('', 'ページを広げています…', total ? total / (total + 1) : null);
       const r = await finishOpen(P, async uid => ids[uid] ? blobs[uid] || null : null, {
         name: f.name, handle: h, fileAt: Date.parse(f.modifiedTime) || P.savedAt || 0,
         fonts: async () => { let n = 0; for(const x of (P.drive && P.drive.fonts) || []){ h.fontIds[x.name] = x.id; if(myFonts.includes(x.name)) continue; try{ const data = await (await gGet(x.id)).arrayBuffer(); await registerFont(x.name, data); await fontDbDo('readwrite', st => st.put({ name: x.name, data })); n++; }catch(e){} } if(n) renderMyFonts(); return n; } });
