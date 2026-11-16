@@ -836,6 +836,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .glink:hover{color:var(--accent);text-decoration-color:currentColor}
 .glink svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 #stDriveList .strcard,#stRecentList .strcard{flex-basis:var(--cw,150px)}
+.strcard[hidden]{display:none !important}
 .gcar{position:relative}
 .gcar #stDriveList{scrollbar-width:none;padding-right:52px;scroll-padding-left:2px}
 .gcar #stDriveList::-webkit-scrollbar{display:none}
@@ -6667,7 +6668,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function gpAlbumName(set){
     if(set === undefined) return gpAlbumCur;
     if(set === gpAlbumCur) return;
-    gpAlbumCur = set; markDirty();
+    gpAlbumCur = set;   // 「変更あり」にはしない。次に BOOK を保存するときに一緒に保存される
   }
   function bookTitle(){ return (bookFile || '').replace(/\.pbmk$/i, '') || `PHOTO BOOK ${stamp()}`; }
   async function gpStart(title){
@@ -7490,7 +7491,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     return lost.filter(Boolean).length;
   }
   // BOOKファイルと同じ内容になったことを、一時保存にも記録する
-  const sigOf = P => { const k = JSON.stringify(Object.assign({}, P, { savedAt: 0, id: 0, withPhotos: 0, fonts: 0 })); let h = 5381; for(let i = 0; i < k.length; i++) h = ((h << 5) + h + k.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + k.length.toString(36); };
+  const sigOf = P => { const k = JSON.stringify(Object.assign({}, P, { savedAt: 0, id: 0, withPhotos: 0, fonts: 0, gpAlbum: 0 })); let h = 5381; for(let i = 0; i < k.length; i++) h = ((h << 5) + h + k.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + k.length.toString(36); };
 
   // スマホの縦：いちばん上のひとことは1行に収める（入りきらないときだけ文字を小さく）
   // 写真の調整の見出し（ページ・ファイル名・px・サイズ）は、文字を小さくしてでも全部を1行で出す
@@ -7850,7 +7851,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const z = n => String(n).padStart(2, '0');
     list.forEach(w => {
       const d = new Date(w.savedAt), card = document.createElement('div');
-      card.className = 'strcard ' + (KIND_CLS[w.kind] || 'c1'); if(w.handle && w.handle.drive && w.handle.folderId) card.dataset.fid = w.handle.folderId;
+      card.className = 'strcard ' + (KIND_CLS[w.kind] || 'c1'); if(w.handle && w.handle.drive && w.handle.folderId){ card.dataset.fid = w.handle.folderId; card.dataset.wid = w.id; card.dataset.at = w.savedAt; }
       const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       card.innerHTML = `<div class="strkind"><i class="strdot"></i>${esc(KIND_NAME[w.kind] || 'BOOK')}</div><button type="button" class="strthumb" title="続きから編集する">${w.thumb ? `<img src="${w.thumb}" alt="">` : '<span class="strnoimg">写真なし</span>'}</button>`
         + `<div class="strmeta">${w.bookFile ? `<small class="strfname" title="${esc(w.bookFile)}">${esc(w.handle && w.handle.drive ? w.bookFile.replace(/\.pbmk$/i, '') : /\.pbmk$/i.test(w.bookFile) ? w.bookFile : w.bookFile + '.pbmk')}</small>` : ''}<small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${w.pages}P・写真${w.photos}枚・${((w.project.settings || {}).fmt || 'jpg').toUpperCase()}</small>${w.fileState && w.bookFile ? `<small class="strfile${w.fileState === 'synced' ? ' ok' : ''}" title="${esc(w.bookFile || '')}">${w.fileState === 'synced' ? (WEB ? '✓ 保存済み' : '✓ BOOKに保存済み') : (w.handle && w.handle.drive ? 'Google ドライブに保存後、変更あり' : (WEB ? '保存後、変更あり' : 'BOOKに保存後、変更あり'))}</small>` : ''}</div>`
@@ -8343,6 +8344,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const all = list.length; if(limit && all > limit) list = list.slice(0, limit);
     // 「まだ保存していない作業」のカードも、ドライブ側の今の名前に合わせる
     if(row.id === 'stDriveList'){ const nm = {}; full.forEach(f => { nm[f.id] = f.name; }); document.querySelectorAll('#stRecentList .strcard[data-fid]').forEach(c => { const n = nm[c.dataset.fid], el = c.querySelector('.strfname'); if(n && el && el.textContent !== n){ el.textContent = n; el.title = n; } }); }
+    // ドライブのBOOKを、この端末で変えたまま保存していないとき：カードは1枚にまとめる（「この端末」の段からは消して、ドライブのカードに印を付ける）
+    const pend = {};
+    if(row.id === 'stDriveList'){
+      const ids = new Set(full.map(f => f.id));
+      document.querySelectorAll('#stRecentList .strcard[data-fid]').forEach(c => { if(!ids.has(c.dataset.fid)) return; pend[c.dataset.fid] = { wid: c.dataset.wid, at: +c.dataset.at }; c.hidden = true; });
+      if(![...document.querySelectorAll('#stRecentList .strcard')].some(c => !c.hidden)) $('stRecent').hidden = true;
+    }
     list.forEach(f => {
       const a = f.appProperties || {}, d = new Date(f.modifiedTime), card = document.createElement('div');
       const hid = isHid(f);
@@ -8350,14 +8358,22 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       card.innerHTML = `<div class="strkind"><i class="strdot"></i>${esc2(KIND_NAME[a.kind] || 'BOOK')}</div><button type="button" class="strthumb" title="続きから編集する"><span class="strnoimg">…</span></button>`
         + `<div class="strmeta"><small class="strfname" title="${esc2(f.name)}">${esc2(f.name).replace(/_/g, '_<wbr>')}</small><small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${a.pages || '?'}P・写真${a.photos || 0}枚・${(a.fmt || 'jpg').toUpperCase()}</small></div>`
         + `<button type="button" class="stredit">✎ 続きから編集</button>${hid ? '<button type="button" class="strback" title="一覧に戻す">一覧に戻す</button>' : '<button type="button" class="strdel" title="一覧から外す・削除" aria-label="一覧から外す・削除">×</button>'}`;
-      card.querySelector('.strthumb').addEventListener('click', () => onOpen(f));
+      const pw = pend[f.id];
+      if(pw){
+        const pd = new Date(pw.at);
+        card.classList.add('strpending');
+        card.querySelector('.strmeta').insertAdjacentHTML('beforeend', `<small class="strfile">保存していない変更あり（${pd.getMonth() + 1}/${pd.getDate()} ${z(pd.getHours())}:${z(pd.getMinutes())}）</small>`);
+      }
+      // 保存していない変更があるときは、新しい方（この端末の版）を開く
+      const openIt = pw ? async () => { try{ await openWork(pw.wid); stClose(); }catch(e){ onOpen(f); } } : () => onOpen(f);
+      card.querySelector('.strthumb').addEventListener('click', openIt);
       const refresh = () => { if(!$('driveModal').hidden) openDriveModal(); if(!$('startModal').hidden) renderDriveStart(); };
       if(hid) card.querySelector('.strback').addEventListener('click', async () => {
         try{ await gPatch(f.id, { appProperties: { hidden: null } }); }catch(e){ status('戻せませんでした。もう一度お試しください。'); return; }
         status(`「${f.name}」を一覧に戻しました。`); refresh();
       });
       else card.querySelector('.strdel').addEventListener('click', () => askBookRemove(f, refresh));
-      card.querySelector('.stredit').addEventListener('click', () => onOpen(f));
+      card.querySelector('.stredit').addEventListener('click', openIt);
       if(a.thumb) gGet(a.thumb).then(b => { card.querySelector('.strthumb').innerHTML = `<img src="${URL.createObjectURL(b)}" alt="">`; }).catch(() => {});
       row.appendChild(card);
     });
