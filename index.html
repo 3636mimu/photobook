@@ -6738,8 +6738,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       const ta = $('gpDupName'), as = $('gpDupAs'), ov = $('gpDupOver'), note = $('gpDupNote'), clean = () => ta.value.replace(/\s*\n\s*/g, ' ').trim();
       ta.value = name; ta.readOnly = false; as.hidden = false; ov.textContent = '上書き'; ov.className = 'qbtn drop';
-      const why = '上書きでこのまま書き出すと、前の写真と重複してしまいます。<br>' + GPL + 'の写真は、ここから削除できません。<br>';
-      note.innerHTML = why + '［上書き］でアルバムを開き、写真をすべて選んで<br>ゴミ箱へ移してください。';
+      const why = 'このアルバムは、直接上書きできません。<br>前の写真が残っていると、新しい写真と重複してしまいます。<br>';
+      note.innerHTML = why + GPL + 'で、アルバム内の写真をすべて削除してください。';
       let opened = false;
       const sync = () => { const v = clean(); as.disabled = !v || v === name; };
       ta.oninput = sync; sync();
@@ -6750,7 +6750,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(opened) return fin({ k: 'over' });
         opened = true; if(url) window.open(url, '_blank', 'noopener');
         ta.readOnly = true; as.hidden = true; ov.textContent = '続ける'; ov.className = 'qbtn save';
-        note.innerHTML = why + 'アルバムの写真をすべて選び、ゴミ箱へ移したら<br>［続ける］を押してください。';
+        note.innerHTML = why + '削除したら、［続ける］を押してください。';
       };
       as.onclick = () => { const v = clean(); if(v && v !== name) fin({ k: 'rename', name: v }); };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
