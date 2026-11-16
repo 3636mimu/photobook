@@ -7719,15 +7719,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   $('closeEditor').addEventListener('click', () => {
     // BOOKファイルに保存していない・保存後に変えたときは、閉じる前に保存をすすめる（Esc でやめる）
     if(!unsavedBook()){ closeEditor(); return; }
-    const why = bookFile ? `BOOKファイル（${bookFile.replace(/[<>&]/g, '')}）に保存したあと、変更があります。` : 'このBOOKは、まだBOOKファイルに保存していません。';
-    // 保存して終了／保存せずに終了／編集にもどる：同じ形のボタン3つだけ（Esc・ブラウザの戻るは「編集にもどる」）
+    const why = bookFile ? `「${bookFile.replace(/[<>&]/g, '')}」に、保存していない変更があります。` : 'このBOOKは、まだ保存していません。';
+    // 編集を続ける／このまま閉じる／保存して終了：同じ形のボタン3つだけ（Esc・ブラウザの戻るは「編集を続ける」）
     const m = $('pagesModal'), sh = m.querySelector('.sheet'), act = m.querySelector('.actions'), yes = $('pagesYes'), no = $('pagesNo');
-    $('pagesTitle').textContent = '編集画面を閉じますか？'; $('pagesMsg').innerHTML = why;
+    $('pagesTitle').textContent = '編集を中断しますか？'; $('pagesMsg').innerHTML = why;
     const keep = [yes.textContent, no.textContent, yes.className, yes.getAttribute('style'), no.getAttribute('style'), act.getAttribute('style')];
     const drop = document.createElement('button'); drop.type = 'button'; drop.className = 'outline';
     [no, drop, yes].forEach(b => b.setAttribute('style', 'min-width:0;flex:1 1 0;padding:10px 6px;white-space:nowrap;font-size:14px;font-weight:700;margin:0'));
     act.setAttribute('style', 'justify-content:stretch;gap:8px');
-    no.textContent = '編集にもどる'; drop.textContent = '保存せずに終了'; yes.textContent = '保存して終了'; yes.className = 'primary';
+    no.textContent = '編集を続ける'; drop.textContent = 'このまま閉じる'; yes.textContent = '保存して終了'; yes.className = 'primary';
     no.after(drop);
     const done = k => {
       m.hidden = true; drop.remove(); document.removeEventListener('keydown', esc); yes.onclick = no.onclick = null;
