@@ -986,7 +986,15 @@ body.sidedrawer .sidehd{display:flex;align-items:center;justify-content:space-be
 .sidehd svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 .sidetab{position:fixed;z-index:29;right:0;top:calc(var(--hdrH,0px) + 14px);display:flex;flex-direction:row;align-items:center;gap:6px;padding:12px 5px 12px 7px;border:1px solid var(--line);border-right:0;border-radius:12px 0 0 12px;background:var(--panel);color:var(--ink);font:inherit;font-size:12px;font-weight:700;letter-spacing:.2em;writing-mode:vertical-rl;box-shadow:-2px 2px 10px rgba(30,25,20,.12);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .sidetab svg{width:14px;height:14px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;writing-mode:horizontal-tb}
-.sidetab[hidden],body.sideopen .sidetab{display:none}
+.sidetab[hidden]{display:none}
+/* 「‹ メニュー」：［一覧｜見開き｜プレビュー］と同じ行の右端に、同じ見た目で置く（写真の右に余白を取らない） */
+.dropbar .viewrow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:8px}
+.dropbar .viewrow .vseg{grid-column:2}
+.dropbar .viewrow .sidetab{grid-column:3;justify-self:end;position:static;writing-mode:horizontal-tb;letter-spacing:0;font-size:12px;font-weight:400;gap:4px;padding:5px 12px 5px 8px;border:1px solid rgba(0,0,0,.08);border-radius:999px !important;background:var(--panel);box-shadow:0 2px 10px rgba(80,60,40,.10);white-space:nowrap}
+.dropbar .viewrow .sidetab svg{stroke:currentColor;stroke-width:1.6}
+body.sidedrawer .grid{padding-right:0 !important}
+.dropbar .viewrow .sidetab{margin-right:-15px}
+@media (pointer:coarse),(max-width:900px){.dropbar .viewrow .sidetab{padding-top:4px;padding-bottom:4px}}
 .sidescrim{position:fixed;inset:0;z-index:34;background:rgba(20,20,22,.12)}
 .sidescrim[hidden]{display:none}
 
@@ -3168,7 +3176,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const scrim = document.createElement('div'); scrim.className = 'sidescrim'; scrim.hidden = true;
     const hd = document.createElement('div'); hd.className = 'sidehd';
     hd.innerHTML = '<span>メニュー</span><button type="button" aria-label="メニューを閉じる"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>';
-    inner.prepend(hd); document.body.append(scrim, tab);
+    inner.prepend(hd); document.body.append(scrim); document.querySelector('.dropbar .viewrow').append(tab);   // 「‹ メニュー」は［一覧｜見開き｜プレビュー］と同じ行の右端に
     const sideOpen = on => { document.body.classList.toggle('sideopen', on); scrim.hidden = !on; aside.setAttribute('aria-hidden', on ? 'false' : 'true'); if(on) aside.scrollTop = 0; };
     tab.addEventListener('click', () => sideOpen(true));
     scrim.addEventListener('click', () => sideOpen(false));
