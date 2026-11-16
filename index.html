@@ -842,8 +842,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .strecent{margin-top:18px}
 .strhead{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px}
 .glogo{width:16px;height:16px;object-fit:contain;flex:none;vertical-align:-3px}
-#pagesTitle .glogo.gpl{width:20px;height:20px;margin-right:6px;vertical-align:-4px}
-#pagesYes .glogo.gpl{width:18px;height:18px;padding:2px;margin-right:6px;background:#fff;border-radius:50%;vertical-align:-5px}
+img.glogo.gpl{width:1.15em;height:1.15em;margin-right:.3em;vertical-align:-.2em}
+#pagesYes img.glogo.gpl{width:1.1em;height:1.1em;padding:2px;margin-right:.4em;background:#fff;border-radius:50%;vertical-align:-.3em}
 .ghead{display:inline-flex;align-items:center;gap:6px}
 .glink{color:inherit;text-decoration:underline;text-decoration-color:rgba(0,0,0,.25);text-underline-offset:3px;display:inline-flex;align-items:center;gap:3px}
 .glink:hover{color:var(--accent);text-decoration-color:currentColor}
@@ -3860,7 +3860,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('gapo').textContent = (+$('gap').value).toFixed(2) + ' %';
     $('qo').textContent = $('q').value;
   }
-  function status(t){ $('status').textContent = t; }
+  function status(t){ gpTxt($('status'), t); }
 
   // ---------- move between slots (pointer drag) ----------
   function swapSlots(i, j){
@@ -6657,7 +6657,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       m = document.createElement('div'); m.className = 'modal'; m.id = 'gpModal'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
       m.innerHTML = `<div class="sheet gpsheet"><h3>書き出し先</h3>
         <div class="gpdest"><label><input type="radio" name="gpd" value="local"><span>${MOBILE ? 'この端末' : 'パソコン'}に保存</span></label>
-        <label><input type="radio" name="gpd" value="photos"><span>Google フォトのアルバムに保存</span></label></div>
+        <label><input type="radio" name="gpd" value="photos"><span>${GPL}のアルバムに保存</span></label></div>
         <div class="gpalbum"><span>アルバム名</span><textarea id="gpTitle" rows="3" maxlength="500" autocomplete="off" spellcheck="false"></textarea></div>
         <div class="actions"><button type="button" class="qbtn keep" id="gpNo">キャンセル</button><button type="button" class="qbtn save" id="gpGo">書き出す</button></div></div>`;
       document.body.append(m);
@@ -6710,9 +6710,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!r) return;
       if(r.k === 'rename'){ t = r.name; continue; }   // 別の名前：その名前もあれば、もう一度聞く
       // 上書き：前の写真はツールから消せないので、Google フォトで手でゴミ箱へ → 空になった同じアルバムに入れる
-      const okGo = await new Promise(res0 => { const sh = $('pagesModal').querySelector('.sheet'), mw = sh.style.maxWidth; sh.style.maxWidth = '520px'; const res = v => { sh.style.maxWidth = mw; res0(v); }; askYesNo('Google フォトの、アルバムを空にしてください', `<p>このまま書き出すと、前の写真と重複します。<br>このツールからは Google フォトの写真を直接削除できないため、<br>アルバム「${esc2(t)}」の写真を全て選択して、<br>ゴミ箱に移動してください。</p>`, () => { if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); res(true); }, 'アルバムを開く', 'キャンセル', () => res(false));
-        const gp = '<img class="glogo gpl" src="https://www.gstatic.com/images/branding/product/2x/photos_48dp.png" alt="" onerror="this.remove()">Google フォト';
-        $('pagesTitle').innerHTML = gp + 'の、アルバムを空にしてください'; $('pagesYes').innerHTML = gp + ' アルバムを開く'; });
+      const okGo = await new Promise(res0 => { const sh = $('pagesModal').querySelector('.sheet'), mw = sh.style.maxWidth; sh.style.maxWidth = '520px'; const res = v => { sh.style.maxWidth = mw; res0(v); }; askYesNo('Google フォトの、アルバムを空にしてください', `<p>このまま書き出すと、前の写真と重複してしまいます。<br>Google フォトの写真は、ここから削除できません。<br>アルバム「${esc2(t)}」の写真をすべて選び、<br>ゴミ箱へ移してください。</p>`, () => { if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); res(true); }, 'Google フォト アルバムを開く', 'キャンセル', () => res(false)); });
       if(!okGo) return;
       const go = await new Promise(res => askYesNo('写真を削除しましたか？', `<p>ゴミ箱に移動したら、［続ける］を押してください。</p>`, () => res(true), '続ける', 'キャンセル', () => res(false)));
       if(!go) return;
@@ -7042,10 +7040,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     askYesNo('ページ数を減らします', `${n}ページにすると、${from}以降の写真 <b>${lost}枚</b> が消えます。<br>本当にいいですか？`,
       () => { $('pages').value = String(n); applyPages(true); afterPages(); status(`${n}ページにしました（写真 ${lost}枚を削除）。`); });
   });
+  // 「Google フォト」の文字にロゴを添える（この一連の画面で使う）
+  const GPL = '<img class="glogo gpl" src="https://www.gstatic.com/images/branding/product/2x/photos_48dp.png" alt="" onerror="this.remove()">Google フォト';
+  function gpLogo(html){ return String(html).split('Google フォト').join(GPL); }
+  function gpTxt(el, t){ const v = String(t == null ? '' : t); if(v.includes('Google フォト')) el.innerHTML = gpLogo(esc2(v)); else el.textContent = v; }
   function askYesNo(title, html, onYes, yesLabel, noLabel, onNo){
-    $('pagesYes').textContent = yesLabel || 'YES'; $('pagesNo').textContent = noLabel || 'NO';
-    $('pagesTitle').textContent = title;
-    $('pagesMsg').innerHTML = html;
+    gpTxt($('pagesYes'), yesLabel || 'YES'); gpTxt($('pagesNo'), noLabel || 'NO');
+    gpTxt($('pagesTitle'), title);
+    $('pagesMsg').innerHTML = gpLogo(html);
     const notice = noLabel === '';   // お知らせだけ（ボタン1つ）
     $('pagesNo').hidden = notice;
     const m = $('pagesModal'); m.hidden = false; (notice ? $('pagesYes') : $('pagesNo')).focus();
@@ -8161,7 +8163,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // BOOKをドライブに保存：BOOKごとのフォルダに book.json・サムネ・写真（元の名前のまま）。写真は1回だけ上げて、あとは中身の記録だけ
   // 保存・読み込み中の表示（frac が null のあいだは、流れるバー）
   function gBusy(title, text, frac){
-    const m = $('gBusy'); if(title) $('gBusyTitle').textContent = title; $('gBusyText').textContent = text || '';
+    const m = $('gBusy'); if(title) gpTxt($('gBusyTitle'), title); gpTxt($('gBusyText'), text || '');
     const bar = $('gBusyBar'); bar.classList.toggle('wait', frac == null); bar.firstElementChild.style.width = frac == null ? '' : Math.round(Math.min(1, frac) * 100) + '%';
     m.hidden = false;
   }
