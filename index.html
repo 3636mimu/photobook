@@ -391,7 +391,17 @@ button{font:inherit}
 .viewer:not(.gridmode) .vgrid{display:none}
 /* iPad の全画面：上の時計・電池の下にバーをさげ、見出しは左上の ✕ の右へ */
 .viewer.vfs{padding-top:max(env(safe-area-inset-top,0px),26px)}
-.viewer.vfs .vbar .vt{padding-left:84px}
+
+/* プレビュー：ページ番号のボタンは上のバーの真ん中に。下の行をなくしたぶん、写真を縦に大きく。「見開き 3 / 14」の表示はやめる（一覧のときの「一覧 ○組」は残す） */
+.viewer{grid-template-rows:auto 1fr}
+.vbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr);align-items:center}
+.vbar .vbtns{justify-self:end}
+.vbar .vstrip{padding:0;min-width:0}
+.viewer:not(.gridmode) .vbar .vt{visibility:hidden;font-size:0}
+.viewer .vstage{padding-bottom:10px}
+.viewer.vfs.gridmode .vbar .vt{padding-left:84px}
+.viewer.vfs .vbar{grid-template-columns:minmax(72px,1fr) minmax(0,auto) minmax(0,1fr)}
+@media (max-width:640px){.vbar{grid-template-columns:minmax(0,1fr) auto}.vbar .vstrip{grid-column:1 / -1;grid-row:2;margin-top:6px}.vbar .vbtns{grid-column:2;grid-row:1}}
 .viewer.vfson{touch-action:none}
 .viewer.vfson .vgrid{touch-action:pan-y}
 .vstrip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:10px 16px 14px}
@@ -1993,6 +2003,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
 <div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="見開きプレビュー">
   <div class="vbar">
     <div class="vt" id="vTitle"></div>
+    <div class="vstrip" id="vStrip"></div>
     <div class="vbtns">
       <button class="vclose" id="vGridBtn">一覧</button>
       <button class="vclose" id="vClose">閉じる</button>
@@ -2004,7 +2015,6 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
     <canvas id="vCv"></canvas>
     <button class="varrow next" id="vNext" aria-label="次の見開き">›</button>
   </div>
-  <div class="vstrip" id="vStrip"></div>
 </div>
 
 <div class="manual" id="manual" hidden><div class="mansheet" role="dialog" aria-modal="true" aria-label="くわしい説明書"><div class="manbar"><b>くわしい説明書</b><button type="button" class="manclose" id="manualClose" aria-label="閉じる">×</button></div><iframe id="manualFrame" title="くわしい説明書"></iframe></div></div>
