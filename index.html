@@ -842,6 +842,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .strecent{margin-top:18px}
 .strhead{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px}
 .glogo{width:16px;height:16px;object-fit:contain;flex:none;vertical-align:-3px}
+#pagesTitle .glogo.gpl{width:20px;height:20px;margin-right:6px;vertical-align:-4px}
+#pagesYes .glogo.gpl{width:18px;height:18px;padding:2px;margin-right:6px;background:#fff;border-radius:50%;vertical-align:-5px}
 .ghead{display:inline-flex;align-items:center;gap:6px}
 .glink{color:inherit;text-decoration:underline;text-decoration-color:rgba(0,0,0,.25);text-underline-offset:3px;display:inline-flex;align-items:center;gap:3px}
 .glink:hover{color:var(--accent);text-decoration-color:currentColor}
@@ -6708,7 +6710,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!r) return;
       if(r.k === 'rename'){ t = r.name; continue; }   // 別の名前：その名前もあれば、もう一度聞く
       // 上書き：前の写真はツールから消せないので、Google フォトで手でゴミ箱へ → 空になった同じアルバムに入れる
-      const okGo = await new Promise(res => askYesNo('上書きするには、アルバムを空にしてください', `<p>このまま書き出すと、前の写真と重複します。<br>このツールからは Google フォトの写真を削除できないため、<br>アルバム「${esc2(t)}」の写真を全て選択して、ゴミ箱に移動してください。</p>`, () => { if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); res(true); }, 'アルバムを開く', 'キャンセル', () => res(false)));
+      const okGo = await new Promise(res0 => { const sh = $('pagesModal').querySelector('.sheet'), mw = sh.style.maxWidth; sh.style.maxWidth = '520px'; const res = v => { sh.style.maxWidth = mw; res0(v); }; askYesNo('Google フォトの、アルバムを空にしてください', `<p>このまま書き出すと、前の写真と重複します。<br>このツールからは Google フォトの写真を直接削除できないため、<br>アルバム「${esc2(t)}」の写真を全て選択して、<br>ゴミ箱に移動してください。</p>`, () => { if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); res(true); }, 'アルバムを開く', 'キャンセル', () => res(false));
+        const gp = '<img class="glogo gpl" src="https://www.gstatic.com/images/branding/product/2x/photos_48dp.png" alt="" onerror="this.remove()">Google フォト';
+        $('pagesTitle').innerHTML = gp + 'の、アルバムを空にしてください'; $('pagesYes').innerHTML = gp + ' アルバムを開く'; });
       if(!okGo) return;
       const go = await new Promise(res => askYesNo('写真を削除しましたか？', `<p>ゴミ箱に移動したら、［続ける］を押してください。</p>`, () => res(true), '続ける', 'キャンセル', () => res(false)));
       if(!go) return;
