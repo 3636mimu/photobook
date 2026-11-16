@@ -720,6 +720,13 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #pagesModal{z-index:60}
 /* 書き出し先（パソコン／Google フォト） */
 #gpModal{z-index:58}
+#gpDup{z-index:59}
+#gpDup .gpsheet{max-width:460px;padding:26px 28px 22px}
+#gpDup h3{margin:0 0 14px;font-size:15px;font-weight:500;text-align:center}
+#gpDup textarea{width:100%;box-sizing:border-box;resize:none;line-height:1.6;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;color:#111;background:#fff}
+#gpDup .actions{justify-content:center;gap:12px;margin-top:20px}
+#gpDup .qbtn{flex:0 1 120px}
+#gpDup .qbtn:disabled{opacity:.45;cursor:default;filter:none}
 #gpModal .gpsheet{max-width:440px;padding:26px 28px 22px}
 #gpModal h3{margin:0 0 14px;font-size:15px;font-weight:500;text-align:center}
 #gpModal .gpdest{display:flex;flex-direction:column;gap:8px}
@@ -6691,37 +6698,53 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       do{ const r = await gpJson('/albums?pageSize=50' + (tok ? '&pageToken=' + encodeURIComponent(tok) : '')); (r.albums || []).forEach(a => { if(!names.has(a.title)) names.set(a.title, a); }); tok = r.nextPageToken || ''; }while(tok);
     }catch(e){ console.warn(e); }
     gBusyOff();
-    const found = names.get(title);
-    let k2 = 2; while(names.has(`${title} (${k2})`)) k2++;   // 「名前 (2)」「名前 (3)」…と、空いている番号を付ける
-    const t2 = `${title} (${k2})`;
     const empty = a => !(+a.mediaItemsCount > 0);
-    if(found && empty(found)){ saveAllSpreads({ title, albumId: found.id, url: found.productUrl }); return; }   // 空のアルバムなら、そのまま入れる
-    if(found){
-      const k = await askPick('同じ名前のアルバムがあります', `<p>「${esc2(title)}」</p>`, [
-        { k: 'new', main: true, title: '新しく作る', desc: `「${esc2(t2)}」として作ります`, go: '作る' },
-        { k: 'open', title: '前のアルバムを開く', desc: 'Google フォトで、前の写真をゴミ箱に入れられます', go: '開く' }]);
-      if(k === 'new'){ saveAllSpreads({ title: t2 }); return; }
-      if(k !== 'open') return;
-      // 先に手順を見せて、［ゴミ箱に入れに行く］を押してから Google フォトを開く
-      const okGo = await new Promise(r => askYesNo('前の写真をゴミ箱に入れます', `<p>Google フォトで「${esc2(title)}」のアルバムを開きます。<br>写真をすべて選んでゴミ箱に入れたら、このタブに戻って［続ける］を押してください。<br>空になった同じアルバムに、新しい写真を入れます。</p>`, () => { if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); r(true); }, 'ゴミ箱に入れに行く', 'やめる', () => r(false)));
+    let t = title;
+    for(;;){
+      const found = names.get(t);
+      if(!found){ if(t !== title) gpAlbumName(t); saveAllSpreads({ title: t }); return; }
+      if(empty(found)){ saveAllSpreads({ title: t, albumId: found.id, url: found.productUrl }); return; }   // 空のアルバムなら、そのまま入れる
+      const r = await gpAskDup(t);
+      if(!r) return;
+      if(r.k === 'rename'){ t = r.name; continue; }   // 別の名前：その名前もあれば、もう一度聞く
+      // 上書き：前の写真はツールから消せないので、Google フォトで手でゴミ箱へ → 空になった同じアルバムに入れる
+      const okGo = await new Promise(res => askYesNo('前の写真をゴミ箱に入れます', `<p>Google フォトで「${esc2(t)}」を開きます。<br>写真をすべてゴミ箱に入れたら、このタブに戻って［続ける］を押してください。</p>`, () => { if(found.productUrl) window.open(found.productUrl, '_blank', 'noopener'); res(true); }, 'ゴミ箱に入れに行く', 'やめる', () => res(false)));
       if(!okGo) return;
-      // Google フォトで片付けてもらうあいだ、ここで待つ
-      const go = await new Promise(r => askYesNo('ゴミ箱に入れたら［続ける］', `<p>Google フォトのタブで「${esc2(title)}」の写真をすべてゴミ箱に入れてから、［続ける］を押してください。</p>`, () => r(true), '続ける', 'やめる', () => r(false)));
+      const go = await new Promise(res => askYesNo('ゴミ箱に入れたら［続ける］', `<p>Google フォトのタブで「${esc2(t)}」の写真をすべてゴミ箱に入れてから、［続ける］を押してください。</p>`, () => res(true), '続ける', 'やめる', () => res(false)));
       if(!go) return;
       let cur = found;
       try{ gBusy('Google フォトに保存しています', 'アルバムを確かめています…', null); cur = await gpJson('/albums/' + encodeURIComponent(found.id)); }catch(e){ console.warn(e); }
       gBusyOff();
       if(!empty(cur)){
-        const k3 = await askPick('まだ前の写真が残っています', `<p>「${esc2(title)}」に ${+cur.mediaItemsCount || ''}枚 残っています。</p>`, [
-          { k: 'add', title: 'このまま追加', desc: '前の写真のあとに入れます', go: '追加' },
-          { k: 'new', main: true, title: '新しく作る', desc: `「${esc2(t2)}」として作ります`, go: '作る' }]);
-        if(k3 === 'add'){ saveAllSpreads({ title, albumId: found.id, url: found.productUrl }); return; }
-        if(k3 === 'new'){ saveAllSpreads({ title: t2 }); return; }
-        return;
+        const add = await new Promise(res => askYesNo('まだ前の写真が残っています', `<p>「${esc2(t)}」に ${+cur.mediaItemsCount || ''}枚 残っています。</p>`, () => res(true), 'このまま追加', 'キャンセル', () => res(false)));
+        if(!add) return;
       }
-      saveAllSpreads({ title, albumId: found.id, url: found.productUrl }); return;
+      saveAllSpreads({ title: t, albumId: found.id, url: found.productUrl }); return;
     }
-    saveAllSpreads({ title });
+  }
+  // 同じ名前のアルバムがあるとき（Lightroom の「既に存在します」と同じ形）：名前はその場で直せる
+  function gpAskDup(name){
+    return new Promise(done => {
+      let m = $('gpDup');
+      if(!m){
+        m = document.createElement('div'); m.className = 'modal'; m.id = 'gpDup'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
+        m.innerHTML = `<div class="sheet gpsheet"><h3>以下のアルバムはすでに存在します</h3>
+          <textarea id="gpDupName" rows="3" maxlength="500" spellcheck="false"></textarea>
+          <div class="actions"><button type="button" class="qbtn keep" id="gpDupNo">キャンセル</button><button type="button" class="qbtn drop" id="gpDupOver">上書き</button><button type="button" class="qbtn save" id="gpDupAs">別名で保存</button></div></div>`;
+        document.body.append(m);
+        $('gpDupName').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.isComposing) e.preventDefault(); });
+      }
+      const ta = $('gpDupName'), as = $('gpDupAs'), clean = () => ta.value.replace(/\s*\n\s*/g, ' ').trim();
+      ta.value = name;
+      const sync = () => { const v = clean(); as.disabled = !v || v === name; };
+      ta.oninput = sync; sync();
+      const fin = r => { m.hidden = true; m.onkeydown = null; done(r); };
+      $('gpDupNo').onclick = () => fin(null);
+      $('gpDupOver').onclick = () => fin({ k: 'over' });
+      as.onclick = () => { const v = clean(); if(v && v !== name) fin({ k: 'rename', name: v }); };
+      m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
+      m.hidden = false; ta.focus(); ta.select();
+    });
   }
   async function gpUpload(files, d){
     gBusy('Google フォトに保存しています', 'アルバムを作っています', .5);
