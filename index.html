@@ -2916,7 +2916,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // two-step delete: first press arms the button, second press within 4 s clears everything
   $('clearAll').addEventListener('click', () => {
     const n = slots.filter(Boolean).length;
-    askYesNo('すべての写真を削除しますか？', `<p>入っている写真${n}枚を、すべての見開きから取り除きます。<br>元の写真ファイルは消えません。</p>`, () => {
+    askYesNo('すべての写真を削除しますか？', `<p>入っている写真${n}枚を、すべての見開きから取り除きます。<br>元には戻せません。</p>`, () => {
       for(let i=0;i<slots.length;i++){ release(i); slots[i] = null; renderSlot(i); }
       wide.clear(); lost = [];
       renderAll();
