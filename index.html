@@ -777,6 +777,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 @keyframes gwait{0%{left:-30%}100%{left:100%}}
 #gBusy p{margin:0;font-size:13px;color:var(--ink)}
 #gBusy small{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
+#gBusy .gbcancel{margin:14px auto 0;padding:7px 22px;font-size:13px}
 .wbtn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .wbtn:hover,.wbtn:focus-visible{color:var(--accent);border-color:var(--accent);background:#fff;outline:none}
 .slot.lost{outline:2px dashed #D9A21B;outline-offset:-4px;color:#B07D0A}
@@ -2348,6 +2349,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <div class="gbar wait" id="gBusyBar"><i></i></div>
     <p id="gBusyText">準備しています…</p>
     <small>写真が多いと、少し時間がかかります。</small>
+    <button type="button" class="outline gbcancel" id="gBusyCancel" hidden>中止</button>
   </div>
 </div>
 <div class="modal" id="driveModal" hidden role="dialog" aria-modal="true" aria-labelledby="driveTitle">
@@ -7931,7 +7933,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const bar = $('gBusyBar'); bar.classList.toggle('wait', frac == null); bar.firstElementChild.style.width = frac == null ? '' : Math.round(Math.min(1, frac) * 100) + '%';
     m.hidden = false;
   }
-  function gBusyOff(){ $('gBusy').hidden = true; }
+  function gBusyOff(){ $('gBusy').hidden = true; $('gBusyCancel').hidden = true; $('gBusyCancel').onclick = null; }
   // 文字列から短い目印（同じ画像を2回上げないため）
   function strHash(str){ let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for(let i = 0; i < str.length; i++){ const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0') + '-' + str.length.toString(36); }
   async function driveSave(h, from, show){
@@ -8007,26 +8009,42 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // ドライブのBOOKを開く
   async function openDriveBook(f){
+    let canceled = false;
     const go = async () => {
       if(!(await gEnsure(true))){ status('Google ドライブにつながりませんでした。'); return; }
       status('Google ドライブから開いています…'); gBusy('Google ドライブから開いています', `「${f.name}」を読み込んでいます…`, null);
-      try{ await go2(); } finally { gBusyOff(); }
+      // 読み込みの中止：写真を全部受け取り終えるまでは、編集画面に何も入れないので、いつ止めても元のまま
+      canceled = false; const cb = $('gBusyCancel'); cb.hidden = false;
+      cb.onclick = () => { canceled = true; gBusyOff(); status('読み込みを中止しました。'); };
+      try{ await go2(); } finally { if(!canceled) gBusyOff(); }
     };
     const go2 = async () => {
       let P;
       try{ P = JSON.parse(await (await gGet(f.appProperties.json)).text()); if(!P || P.app !== 'PHOTO BOOK MAKER') throw 0; }
-      catch(e){ status('このBOOKを開けませんでした。'); return; }
+      catch(e){ if(!canceled) status('このBOOKを開けませんでした。'); return; }
+      if(canceled) return;
       const ids = (P.drive && P.drive.photos) || {};
       const h = { drive: true, name: f.name, folderId: f.id, jsonId: f.appProperties.json, thumbId: f.appProperties.thumb || '', photoIds: Object.assign({}, ids), photoNames: {}, fontIds: {}, assetIds: Object.assign({}, (P.drive && P.drive.assets) || {}) };
       // 装飾の画像を、別のファイルから元のまま戻す
       const A = (P.drive && P.drive.assets) || {};
       for(const arr of Object.values(P.decos || {})) for(const t of (Array.isArray(arr) ? arr : [])){
         if(!t || typeof t.img !== 'string' || !t.img.startsWith('asset:')) continue;
+        if(canceled) return;
         const id = A[t.img.slice(6)]; t.img = '';
         if(id){ try{ const b = await gGet(id); t.img = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(b); }); }catch(e){} }
       }
-      let done = 0; const total = Object.keys(ids).length;
-      const r = await finishOpen(P, async uid => { if(!ids[uid]) return null; const b = await gGet(ids[uid]); status(`Google ドライブから写真を読み込んでいます…（${++done}/${total}）`); gBusy('', `写真 ${done} / ${total} 枚`, done / (total + 1)); return b; }, {
+      // 写真を先に全部受け取る（ここまでなら中止できる）
+      const uids = Object.keys(ids), total = uids.length, blobs = {}; let done = 0;
+      for(const uid of uids){
+        if(canceled) return;
+        try{ blobs[uid] = await gGet(ids[uid]); }catch(e){ blobs[uid] = null; }
+        if(canceled) return;
+        status(`Google ドライブから写真を読み込んでいます…（${++done}/${total}）`); gBusy('', `写真 ${done} / ${total} 枚`, done / (total + 1));
+      }
+      if(canceled) return;
+      // ここからは編集画面に入れるので、中止はできない
+      $('gBusyCancel').hidden = true; gBusy('', '仕上げています…', total ? total / (total + 1) : null);
+      const r = await finishOpen(P, async uid => ids[uid] ? blobs[uid] || null : null, {
         name: f.name, handle: h, fileAt: Date.parse(f.modifiedTime) || P.savedAt || 0,
         fonts: async () => { let n = 0; for(const x of (P.drive && P.drive.fonts) || []){ h.fontIds[x.name] = x.id; if(myFonts.includes(x.name)) continue; try{ const data = await (await gGet(x.id)).arrayBuffer(); await registerFont(x.name, data); await fontDbDo('readwrite', st => st.put({ name: x.name, data })); n++; }catch(e){} } if(n) renderMyFonts(); return n; } });
       status(`Google ドライブの「${f.name}」を開きました。続きから編集できます。` + (r.missing ? `読み込めなかった写真が${r.missing}枚あります。` : '') + (r.forked ? 'このブラウザに残っていた、より新しい版は「続きから作る」にそのまま残しています。' : ''));
