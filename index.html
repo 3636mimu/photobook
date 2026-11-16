@@ -718,6 +718,19 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .ios .isec[open] > summary{border-radius:12px 12px 0 0}
 .ios .isec[open] > .icard{border-radius:0 0 12px 12px;border-top:1px solid var(--isep);margin-bottom:0}
 #pagesModal{z-index:60}
+/* 書き出し先（パソコン／Google フォト） */
+#gpModal{z-index:58}
+#gpModal .gpsheet{max-width:440px;padding:26px 28px 22px}
+#gpModal h3{margin:0 0 14px;font-size:15px;font-weight:500;text-align:center}
+#gpModal .gpdest{display:flex;flex-direction:column;gap:8px}
+#gpModal .gpdest label{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:14px}
+#gpModal .gpdest label:has(input:checked){border-color:#2A8C7F;background:rgba(42,140,127,.07)}
+#gpModal .gpdest input{accent-color:#2A8C7F;margin:0}
+#gpModal .gpalbum{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:13px;color:var(--muted)}
+#gpModal .gpalbum[hidden]{display:none}
+#gpModal .gpalbum input{padding:9px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;color:#111;background:#fff}
+#gpModal .actions{justify-content:center;gap:14px;margin-top:20px}
+#gpModal .qbtn{flex:0 1 128px}
 /* 編集を中断するときの3つのボタン：丸い塗りのボタン（続ける＝落ち着いたグレージュ、閉じる＝赤、保存＝アクセント色） */
 .qbtn{border:0 !important;border-radius:999px !important;padding:10px 8px !important;font:inherit;font-size:14px !important;font-weight:500 !important;letter-spacing:.02em;white-space:nowrap;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.16);transition:filter .15s,transform .1s}
 .qbtn:hover{filter:brightness(1.05)}.qbtn:active{transform:translateY(1px)}
@@ -6504,11 +6517,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 20000);
     return 'saved';
   }
-  async function saveAllSpreads(){
+  async function saveAllSpreads(dest){
     const list = allPairs().filter(pairReady);
     if(!list.length) return;
     let toDir;
-    try{ toDir = await ensureDir(); }catch(e){ status('保存しませんでした。フォルダを選んだあと「このサイトにファイルの編集を許可しますか？」で「許可する」を押すと保存できます。'); return; }
+    if(!dest) try{ toDir = await ensureDir(); }catch(e){ status('保存しませんでした。フォルダを選んだあと「このサイトにファイルの編集を許可しますか？」で「許可する」を押すと保存できます。'); return; }
     const st = stamp(), files = [];
     const pdf = isPdf(), imgs = [];
     if(pdf && booklet){ await saveBookletPdf(st, toDir); return; }
@@ -6519,6 +6532,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       imgs.push(img);
       if(!pdf) files.push({ name: `mihiraki_${st}_${isCover(p) ? 'cover' : String(p+1).padStart(2,'0')}.jpg`, blob: img.blob });
     }
+    if(dest && !pdf){ await gpUpload(files, dest); return; }
     if(pdf){
       // one PDF holding every spread, one spread per page
       status('PDF にまとめています…');
@@ -6571,7 +6585,106 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       else savePairs(list);
     }
   }
-  $('saveAll').addEventListener('click', () => confirmLow(allPairs().filter(pairReady), saveAllSpreads));
+  $('saveAll').addEventListener('click', () => confirmLow(allPairs().filter(pairReady), () => (gpOn() && !isPdf()) ? gpAskDest() : saveAllSpreads()));
+
+  // ---------- 書き出し先に Google フォト（JPG のときだけ） ----------
+  // ツールが新しいアルバムを作って、書き出した JPG を入れる（Google の決まりで、もともとあるアルバムには入れられない）
+  const GPAPI = 'https://photoslibrary.googleapis.com/v1';
+  const GPSCOPE = 'https://www.googleapis.com/auth/photoslibrary.appendonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata';
+  const GP = { tok: '', exp: 0, client: null, wait: null };
+  const gpOn = () => WEB && !!PBM_WEB.clientId && !/YOUR_CLIENT_ID/.test(PBM_WEB.clientId);
+  function gpToken(){   // 押したその場で呼ぶ（Google の小さな窓を開くため）
+    if(GP.tok && GP.exp > Date.now() + 60000) return Promise.resolve(true);
+    if(!(window.google && google.accounts && google.accounts.oauth2)) return Promise.resolve(false);
+    if(!GP.client) GP.client = google.accounts.oauth2.initTokenClient({ client_id: PBM_WEB.clientId, scope: GPSCOPE,
+      callback: r => { const d = GP.wait; GP.wait = null; if(r && r.access_token){ GP.tok = r.access_token; GP.exp = Date.now() + (Number(r.expires_in) || 3600) * 1000 - 60000; } d && d(!!(r && r.access_token)); },
+      error_callback: () => { const d = GP.wait; GP.wait = null; d && d(false); } });
+    return new Promise(res => { GP.wait = res; const o = { prompt: '' }; if(GD.email) o.login_hint = GD.email; GP.client.requestAccessToken(o); });
+  }
+  async function gpJson(path, body){
+    const r = await fetch(GPAPI + path, body ? { method: 'POST', headers: { Authorization: 'Bearer ' + GP.tok, 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : { headers: { Authorization: 'Bearer ' + GP.tok } });
+    if(!r.ok) throw new Error(`${path.split('?')[0]} ${r.status} ${(await r.text().catch(() => '')).slice(0, 160)}`);
+    return r.json();
+  }
+  function gpAskDest(){
+    let m = $('gpModal');
+    if(!m){
+      m = document.createElement('div'); m.className = 'modal'; m.id = 'gpModal'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
+      m.innerHTML = `<div class="sheet gpsheet"><h3>書き出し先</h3>
+        <div class="gpdest"><label><input type="radio" name="gpd" value="local"><span>${MOBILE ? 'この端末' : 'パソコン'}に保存</span></label>
+        <label><input type="radio" name="gpd" value="photos"><span>Google フォトのアルバムに保存</span></label></div>
+        <div class="gpalbum"><span>アルバム名</span><input type="text" id="gpTitle" maxlength="500" autocomplete="off"></div>
+        <div class="actions"><button type="button" class="qbtn keep" id="gpNo">キャンセル</button><button type="button" class="qbtn save" id="gpGo">書き出す</button></div></div>`;
+      document.body.append(m);
+      const sync = () => { const ph = m.querySelector('input[name=gpd]:checked').value === 'photos'; m.querySelector('.gpalbum').hidden = !ph; };
+      m.addEventListener('change', sync);
+      const close = () => { m.hidden = true; };
+      $('gpNo').onclick = close;
+      m.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
+      $('gpGo').onclick = () => {
+        const ph = m.querySelector('input[name=gpd]:checked').value === 'photos';
+        try{ localStorage.setItem('pbm-gpdest', ph ? 'photos' : 'local'); }catch(e){}
+        if(!ph){ close(); saveAllSpreads(); return; }
+        const title = $('gpTitle').value.trim() || bookTitle();
+        const tk = gpToken();   // 押したその場で（Google の窓）
+        close();
+        tk.then(ok => ok ? gpStart(title) : status('Google フォトにつながりませんでした。'));
+      };
+      m._sync = sync;
+    }
+    let last = 'local'; try{ last = localStorage.getItem('pbm-gpdest') || 'local'; }catch(e){}
+    m.querySelector(`input[value=${last}]`).checked = true; m._sync();
+    $('gpTitle').value = bookTitle();
+    m.hidden = false; $('gpGo').focus();
+  }
+  function bookTitle(){ return (bookFile || '').replace(/\.pbmk$/i, '') || `PHOTO BOOK ${stamp()}`; }
+  async function gpStart(title){
+    // ツールが前に作った同じ名前のアルバムがあれば、そこに足すか、新しく作るかを選ぶ
+    let found = null;
+    try{ gBusy('Google フォトに保存しています', '準備しています…', null);
+      let tok = '';
+      do{ const r = await gpJson('/albums?pageSize=50' + (tok ? '&pageToken=' + encodeURIComponent(tok) : '')); found = (r.albums || []).find(a => a.title === title) || found; tok = found ? '' : r.nextPageToken || ''; }while(tok);
+    }catch(e){ console.warn(e); }
+    gBusyOff();
+    let dest = { title };
+    if(found){
+      const k = await askPick('同じ名前のアルバムがあります', `<p>「${esc2(title)}」</p>`, [
+        { k: 'add', main: true, title: 'このアルバムに追加', desc: '', go: '追加' },
+        { k: 'new', title: '新しいアルバムを作る', desc: '', go: '作る' }]);
+      if(!k) return;
+      if(k === 'add') dest = { title, albumId: found.id, url: found.productUrl };
+    }
+    saveAllSpreads(dest);
+  }
+  async function gpUpload(files, d){
+    gBusy('Google フォトに保存しています', '準備しています…', null);
+    try{
+      let albumId = d.albumId, url = d.url;
+      if(!albumId){ const a = await gpJson('/albums', { album: { title: d.title } }); albumId = a.id; url = a.productUrl; }
+      const items = [];
+      for(let i = 0; i < files.length; i++){
+        gBusy('', `写真 ${i + 1} / ${files.length} 枚`, i / (files.length + 1));
+        let r;
+        try{ r = await fetch(GPAPI + '/uploads', { method: 'POST', headers: { Authorization: 'Bearer ' + GP.tok, 'Content-Type': 'application/octet-stream', 'X-Goog-Upload-Content-Type': 'image/jpeg', 'X-Goog-Upload-Protocol': 'raw', 'X-Goog-Upload-File-Name': files[i].name }, body: files[i].blob }); }
+        catch(e){ throw new Error('ブラウザから Google フォトに直接送れませんでした（' + (e && e.message || e) + '）'); }
+        if(!r.ok) throw new Error('uploads ' + r.status + ' ' + (await r.text().catch(() => '')).slice(0, 160));
+        items.push({ description: '', simpleMediaItem: { uploadToken: await r.text(), fileName: files[i].name } });
+      }
+      gBusy('', '仕上げています…', files.length / (files.length + 1));
+      let ng = 0;
+      for(let i = 0; i < items.length; i += 50){
+        const r = await gpJson('/mediaItems:batchCreate', { albumId, newMediaItems: items.slice(i, i + 50) });
+        ng += (r.newMediaItemResults || []).filter(x => x.status && x.status.code).length;
+      }
+      gBusyOff();
+      status(`${files.length - ng}枚を Google フォトのアルバム「${d.title}」に保存しました。` + (ng ? `${ng}枚は保存できませんでした。` : ''));
+      if(url) askYesNo('Google フォトに保存しました', `<p>アルバム「${esc2(d.title)}」に ${files.length - ng}枚を入れました。</p>`, () => window.open(url, '_blank', 'noopener'), 'Google フォトで開く', '閉じる');
+    }catch(e){
+      gBusyOff(); console.warn(e);
+      status('Google フォトに保存できませんでした。' + (e && e.message ? '（' + e.message + '）' : ''));
+      askYesNo('Google フォトに保存できませんでした', `<p style="word-break:break-all">${esc2(e && e.message || String(e))}</p>`, () => {}, 'OK', '閉じる');
+    }
+  }
   // ---------- 写真を1枚ずつ書き出し: each photo as edited here (crop, zoom, rotation, tilt), one JPG per photo ----------
   // no gutter shadow or grid; cover text is included on the 写真集 cover; a one-photo spread comes out as the whole wide photo
   // does any 装飾 item reach this page (side 0 = left, 1 = right) of spread p?
