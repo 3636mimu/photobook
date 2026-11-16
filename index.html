@@ -6716,12 +6716,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!found){ if(t !== title) gpAlbumName(t); saveAllSpreads({ title: t }); return; }
       if(empty(found)){ saveAllSpreads({ title: t, albumId: found.id, url: found.productUrl }); return; }   // 空のアルバムなら、そのまま入れる
       // 残りの枚数を確かめる（確かめられないときは 0 として進める）
-      const left = async () => { try{ const a = await gpJson('/albums/' + encodeURIComponent(found.id)); return +a.mediaItemsCount || 0; }catch(e){ console.warn(e); return 0; } };
+      const left = async () => { try{ const a = await gpJson('/albums/' + encodeURIComponent(found.id)); return +a.mediaItemsCount || 0; }catch(e){ console.warn(e); return / 40[04] /.test(e && e.message || '') ? -1 : 0; } };   // -1：アルバムごと消された
       const r = await gpAskDup(t, found.productUrl, left, +found.mediaItemsCount || 0);
       if(!r) return;
       if(r.k === 'rename'){ t = r.name; continue; }   // 別の名前：その名前もあれば、もう一度聞く
       // 上書き：窓の中でアルバムを開き、空になったのを確かめてから入れる（gpAskDup）
-      saveAllSpreads({ title: t, albumId: found.id, url: found.productUrl }); return;
+      // Google フォトで空のアルバムごと消された（「空のアルバムを削除しますか？」で消した）ときは、同じ名前で作り直す
+      saveAllSpreads(r.gone ? { title: t } : { title: t, albumId: found.id, url: found.productUrl }); return;
     }
   }
   // 同じ名前のアルバムがあるとき（Lightroom の「既に存在します」と同じ形）：名前はその場で直せる
@@ -6751,7 +6752,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(opened){   // ［保存］：アルバムが空になったか確かめる。残っていれば、削除をお願いし直す
           ov.disabled = true; ov.textContent = '確認中…';
           left().then(n => {
-            if(!n) return fin({ k: 'over' });
+            if(n <= 0) return fin({ k: 'over', gone: n < 0 });
             ov.disabled = false; ov.textContent = '保存';
             note.innerHTML = `まだ前の写真が <b>${n}枚</b> 残っています。<br>アルバム内の写真をすべて削除してから、［保存］を押してください。`;
           });
@@ -6783,7 +6784,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       gBusyImg(null); gBusy('', '仕上げています…', .99);
       let ng = 0;
       for(let i = 0; i < items.length; i += 50){
-        const r = await gpJson('/mediaItems:batchCreate', { albumId, newMediaItems: items.slice(i, i + 50) });
+        let r;
+        try{ r = await gpJson('/mediaItems:batchCreate', { albumId, newMediaItems: items.slice(i, i + 50) }); }
+        catch(e){
+          if(!/ 40[04] /.test(e && e.message || '') || i) throw e;
+          const a = await gpJson('/albums', { album: { title: d.title } }); albumId = a.id; url = a.productUrl;   // 途中でアルバムが消されていた
+          r = await gpJson('/mediaItems:batchCreate', { albumId, newMediaItems: items.slice(i, i + 50) });
+        }
         ng += (r.newMediaItemResults || []).filter(x => x.status && x.status.code).length;
       }
       gBusyOff();
@@ -6792,7 +6799,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }catch(e){
       gBusyOff(); console.warn(e);
       status('Google フォトに保存できませんでした。' + (e && e.message ? '（' + e.message + '）' : ''));
-      askYesNo('Google フォトに保存できませんでした', `<p style="word-break:break-all">${esc2(e && e.message || String(e))}</p>`, () => {}, 'OK', '閉じる');
+      askYesNo('Google フォトに保存できませんでした', `<p style="word-break:break-all">${esc2(e && e.message || String(e))}</p>`, () => {}, '閉じる', '');
     }
   }
   // ---------- 写真を1枚ずつ書き出し: each photo as edited here (crop, zoom, rotation, tilt), one JPG per photo ----------
