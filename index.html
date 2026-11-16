@@ -728,6 +728,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #gpDup .gpcard > b{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
 #gpDup .gpcard p{margin:0;font-size:13px;line-height:1.75}
 #gpDup .gpcard[hidden]{display:none}
+a.gpapp{font-size:12.5px;color:#2A8C7F;text-decoration:underline;text-underline-offset:2px}
 #gpDup:focus{outline:none}
 #gpDup .gprow{display:flex;justify-content:flex-end;margin-top:10px}
 #gpDup .gprow .qbtn{flex:0 0 132px}
@@ -6758,9 +6759,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           });
           return;
         }
-        opened = true; if(url) window.open(url, '_blank', 'noopener');
+        opened = true; gpOpenAlbum(url);
         ta.readOnly = true; asCard.hidden = true; sync(); ov.textContent = '保存'; ov.className = 'qbtn save';
-        note.textContent = '削除が完了したら、［保存］を押してください。';
+        note.innerHTML = '削除が完了したら、［保存］を押してください。' + (gpAppLink() ? '<br>' + gpAppLink() : '');
       };
       as.onclick = () => { const v = clean(); if(v && v !== name) fin({ k: 'rename', name: v }); };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
@@ -6795,7 +6796,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       gBusyOff();
       status(`${files.length - ng}枚を Google フォトのアルバム「${d.title}」に保存しました。` + (ng ? `${ng}枚は保存できませんでした。` : ''));
-      if(url) askYesNo('Google フォトに保存しました', `<p>アルバム「${esc2(d.title)}」に ${files.length - ng}枚を入れました。</p>`, () => window.open(url, '_blank', 'noopener'), 'Google フォトで開く', '閉じる');
+      if(url) askYesNo('Google フォトに保存しました', `<p>アルバム「${esc2(d.title)}」に ${files.length - ng}枚を入れました。</p>${gpAppLink() ? `<p>${gpAppLink()}</p>` : ''}`, () => gpOpenAlbum(url), 'Google フォトで開く', '閉じる');
     }catch(e){
       gBusyOff(); console.warn(e);
       status('Google フォトに保存できませんでした。' + (e && e.message ? '（' + e.message + '）' : ''));
@@ -7067,6 +7068,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   });
   // 「Google フォト」の文字にロゴを添える（この一連の画面で使う）
   const GPL = '<img class="glogo gpl" src="https://www.gstatic.com/images/branding/product/2x/photos_48dp.png" alt="" onerror="this.remove()">Google フォト';
+  // Google フォトのアルバムを開く：Android はアプリで直接、iPhone・iPad はリンクを渡して（アプリが受け取れば、アプリで開く）、PC はブラウザで
+  const IS_ANDROID = /Android/i.test(navigator.userAgent);
+  function gpOpenAlbum(url){
+    if(!url) return;
+    const a = document.createElement('a');
+    if(IS_ANDROID) a.href = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.google.android.apps.photos;end';
+    else { a.href = url; a.target = '_blank'; a.rel = 'noopener'; }
+    document.body.append(a); a.click(); a.remove();
+  }
+  // iPhone・iPad で、アルバムがブラウザで開いたとき用：アプリを起動するだけ（アルバムはアプリで選ぶ）
+  const gpAppLink = () => IS_IOS ? '<a class="gpapp" href="googlephotos://">アプリを起動</a>' : '';
   function gpLogo(html){ return String(html).split('Google フォト').join(GPL); }
   function gpTxt(el, t){ const v = String(t == null ? '' : t); if(v.includes('Google フォト')) el.innerHTML = gpLogo(esc2(v)); else el.textContent = v; }
   function askYesNo(title, html, onYes, yesLabel, noLabel, onNo){
