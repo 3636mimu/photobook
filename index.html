@@ -8434,7 +8434,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       card.innerHTML = `<div class="strkind"><i class="strdot"></i>${esc2(KIND_NAME[a.kind] || 'BOOK')}</div><button type="button" class="strthumb" title="続きから編集する"><span class="strnoimg">…</span></button>`
         + `<div class="strmeta"><small class="strfname" title="${esc2(f.name)}">${esc2(f.name).replace(/_/g, '_<wbr>')}</small><small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${a.pages || '?'}P・写真${a.photos || 0}枚・${(a.fmt || 'jpg').toUpperCase()}</small></div>`
         + `<button type="button" class="stredit">✎ 続きから編集</button>${hid ? '<button type="button" class="strback" title="一覧に戻す">一覧に戻す</button>' : '<button type="button" class="strdel" title="一覧から外す・削除" aria-label="一覧から外す・削除">×</button>'}`;
-      const pw = pend[f.id];
+      // この端末の変更より後に、ほかの端末でドライブに保存されていたら、ドライブの方が新しい（印は付けず、ドライブの版を開く）
+      const pw = pend[f.id] && pend[f.id].at > new Date(f.modifiedTime).getTime() ? pend[f.id] : null;
       if(pw){
         const pd = new Date(pw.at);
         card.classList.add('strpending');
