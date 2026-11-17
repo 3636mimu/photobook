@@ -8072,10 +8072,24 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // Google の画面から戻ってきたとき：鍵を受け取る
   function gReceive(){
+  // Google の画面へ移ったのに、返事なしで最初から読み込み直された（原因を探すため、知らせる）
+  if(WEB && !/[#&](access_token|error)=/.test(location.hash)){
+    let pend = null; try{ pend = JSON.parse(localStorage.getItem('pbm-gredir') || 'null'); }catch(e){}
+    if(pend && Date.now() - pend.at < 10 * 60000){
+      try{ localStorage.removeItem('pbm-gredir'); }catch(e){}
+      setTimeout(() => askYesNo('Google から戻ってきませんでした', `<p style="word-break:break-all">${esc2(location.href)}</p>`, () => {}, '閉じる', ''), 600);
+    }
+  }
   if(WEB && /[#&](access_token|error)=/.test(location.hash)){
     const h = new URLSearchParams(location.hash.slice(1));
     let pend = null; try{ pend = JSON.parse(localStorage.getItem('pbm-gredir') || 'null'); localStorage.removeItem('pbm-gredir'); }catch(e){}
     try{ history.replaceState(history.state, '', location.pathname + location.search); }catch(e){}
+    // うまくいかなかったとき：Google から返ってきた理由をそのまま見せる（原因を探すため）
+    if(!h.get('access_token')){
+      const why = [h.get('error'), h.get('error_description'), h.get('error_subtype')].filter(Boolean).join(' / ') || '不明';
+      setTimeout(() => askYesNo('Google につなげませんでした', `<p style="word-break:break-all">${esc2(why)}</p><p style="font-size:12px;color:var(--muted)">${pend ? '' : '（つなぐ前の記録が見つかりませんでした）'}</p>`, () => {}, '閉じる', ''), 600);
+    }
+    else if(!pend || h.get('state') !== pend.st) setTimeout(() => askYesNo('Google につなげませんでした', '<p>つなぐ前の記録と合いませんでした。もう一度お試しください。</p>', () => {}, '閉じる', ''), 600);
     if(pend && h.get('state') === pend.st && h.get('access_token') && pend.key === 'drive'){
       GD.tok = h.get('access_token'); GD.exp = Date.now() + (Number(h.get('expires_in')) || 3600) * 1000 - 60000; GD.root = '';
       try{ sessionStorage.setItem('pbm-gtok', JSON.stringify({ tok: GD.tok, exp: GD.exp })); }catch(e){}
