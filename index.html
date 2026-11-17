@@ -9,7 +9,7 @@
 <meta name="copyright" content="© 2026 YUJI MIMURA">
 <title>PHOTO BOOK MAKER</title>
 <script>/* 表示はいつも明るく。詳細設定の「暗い表示」を ON にした端末だけ暗くする */try{document.documentElement.dataset.theme=localStorage.getItem("pbm-dark")==="1"?"dark":"light"}catch(e){document.documentElement.dataset.theme="light"}</script>
-<script>/* ホーム画面から開いたとき（iPad・iPhone）：ページ全体ではなく中の枠をスクロールする（iPadOS 26 が上端に付けるぼかしが、上のバーにかからないように） */try{if(navigator.standalone===true||matchMedia("(display-mode: standalone)").matches)document.documentElement.classList.add("pwa")}catch(e){}</script>
+<script>/* ホーム画面から開いたとき（iPad・iPhone）の目印 */try{if(navigator.standalone===true||matchMedia("(display-mode: standalone)").matches)document.documentElement.classList.add("pwa")}catch(e){}</script>
 <!-- iPhone・iPad：メールアドレスや電話番号を勝手にリンクにしない（押すとメール作成が開いてしまうため） -->
 <meta name="format-detection" content="telephone=no,email=no,address=no,date=no">
 <!-- スマホ・iPad：ホーム画面に追加すると、ブラウザの枠なしの全画面で開く -->
@@ -53,9 +53,8 @@ header:has(#modeLine),#modeLine,.ginvite,.sthead2,#stStep2 .stsum{
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.6}
 .wrap{max-width:min(2400px,100%);margin:0 auto;padding-inline:20px;padding-block:12px 40px}
-html.pwa,html.pwa body{height:100%;overflow:hidden}
-html.pwa body > .wrap{height:100%;max-width:none;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;box-sizing:border-box;padding-top:0}
-html.pwa body > .wrap > header{margin-top:0}
+/* ホーム画面版：上のバーを上端から 1px 離して貼り付ける（iPadOS 26 が上端に貼り付いたバーにかけるぼかしを避けるため） */
+html.pwa header{top:1px}
 header{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin:-12px 0 0;padding:10px 0 8px;min-width:0;position:sticky;top:0;z-index:30;background:var(--bg)}
 header h1{flex:none;white-space:nowrap}
 .closeed{flex:none;border:0;background:none;padding:2px 4px;font:inherit;font-size:12px;color:#6b5a4f;cursor:pointer;white-space:nowrap;border-radius:6px}
@@ -2902,8 +2901,6 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // iPad・iPhone の「写真ライブラリ」の枠は、ファイル選択の部品がある場所から出る → 触った場所に部品を移してから開く
   let lastPt = null;
   document.addEventListener('pointerdown', e => { lastPt = { x: e.clientX, y: e.clientY }; }, true);
-  // ふだんはページ全体、ホーム画面版は中の枠がスクロールする
-  function pageScroller(){ return document.documentElement.classList.contains('pwa') && document.querySelector('body > .wrap') || window; }
   function openOne(idx){
     pendingIdx = idx; const f = $('fileOne');
     if(lastPt){ f.style.setProperty('position', 'fixed', 'important'); f.style.left = lastPt.x + 'px'; f.style.top = lastPt.y + 'px'; }
@@ -3969,7 +3966,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const t = targetAt(x, y);
       if(!t || !cur || t.idx !== cur.idx || t.card !== cur.card){ clearTarget(); cur = t; if(cur){ cur.el.classList.add('target'); cur.card && cur.card.classList.add('target'); } }
       // 画面の端に来たら、少しずつスクロール
-      const edge = 70; if(y < edge) pageScroller().scrollBy(0, -12); else if(y > innerHeight - edge) pageScroller().scrollBy(0, 12);
+      const edge = 70; if(y < edge) window.scrollBy(0, -12); else if(y > innerHeight - edge) window.scrollBy(0, 12);
     };
     const activate = () => {
       active = true;
@@ -4039,7 +4036,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const card = el && el.closest('.spread');
       const q = card ? pairUI.findIndex(u => u.card === card) : -1;
       if(q !== cur){ clear(); cur = q; if(cur >= 0 && cur !== from) pairUI[cur].card.classList.add('target'); }
-      const edge = 70; if(touch){ if(ev.clientY < edge) pageScroller().scrollBy(0, -12); else if(ev.clientY > innerHeight - edge) pageScroller().scrollBy(0, 12); }
+      const edge = 70; if(touch){ if(ev.clientY < edge) window.scrollBy(0, -12); else if(ev.clientY > innerHeight - edge) window.scrollBy(0, 12); }
     };
     const end = ev => {
       clearTimeout(timer);
@@ -6258,7 +6255,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     document.addEventListener('keydown', e => { if(!list.hidden && e.key === 'Escape') closeList(); });
     addEventListener('resize', closeList);
     sel.addEventListener('change', closeList);
-    { const f = () => { hide(); if(typeof closeList === 'function') closeList(); }; addEventListener('scroll', f, { passive: true }); const w = document.querySelector('body > .wrap'); if(w) w.addEventListener('scroll', f, { passive: true }); }
+    addEventListener('scroll', () => { hide(); if(typeof closeList === 'function') closeList(); }, { passive: true });
   }
   function stamp(){
     const d = new Date(), z = n => String(n).padStart(2,'0');
