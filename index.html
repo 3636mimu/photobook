@@ -7946,7 +7946,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const unsavedBook = () => hasWork() && (!bookFile || !fileSig || sigOf(buildProject()) !== fileSig);
   // ブラウザやタブを閉じようとしたときも確認する（文言はブラウザが決めたものが出る）
   addEventListener('beforeunload', e => {
-    if(!booted || gRedirecting || !unsavedBook()) return;
+    if(!booted || !unsavedBook()) return;
     if(dirty){ clearTimeout(autoT); autoSave(); }
     e.preventDefault(); e.returnValue = '';
   });
@@ -8057,52 +8057,6 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       error_callback: () => { const done = GD.wait; GD.wait = null; done && done(false); } });
     return true;
   }
-  // ホーム画面に追加して開いたとき（iPad・iPhone）：Google の小窓ではアカウントを選び直せない（小窓から戻れず真っ白になる）
-  // → アカウントを選ぶときだけ、このページごと Google の画面に移って、選んだら戻ってくる
-  const STANDALONE = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
-  let gRedirecting = false;
-  function gRedirect(scope, key){
-    const st = Math.random().toString(36).slice(2) + Date.now().toString(36);
-    try{ localStorage.setItem('pbm-gredir', JSON.stringify({ st, key, at: Date.now() })); }catch(e){}
-    if(dirty){ clearTimeout(autoT); autoSave(); }
-    const q = new URLSearchParams({ client_id: PBM_WEB.clientId, redirect_uri: location.origin + location.pathname.replace(/index\.html$/, ''), response_type: 'token', scope, state: st, prompt: 'select_account', include_granted_scopes: 'true' });
-    gRedirecting = true;
-    setTimeout(() => location.assign('https://accounts.google.com/o/oauth2/v2/auth?' + q), 150);
-    return new Promise(() => {});   // このページはいったん離れる（戻ってきたら、下の「受け取り」が続きをする）
-  }
-  // Google の画面から戻ってきたとき：鍵を受け取る
-  function gReceive(){
-  // Google の画面へ移ったのに、返事なしで最初から読み込み直された（原因を探すため、知らせる）
-  if(WEB && !/[#&](access_token|error)=/.test(location.hash)){
-    let pend = null; try{ pend = JSON.parse(localStorage.getItem('pbm-gredir') || 'null'); }catch(e){}
-    if(pend && Date.now() - pend.at < 10 * 60000){
-      try{ localStorage.removeItem('pbm-gredir'); }catch(e){}
-      setTimeout(() => askYesNo('Google から戻ってきませんでした', `<p style="word-break:break-all">${esc2(location.href)}</p>`, () => {}, '閉じる', ''), 600);
-    }
-  }
-  if(WEB && /[#&](access_token|error)=/.test(location.hash)){
-    const h = new URLSearchParams(location.hash.slice(1));
-    let pend = null; try{ pend = JSON.parse(localStorage.getItem('pbm-gredir') || 'null'); localStorage.removeItem('pbm-gredir'); }catch(e){}
-    try{ history.replaceState(history.state, '', location.pathname + location.search); }catch(e){}
-    // うまくいかなかったとき：Google から返ってきた理由をそのまま見せる（原因を探すため）
-    if(!h.get('access_token')){
-      const why = [h.get('error'), h.get('error_description'), h.get('error_subtype')].filter(Boolean).join(' / ') || '不明';
-      setTimeout(() => askYesNo('Google につなげませんでした', `<p style="word-break:break-all">${esc2(why)}</p><p style="font-size:12px;color:var(--muted)">${pend ? '' : '（つなぐ前の記録が見つかりませんでした）'}</p>`, () => {}, '閉じる', ''), 600);
-    }
-    else if(!pend || h.get('state') !== pend.st) setTimeout(() => askYesNo('Google につなげませんでした', '<p>つなぐ前の記録と合いませんでした。もう一度お試しください。</p>', () => {}, '閉じる', ''), 600);
-    if(pend && h.get('state') === pend.st && h.get('access_token') && pend.key === 'drive'){
-      GD.tok = h.get('access_token'); GD.exp = Date.now() + (Number(h.get('expires_in')) || 3600) * 1000 - 60000; GD.root = '';
-      try{ sessionStorage.setItem('pbm-gtok', JSON.stringify({ tok: GD.tok, exp: GD.exp })); }catch(e){}
-      (async () => {
-        await new Promise(r => setTimeout(r, 0));   // 画面の準備がすべて終わってから
-        try{ const a = await gJson(`${GAPI}/drive/v3/about?fields=user(emailAddress)`); if(a && a.user && a.user.emailAddress){ GD.email = a.user.emailAddress; try{ localStorage.setItem('pbm-gacct', GD.email); }catch(e){} } }catch(e){}
-        gExpTimer(); gSync(); gStylesPull && gStylesPull();
-        if(GD.email) status(`「${GD.email}」のGoogle ドライブに切り替えました。`);
-        if(!$('startModal').hidden && typeof renderRecent === 'function') renderRecent();
-      })();
-    }
-  }
-  }
   if(WEB){
     const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.onload = () => { gInit(); gSync(); }; document.head.appendChild(s);
   }
@@ -8123,11 +8077,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }, true);
     gExpTimer();
   }
-  gReceive();   // Google の画面から戻ってきたときの受け取り（必要なものがそろってから）
   function gEnsure(interactive, pick, force){
     if(gValid() && !pick && !force) return Promise.resolve(true);
     if(GD.wait) return new Promise(res => { const prev = GD.wait; GD.wait = ok => { prev(ok); res(ok); }; });   // 更新中なら、それを待つ
-    if(interactive && STANDALONE && (pick || !GD.email) && PBM_WEB.clientId) return gRedirect(GSCOPE, 'drive');   // ホーム画面版：アカウントを選ぶときは、ページごと移る
     if(!interactive || !gInit()) return Promise.resolve(false);
     return new Promise(res => {
       GD.wait = res;
