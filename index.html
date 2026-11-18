@@ -3934,11 +3934,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(A){
       drawCropped(g,A,rA,0,0,sa,ch);
       if(gridOut()) drawGuide(g,0,0,sa,ch,'#ff0000',gridWidth(target));
-    } else placeholder(g,0,sa,ch,isCover(p) && backOff() ? '裏表紙（印刷なし）' : blankSet.has(p*2) && !sample ? '' : slotHint(p*2),!!B || blankSet.has(p*2) || isLocked(p*2) || (exporting && hasDeco(p)),pairUI[p] && target === pairUI[p].cv);
+    } else placeholder(g,0,sa,ch,isCover(p) && backOff() ? '裏表紙（印刷なし）' : blankSet.has(p*2) && !sample ? '' : slotHint(p*2),!!B || blankSet.has(p*2) || blankSet.has(p*2+1) || isLocked(p*2) || (exporting && hasDeco(p)),pairUI[p] && target === pairUI[p].cv);
     if(B){
       drawCropped(g,B,rB,sa+sg,0,sb,ch);
       if(gridOut()) drawGuide(g,sa+sg,0,sb,ch,'#ff0000',gridWidth(target));
-    } else placeholder(g,sa+sg,sb,ch,blankSet.has(p*2+1) && !sample ? '' : slotHint(p*2+1),!!A || blankSet.has(p*2+1) || isLocked(p*2+1) || (exporting && hasDeco(p)),pairUI[p] && target === pairUI[p].cv);
+    } else placeholder(g,sa+sg,sb,ch,blankSet.has(p*2+1) && !sample ? '' : slotHint(p*2+1),!!A || blankSet.has(p*2+1) || blankSet.has(p*2) || isLocked(p*2+1) || (exporting && hasDeco(p)),pairUI[p] && target === pairUI[p].cv);
     const cx = sa + sg/2, half = (cw*P.shW/100)/2;
     if(pairUI[p] && target === pairUI[p].cv) pairUI[p].seam = cx / cw;
     // on the list card the insides of the cover are left out (nothing ever goes there): only the other page shows
@@ -4378,7 +4378,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   document.addEventListener('fullscreenchange', vFsChange);
   document.addEventListener('webkitfullscreenchange', vFsChange);
   function openViewer(startPair, grid){
-    vList = allPairs().filter(p => sample || hasPhoto(p) || hasDeco(p));
+    vList = allPairs().filter(p => sample || hasPhoto(p) || hasDeco(p) || hasBlank(p));
     syncViewerBg();
     if(!vList.length){ status('写真を入れるとプレビューできます。'); return; }
     vPos = Math.max(0, vList.indexOf(startPair ?? (vList.find(p => sample || hasPhoto(p)) ?? vList[0])));
