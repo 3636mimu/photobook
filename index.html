@@ -7336,18 +7336,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const tourGroup = list => { const els = list.filter(e => e && e.offsetParent); if(!els.length) return null;
     return { first: els[0], scrollIntoView: o => els[0].scrollIntoView(o), getBoundingClientRect: () => { const rs = els.map(e => e.getBoundingClientRect()); const l = Math.min(...rs.map(r => r.left)), t = Math.min(...rs.map(r => r.top)), r = Math.max(...rs.map(r => r.right)), b = Math.max(...rs.map(r => r.bottom)); return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t }; } }; };
   const inCard = sel => { const c = tourCard(); const e = c && c.querySelector(sel); return e && e.offsetParent ? e : null; };
+  // 順番：画面の上で近いものから順に。上の設定 → 見かた → 見開き（≡ → 写真 → 下のボタン左から右）→ 右上の保存 → メニュー（上から下へ、引き出したまま）
   const TOUR = [
-    { el: () => { const b = $('setBtn'); return b && !b.hidden && b.offsetParent ? b : $('modeLine'); }, t: '作るものの設定', x: 'サイズ・ページ数・解像度・保存形式は、ここでいつでも変えられます。' },
-    { el: () => { const t = document.querySelector('.sidetab'); return document.body.classList.contains('sidedrawer') && t && !t.hidden && t.offsetParent ? t : null; }, t: 'メニュー', x: '写真を選ぶ・書き出す・表示の切り替えなどは、この「メニュー」の中にあります。\n押すと右から引き出せます。' },
-    { el: () => $('pickMany'), t: '写真を入れる', x: 'ここから写真を選びます。\n見開きに直接ドラッグ＆ドロップしても入れられます。' },
-    { el: () => inCard('.stage'), t: '写真を整える・並べ替える', x: COARSE ? '写真をダブルタップすると、拡大・回転・削除ができます。\n長押ししてから動かすと、別のページへ移動できます。' : '写真をクリックすると、拡大・回転・削除ができます。\nドラッグすると別のページへ移動できます。' },
+    { el: () => { const b = $('setBtn'); return b && !b.hidden && b.offsetParent ? b : (tourGroup([...document.querySelectorAll('#modeLine > .mctl')]) || $('modeLine')); }, t: '作るものの設定', x: 'サイズ・ページ数・解像度・保存形式は、ここでいつでも変えられます。' },
+    { el: () => document.querySelector('.vseg'), t: '見かたを切り替える', x: '一覧で並べる・1見開きずつ大きく見る・プレビューで確認する、を切り替えます。' },
     { el: () => inCard('.spine'), spine: true, t: '見開きごと並べ替える', x: 'カードの上に出る「≡」をつかんでドラッグすると、見開きごと順番を入れ替えられます。\nマウスを乗せると表示されます。' },
+    { el: () => inCard('.stage'), t: '写真を整える・並べ替える', x: COARSE ? '写真をダブルタップすると、拡大・回転・削除ができます。\n長押ししてから動かすと、別のページへ移動できます。' : '写真をクリックすると、拡大・回転・削除ができます。\nドラッグすると別のページへ移動できます。' },
     { el: () => inCard('.lay'), t: '1枚で見開きにする', x: 'このボタンを押すと、1枚の写真を左右2ページにまたがって大きく使えます。\nもう一度押すと2枚の見開きに戻ります。' },
     { el: () => inCard('.txtbtn'), t: '文字やロゴを入れる', x: '「装飾」から、タイトルや日付、ロゴなどを重ねられます。' },
     { el: () => inCard('.icon-btn.save'), t: 'この見開きだけ保存する', x: 'カードの「保存」で、その見開きだけを保存できます（保存形式の JPG / PDF で）。\nSNSに載せたり、仲間に送ったりするときに便利です。' },
-    { el: () => document.querySelector('.vseg'), t: '見かたを切り替える', x: '一覧で並べる・1見開きずつ大きく見る・プレビューで確認する、を切り替えます。' },
-    { el: () => tourGroup(['saveAll', 'saveSheet', 'saveSingles'].map($)), t: '書き出す', x: 'できあがったら、この3つで保存します。\n全ページまとめて・一覧で1枚に・1枚ずつ、の3通りで書き出せます。' },
     { el: () => document.querySelector('.workbtns'), t: 'BOOKを保存する', x: 'BOOKは自動で保存され、次に開いたとき最初の画面の「続きから作る」から戻れます。\n「BOOKを保存」でファイルにしておけば、別のパソコンでも続きができます。' },
+    { el: () => { const t = document.querySelector('.sidetab'); return document.body.classList.contains('sidedrawer') && t && !t.hidden && t.offsetParent ? t : null; }, t: 'メニュー', x: '写真を選ぶ・書き出す・表示の切り替えなどは、この「メニュー」の中にあります。\n押すと右から引き出せます。' },
+    { el: () => $('pickMany'), t: '写真を入れる', x: 'ここから写真を選びます。\n見開きに直接ドラッグ＆ドロップしても入れられます。' },
+    { el: () => tourGroup(['saveAll', 'saveSheet', 'saveSingles'].map($)), t: '書き出す', x: 'できあがったら、この3つで保存します。\n全ページまとめて・一覧で1枚に・1枚ずつ、の3通りで書き出せます。' },
     { el: () => tourGroup([document.querySelector('.gridbox'), $('shadowOn').closest('.sechead'), $('tplBox').previousElementSibling, $('tplBox')]), t: '表示の切り替え', x: 'グリッド：構図の目安の線（種類も選べます）\nノドの影：見開きの中央の影\n横の表示：一覧に横に並べる数\nテンプレート：写真の下に出す構図メモ' },
     { el: () => document.querySelector('#settings > summary'), t: '詳細設定', x: 'ノドの影の幅・濃さ、中央の線、余白の色など、細かい見た目を整えられます。\n設定を初期値に戻したり、この案内をもう一度見たりもできます。' },
     { el: () => document.querySelector('.howto summary'), t: '困ったときは', x: '「使い方」で手順をいつでも見返せます。\nこの案内も、そこからもう一度見られます。' }
