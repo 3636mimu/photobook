@@ -355,6 +355,10 @@ button{font:inherit}
 @media (pointer:coarse){.blkbtn{opacity:.92}}
 .sharebtn{width:100%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.35}.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
 .shlbl{font-size:11.5px;color:var(--muted);margin:12px 0 -6px}
+.shrow2{display:flex;gap:8px;align-items:center;margin-top:10px}
+.shrow2 .shbox{margin-top:0;flex:1 1 auto;width:auto;min-width:0}
+.shcp1{flex:0 0 auto;min-width:72px;text-align:center;text-decoration:none;box-sizing:border-box;font:inherit;font-size:12.5px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#5a554e;cursor:pointer;white-space:nowrap}
+.shcp1:hover{background:#f4f2ee}
 .shbox{display:block;width:100%;margin-top:10px;box-sizing:border-box;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;letter-spacing:.06em;background:#f6f5f2;color:#333}
 #shareLink{font-size:13px;letter-spacing:0}
 .hint{font-size:12px;color:var(--muted);margin:0}
@@ -8748,11 +8752,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(unverified) notes.push(`開けるようになるまで、数分かかることがあります。<span style="opacity:.6">（${esc2(unverified)}）</span>`);
     if(pw) notes.push('パスワードは、リンクとは別に伝えてください。');
     if(opt && opt.exp) notes.push(`${fmtUntil(opt.exp)} まで見られます。`);
-    const row = (lbl, id, v) => `${lbl ? `<div class="shlbl">${lbl}</div>` : ''}<input id="${id}" class="shbox" readonly value="${esc2(v)}">`;
+    const row = (lbl, id, v, open) => `${lbl ? `<div class="shlbl">${lbl}</div>` : ''}<div class="shrow2"><input id="${id}" class="shbox" readonly value="${esc2(v)}">${open ? `<a class="shcp1" href="${esc2(v)}" target="_blank" rel="noopener">開く</a>` : ''}</div>`;
     const label = pw ? 'URLとパスワードをコピー' : 'URLをコピー';
-    askYesNo('写真集が公開されました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('', 'shareLink', url)}${pw ? row('パスワード', 'sharePw', pw) : ''}`,
+    askYesNo('写真集が公開されました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('', 'shareLink', url, true)}${pw ? row('パスワード', 'sharePw', pw) : ''}`,
       () => {}, label, '閉じる');
-    // コピーのボタンは1つだけ。押しても窓は閉じず、「コピー済み」に変わる
+    // コピーのボタンは下の1つだけ。押しても窓は閉じず、「コピー済み」に変わる（URL の横の［開く］で、自分でも見て確かめられる）
     const yes = $('pagesYes'); yes.classList.add('shcpall');
     yes.onclick = async () => { if(await shareCopy(shareText(url, pw), pw ? 'URLとパスワードをコピーしました。' : 'URLをコピーしました。')){ yes.textContent = '✓ コピー済み'; yes.classList.add('copied'); } };
     ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
