@@ -751,7 +751,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt #shExp{flex:0 0 auto;width:auto}#shareOpt #shExpD{flex:0 1 200px;width:200px}
 #shareOpt .pweye{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:12px;cursor:pointer;color:var(--muted);white-space:nowrap}
 #shareOpt .actions,#shareMgr .actions{justify-content:center;margin-top:18px}
-#shareOpt .actions .qbtn,#shareMgr .actions .qbtn{flex:0 0 130px}
+#shareOpt .actions .qbtn,#shareMgr .actions .qbtn{flex:0 0 112px}
 #shareMgr .shlist{display:flex;flex-direction:column;gap:8px;max-height:min(60vh,520px);overflow:auto}
 #shareMgr .shitem{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 #shareMgr .shitem.off{opacity:.6}
@@ -792,7 +792,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #gpModal .actions{justify-content:center;gap:14px;margin-top:20px}
 #gpModal .qbtn{flex:0 1 128px}
 /* 編集を中断するときの3つのボタン：丸い塗りのボタン（続ける＝落ち着いたグレージュ、閉じる＝赤、保存＝アクセント色） */
-.qbtn{border:0 !important;border-radius:8px !important;padding:10px 8px !important;font:inherit;font-size:14px !important;font-weight:500 !important;letter-spacing:.02em;white-space:nowrap;cursor:pointer;box-shadow:none;transition:filter .15s,transform .1s}
+.qbtn{border:0 !important;border-radius:8px !important;padding:8px 8px !important;font:inherit;font-size:13.5px !important;font-weight:500 !important;letter-spacing:.02em;white-space:nowrap;cursor:pointer;box-shadow:none;transition:filter .15s,transform .1s}
 .qbtn:hover{filter:brightness(1.05)}.qbtn:active{transform:translateY(1px)}
 .qbtn.keep{background:#fff !important;color:#5a554e !important;box-shadow:inset 0 0 0 1px var(--line) !important}
 .qbtn.keep:hover{background:#f4f2ee !important}
@@ -800,15 +800,15 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .qbtn.save{background:#2A8C7F !important;color:#fff !important}
 /* どの窓も、戻る・進むのボタンは同じ大きさの丸いボタン（「共有リンクを作る」と同じ形） */
 #pagesModal:not(.qdlg) .actions{justify-content:center;gap:12px;margin-top:20px}
-#pagesModal:not(.qdlg) .qbtn{flex:0 0 130px;padding:10px 12px !important}
-#saveNo,#driveClose,#bookDelCancel{flex:0 0 130px;padding:10px 12px !important}
+#pagesModal:not(.qdlg) .qbtn{flex:0 0 112px;padding:8px 12px !important}
+#saveNo,#driveClose,#bookDelCancel{flex:0 0 112px;padding:8px 12px !important}
 #gBusy .gbcancel.qbtn{display:block;width:96px;margin:16px auto 0;padding:6px 10px !important;font-size:13px !important}
 /* その確認の窓：真ん中ぞろえで、まわりにゆとり */
 #pagesModal.qdlg .sheet{max-width:500px !important;padding:28px 34px 26px;text-align:center}
 #pagesModal.qdlg h3{margin:0;font-size:15px;font-weight:500}
 #pagesModal.qdlg #pagesMsg{margin:20px 0 26px !important}
 #pagesModal.qdlg .actions{justify-content:center;gap:16px;margin:0}
-#pagesModal.qdlg .qbtn{flex:0 1 128px !important;padding:10px 12px !important}
+#pagesModal.qdlg .qbtn{flex:0 1 128px !important;padding:8px 12px !important}
 @media (max-width:480px){#pagesModal.qdlg .sheet{padding:24px 18px 20px}#pagesModal.qdlg .actions{gap:8px}#pagesModal.qdlg .qbtn{flex:1 1 0 !important;padding:10px 4px !important;font-size:13.5px !important}}
 .stopen{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #E8B4A2;background:#FFF6F2;color:#B4573A;font:inherit;font-size:12.5px;font-weight:700;border-radius:999px;padding:6px 16px 6px 13px;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
 .stopen svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
@@ -901,7 +901,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .strhead{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px}
 .glogo{width:16px;height:16px;object-fit:contain;flex:none;vertical-align:-3px}
 img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertical-align:-.2em}
-#pagesModal:not(.qdlg) .qbtn.shcpall{flex:0 0 auto;min-width:130px;padding:10px 18px !important}
+#pagesModal:not(.qdlg) .qbtn.shcpall{flex:0 0 auto;min-width:112px;padding:8px 16px !important}
 #pagesYes.copied{background:#2A8C7F !important;border-color:#2A8C7F !important;color:#fff !important}
 #pagesYes img.glogo.gpl{width:1.1em;height:1.1em;padding:2px;margin-right:.4em;background:#fff;border-radius:50%;vertical-align:-.3em}
 .ghead{display:inline-flex;align-items:center;gap:6px}
@@ -8748,9 +8748,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(unverified) notes.push(`開けるようになるまで、数分かかることがあります。<span style="opacity:.6">（${esc2(unverified)}）</span>`);
     if(pw) notes.push('パスワードは、リンクとは別に伝えてください。');
     if(opt && opt.exp) notes.push(`${fmtUntil(opt.exp)} まで見られます。`);
-    const row = (lbl, id, v) => `<div class="shlbl">${lbl}</div><input id="${id}" class="shbox" readonly value="${esc2(v)}">`;
+    const row = (lbl, id, v) => `${lbl ? `<div class="shlbl">${lbl}</div>` : ''}<input id="${id}" class="shbox" readonly value="${esc2(v)}">`;
     const label = pw ? 'URLとパスワードをコピー' : 'URLをコピー';
-    askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('URL', 'shareLink', url)}${pw ? row('パスワード', 'sharePw', pw) : ''}`,
+    askYesNo('写真集が公開されました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('', 'shareLink', url)}${pw ? row('パスワード', 'sharePw', pw) : ''}`,
       () => {}, label, '閉じる');
     // コピーのボタンは1つだけ。押しても窓は閉じず、「コピー済み」に変わる
     const yes = $('pagesYes'); yes.classList.add('shcpall');
