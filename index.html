@@ -898,7 +898,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .strecent{margin-top:18px}
 .strhead{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px}
 .glogo{width:16px;height:16px;object-fit:contain;flex:none;vertical-align:-3px}
-img.glogo.gpl{width:1.15em;height:1.15em;margin-right:.3em;vertical-align:-.2em}
+img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertical-align:-.2em}
 #pagesYes img.glogo.gpl{width:1.1em;height:1.1em;padding:2px;margin-right:.4em;background:#fff;border-radius:50%;vertical-align:-.3em}
 .ghead{display:inline-flex;align-items:center;gap:6px}
 .glink{color:inherit;text-decoration:underline;text-decoration-color:rgba(0,0,0,.25);text-underline-offset:3px;display:inline-flex;align-items:center;gap:3px}
@@ -7387,8 +7387,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   });
   // 「Google フォト」の文字にロゴを添える（この一連の画面で使う）
   const GPL = '<img class="glogo gpl" src="https://www.gstatic.com/images/branding/product/2x/photos_48dp.png" alt="" onerror="this.remove()">Google フォト';
-  function gpLogo(html){ return String(html).split('Google フォト').join(GPL); }
-  function gpTxt(el, t){ const v = String(t == null ? '' : t); if(v.includes('Google フォト')) el.innerHTML = gpLogo(esc2(v)); else el.textContent = v; }
+  const GDL = '<img class="glogo gdl" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" onerror="this.remove()">Google ドライブ';
+  function gpLogo(html){ return String(html).split('Google フォト').join(GPL).split('Google ドライブ').join(GDL); }
+  function gpTxt(el, t){ const v = String(t == null ? '' : t); if(v.includes('Google フォト') || v.includes('Google ドライブ')) el.innerHTML = gpLogo(esc2(v)); else el.textContent = v; }
   function askYesNo(title, html, onYes, yesLabel, noLabel, onNo){
     gpTxt($('pagesYes'), yesLabel || 'YES'); gpTxt($('pagesNo'), noLabel || 'NO');
     gpTxt($('pagesTitle'), title);
