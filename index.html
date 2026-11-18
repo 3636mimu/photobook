@@ -354,6 +354,10 @@ button{font:inherit}
 .blkbtn.on{background:#2A8C7F;border-color:#2A8C7F;color:#fff}
 @media (pointer:coarse){.blkbtn{opacity:.92}}
 .sharebtn{width:100%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.35}.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
+.shlbl{font-size:11.5px;color:var(--muted);margin:12px 0 -6px}
+.shpwrow{display:flex;gap:8px;align-items:center;margin-top:10px}
+#sharePw{flex:1;min-width:0;box-sizing:border-box;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;letter-spacing:.06em;background:#f6f5f2;color:#333}
+#sharePwCp{flex:none;font:inherit;font-size:12.5px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#333;cursor:pointer}
 #shareLink{width:100%;box-sizing:border-box;margin:10px 0 2px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;background:#f6f5f2;color:#333}
 .hint{font-size:12px;color:var(--muted);margin:0}
 .linkbtn{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0;cursor:pointer;font:inherit}
@@ -556,6 +560,10 @@ button{font:inherit}
 .ios .tchip + .tchip::before{content:"";position:absolute;left:14px;right:0;top:0;border-top:1px solid var(--isep)}
 .ios .tchip .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ios .tchip .ck{width:16px;color:var(--accent);font-weight:700;text-align:center;flex-shrink:0}
+.tchip .leye{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin:-4px 0;border-radius:6px;color:#8a857d;flex-shrink:0;cursor:pointer}
+.tchip .leye:hover{background:rgba(0,0,0,.06);color:#333}
+.tchip .leye.off{color:#c2bdb4}
+.tchip.hid .tx,.tchip.hid .thumb,.tchip.hid .ltype{opacity:.38}
 .ios .tchip[aria-pressed=true]{background:none}
 .ios .tchip:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .ios .iempty{margin:0;padding:12px 14px;font-size:12px;color:var(--ilab)}
@@ -3005,7 +3013,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }catch(e){ decos = {}; }
   const dkey = p => isCover(p) ? 'c' : String(p);
   const decoOf = p => decos[dkey(p)] || [];
-  const hasDeco = p => decoOf(p).some(t => t && (t.kind === 'img' ? !!t.img : !!(t.text && t.text.trim())));
+  const hasDeco = p => decoOf(p).some(t => t && !t.off && (t.kind === 'img' ? !!t.img : !!(t.text && t.text.trim())));
   let sample = true;
   let downloads = null;
   const inArtifact = !!(window.claude && window.claude.use);
@@ -5116,6 +5124,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // a layer is either text or an image (ロゴなど)
   const isImg = t => t && t.kind === 'img';
   const hasBody = t => !!t && (isImg(t) ? !!t.img : !!(t.text && t.text.trim()));
+  const shown = t => hasBody(t) && !t.off;   // 非表示にしたパーツは描かない・書き出さない（消さずに残す）
   const labelOf = t => isImg(t) ? '画像：' + (t.name || 'ロゴ') : (t.text.split('\n')[0].trim() || '（空の文字）');
   const cropOf = t => { const v = k => Math.max(0, Math.min(.9, (t[k] || 0) / 100)); let c = { t: v('crT'), b: v('crB'), l: v('crL'), r: v('crR') }; if(c.t + c.b > .95){ const k = .95 / (c.t + c.b); c.t *= k; c.b *= k; } if(c.l + c.r > .95){ const k = .95 / (c.l + c.r); c.l *= k; c.r *= k; } return c; };
   const imgCache = new Map();
@@ -5220,7 +5229,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     };
   }
   function drawTextItem(g, t, ox, oy, sw, sh, seamF){
-    if(!hasBody(t)) return;
+    if(!shown(t)) return;
     g.save();
     if(t.spill === false && seamF > 0){
       const sx = ox + seamF * sw, B = 1e6;
@@ -5814,7 +5823,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
   }
   function tChips(){
-    const sel = tSelAll(), box = $('tChips'), key = coverTexts.length + ':' + tSel + ':' + tTextOpen + ':' + sel.map(x => coverTexts.indexOf(x)).join(',') + ':' + coverTexts.map(x => x.grp || '').join(',');
+    const sel = tSelAll(), box = $('tChips'), key = coverTexts.length + ':' + tSel + ':' + tTextOpen + ':' + sel.map(x => coverTexts.indexOf(x)).join(',') + ':' + coverTexts.map(x => (x.grp || '') + (x.off ? '~' : '')).join(',');
     tAlignUI(sel);
     const rows = box.querySelectorAll('.tchip');
     if(key === tChipsKey && rows.length === coverTexts.length){
@@ -5835,7 +5844,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const tx = document.createElement('span'); tx.className = 'tx'; tx.textContent = labelOf(t);
       tx.style.fontFamily = fontStack(t.font); tx.style.fontWeight = t.bold ? '700' : ''; tx.style.fontStyle = t.italic ? 'italic' : '';
       const ck = document.createElement('span'); ck.className = 'ck'; ck.textContent = sel.includes(t) ? '✓' : ''; if(i !== tSel && sel.includes(t)) b.classList.add('multi');
-      b.append(hd, tx, ck);
+      // 表示・非表示（目のマーク）
+      const ey = document.createElement('span'); ey.className = 'leye' + (t.off ? ' off' : ''); ey.setAttribute('role', 'button'); ey.tabIndex = 0;
+      ey.title = t.off ? '表示する' : '非表示にする（消さずに残します）'; ey.setAttribute('aria-label', ey.title);
+      ey.innerHTML = t.off
+        ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-2.6 3.4M6.3 6.3C3.9 8 2.5 12 2.5 12S6 19 12 19a9.6 9.6 0 0 0 4.6-1.2"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>'
+        : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+      const flip = e => { e.stopPropagation(); e.preventDefault(); t.off = !t.off; if(!t.off) delete t.off; tChipsKey = ''; tChips(); tChanged(); };
+      ey.addEventListener('pointerdown', e => e.stopPropagation());
+      ey.addEventListener('click', flip); ey.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' ') flip(e); });
+      if(t.off) b.classList.add('hid');
+      b.append(hd, tx, ey, ck);
       if(t.grp){ const gt = document.createElement('span'); gt.className = 'gtag'; gt.textContent = 'G' + (gIds.indexOf(t.grp) + 1); gt.title = 'グループ'; b.insertBefore(gt, ck); }
       if(isImg(t)){ const th = document.createElement('img'); th.className = 'thumb'; th.src = t.img; th.alt = ''; b.insertBefore(th, tx); }
       else { const ty = document.createElement('span'); ty.className = 'ltype'; ty.textContent = 'T'; ty.style.fontFamily = fontStack(t.font); ty.style.color = t.color || '#fff'; b.insertBefore(ty, tx); }
@@ -6275,7 +6294,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const tPt = e => { const r = tcv.getBoundingClientRect(); return [(e.clientX - r.left) * tGeo.dpr, (e.clientY - r.top) * tGeo.dpr]; };
   function tHit(px, py){
     for(let i = coverTexts.length - 1; i >= 0; i--){
-      const t = coverTexts[i]; if(!hasBody(t)) continue;
+      const t = coverTexts[i]; if(!shown(t)) continue;
       const b = tBox(t), dx = px - b.cx, dy = py - b.cy;
       const lx = dx * Math.cos(-b.a) - dy * Math.sin(-b.a), ly = dx * Math.sin(-b.a) + dy * Math.cos(-b.a);
       if(Math.abs(lx) <= b.w / 2 && Math.abs(ly) <= b.h / 2) return i;
@@ -6285,7 +6304,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // what the pointer is over on the selected text: a corner □ scales, just outside a corner (or the ○) rotates, like in photo apps
   const ROT_CURSOR = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7 7 0 1 1 3 5.7" stroke="#fff" stroke-width="4"/><path d="M5 12a7 7 0 1 1 3 5.7" stroke="#111" stroke-width="1.8"/><path d="M2 9l3 3.5L8.5 9.5" stroke="#fff" stroke-width="4"/><path d="M2 9l3 3.5L8.5 9.5" stroke="#111" stroke-width="1.8"/></g></svg>')}") 12 12, crosshair`;
   function tHandle(t, px, py){
-    if(!t || !hasBody(t)) return null;
+    if(!t || !shown(t)) return null;
     const b = tBox(t), k = tGeo.dpr;
     if(Math.hypot(px - b.rotH[0], py - b.rotH[1]) <= 12 * k) return { mode: 'rot', b };
     for(const c of b.corners) if(Math.hypot(px - c.p[0], py - c.p[1]) <= 9 * k) return { mode: 'scale', b, c };
@@ -6298,7 +6317,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const [px, py] = tPt(e), t = tCur(), near = (q, r) => Math.hypot(px - q[0], py - q[1]) <= r * tGeo.dpr;
     tcv.focus();
     const mod = e.shiftKey || e.ctrlKey || e.metaKey || tMultiOn;
-    if(t && hasBody(t) && !mod){
+    if(t && shown(t) && !mod){
       const b = tBox(t);
       const h = tHandle(t, px, py);
       if(h && h.mode === 'rot'){ tDrag = { mode: 'rot', t, cx: b.cx, cy: b.cy, a0: Math.atan2(py - b.cy, px - b.cx), r0: t.rot || 0 }; tcv.setPointerCapture(e.pointerId); tcv.style.cursor = ROT_CURSOR; return; }
@@ -7106,7 +7125,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const measureCv = document.createElement('canvas').getContext('2d');
   function decoOnPage(p, side){
     if(sample || wide.has(p)) return false;
-    const list = decoOf(p).filter(hasBody); if(!list.length) return false;
+    const list = decoOf(p).filter(shown); if(!list.length) return false;
     const H = 1000, W = H * 2 * (cropOn() ? ratio() : 2/3), seam = .5;
     return list.some(t => {
       if(t.spill === false) return (t.x < seam ? 0 : 1) === side;   // stays on its own page
@@ -8624,14 +8643,18 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
   }
   const fmtDay = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
-  async function shareCopy(url){ try{ await navigator.clipboard.writeText(url); }catch(e){ const t = document.createElement('textarea'); t.value = url; document.body.append(t); t.select(); try{ document.execCommand('copy'); }catch(_){} t.remove(); } status('共有リンクをコピーしました。'); }
+  async function shareCopy(url){ try{ await navigator.clipboard.writeText(url); }catch(e){ const t = document.createElement('textarea'); t.value = url; document.body.append(t); t.select(); try{ document.execCommand('copy'); }catch(_){} t.remove(); } status(arguments[1] || '共有リンクをコピーしました。'); }
   function shareDone(url, opt){
     const notes = [];
-    if(opt && opt.pw) notes.push('パスワード付きです。パスワードは、リンクとは別に伝えてください。');
+    if(opt && opt.pw) notes.push('パスワードは、リンクとは別に伝えてください。');
     if(opt && opt.exp) notes.push(`${fmtDay(opt.exp)} まで見られます。`);
-    askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}<input id="shareLink" readonly value="${esc2(url)}">`,
+    const pwBox = opt && opt.pw ? `<div class="shlbl">パスワード</div><div class="shpwrow"><input id="sharePw" readonly value="${esc2(opt.pw)}"><button type="button" id="sharePwCp">コピー</button></div>` : '';
+    askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${pwBox ? '<div class="shlbl">リンク</div>' : ''}<input id="shareLink" readonly value="${esc2(url)}">${pwBox}`,
       () => shareCopy(url), 'リンクをコピー', '閉じる');
-    setTimeout(() => { const el = $('shareLink'); if(el) el.addEventListener('focus', () => el.select()); }, 0);
+    setTimeout(() => {
+      ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
+      const b = $('sharePwCp'); if(b) b.onclick = () => shareCopy(opt.pw, 'パスワードをコピーしました。');
+    }, 0);
   }
   // ---------- 共有中のリンク（一覧・オン／オフ・コピー・削除） ----------
   async function shareItems(){
