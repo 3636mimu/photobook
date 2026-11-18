@@ -5861,10 +5861,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // おすすめ（Photoback に近い書体）がいちばん上
     { const d = document.createElement('details'); d.className = 'fgrp'; d.open = true;
       const sm = document.createElement('summary');
-      sm.innerHTML = '<span class="gn">おすすめ（Photobackに近い書体）</span><span class="gc"></span><span class="chev" aria-hidden="true"></span>';
+      sm.innerHTML = '<span class="gn">おすすめ</span><span class="gc"></span><span class="chev" aria-hidden="true"></span>';
       sm.querySelector('.gc').textContent = FONT_REC.length;
       const grid = document.createElement('div'); grid.className = 'fgrid';
-      FONT_REC.forEach(([pb, f, jp]) => grid.appendChild(fontBtn(f, jp, `${pb}\n${f}`, `Photobackの「${pb}」に近い書体（${f}）`)));
+      FONT_REC.forEach(([pb, f, jp]) => grid.appendChild(fontBtn(f, jp, `${pb}\n${f}`, `${pb}に近い書体（${f}）`)));
       d.append(sm, grid); box.appendChild(d); }
     // 自分のフォント (loaded files) come first
     const my = document.createElement('details'); my.className = 'fgrp'; my.id = 'tMyFontGrp';
