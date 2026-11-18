@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com"};</script>
+<script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": ""};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
 <meta name="copyright" content="© 2026 YUJI MIMURA">
@@ -268,6 +268,8 @@ body.moving,body.moving *{cursor:grabbing!important;user-select:none}
 .stcard b{font-size:15px;align-self:end}
 .stcard span{font-size:11.5px;color:var(--muted);line-height:1.55;align-self:start}
 .stnote{margin-right:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.stfoot .stnote-r{margin-right:0;margin-left:auto}   /* 最初の画面：ボタンは左、「使い方」は右 */
+#stStep1 .stfoot{justify-content:flex-start}
 .stfoot .sthow{border:1px solid var(--line);background:#fff;color:var(--muted);font:inherit;font-size:12px;border-radius:999px;padding:3px 11px;cursor:pointer;line-height:1.5}
 .stfoot .sthow:hover,.stfoot .sthow[aria-expanded=true]{color:var(--ink);border-color:#9a8a80}
 .sthowbox{background:var(--bg);border-radius:12px;padding:12px 16px;font-size:12.5px;line-height:1.6}
@@ -345,6 +347,8 @@ button{font:inherit}
 .primary:disabled,.small:disabled{opacity:.4;cursor:not-allowed}
 .small{background:var(--accent);color:var(--accent-ink);border:0;border-radius:3px;padding:6px 10px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}
 .outline{background:none;color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:7px 12px;font-weight:700;font-size:13px;cursor:pointer}
+.sharebtn{width:100%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.35}.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
+#shareLink{width:100%;box-sizing:border-box;margin:10px 0 2px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;background:#f6f5f2;color:#333}
 .hint{font-size:12px;color:var(--muted);margin:0}
 .linkbtn{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0;cursor:pointer;font:inherit}
 .status{font-size:12px;color:var(--muted);margin:0}
@@ -1100,7 +1104,7 @@ body.sidedrawer .grid{padding-right:0 !important}
 .gquiet{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .gquiet small{font-size:11.5px;color:var(--muted)}
 .strhead b{font-size:15px}.strhead small{font-size:12px;color:var(--muted)}
-.strmeta .strfname{line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.strmeta .strfname{line-height:1.4;overflow:hidden;margin-top:1px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;word-break:break-all;white-space:normal}   /* 長い名前も2行まで見せる（全部はマウスを乗せると出る） */
 .strmeta{flex:1}
 .strmeta .strfile{color:#C98A12;font-weight:600}.strmeta .strfile.ok{color:#2E9C8F}
 .strkind{padding:7px 10px 6px;font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1930,6 +1934,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
         <button class="primary" id="saveAll" disabled>見開一括書き出し</button>
         <button class="primary" id="saveSheet" disabled>一覧書き出し</button>
         <button class="primary" id="saveSingles" disabled title="調整した写真を1枚ずつ JPG で保存">1枚ずつ書き出し</button>
+        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled>共有リンクを作る<span class="sub">本のようにめくって見られるリンク</span></button>
         <input type="file" id="workFile" class="vh" accept=".pbmk">
         <div id="pgTip" class="pgtip" aria-hidden="true">配置写真を調整</div><div id="dTapTip" class="pgtip" aria-hidden="true"></div>
         <input type="file" id="fileRelink" class="vh" accept="image/*" multiple>
@@ -2363,7 +2368,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         <li><b>前と同じでいいときは</b>右下の「前回の設定のまま始める」を押すと、この質問をとばして始められます。</li>
         <li id="stHowCont"><b>続きから作るときは</b>BOOKは自動で保存され、「続きから作る」に並びます。<br>保存したBOOKファイル（.pbmk）は、右下の「<span class="devn">パソコン</span>のBOOKファイルを開く」から開けます。</li>
       </ol></div>
-      <div class="stfoot"><span class="stnote">設定は編集中に変えられます。<button type="button" class="sthow" id="stHow" aria-expanded="false">? 使い方</button></span><button type="button" class="stopen" id="stOpenFile" title="保存したBOOKファイル（.pbmk）を選びます。この画面にドラッグ＆ドロップしても開けます"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 3.8h9.6v6.9H3.2z"/><path d="M1.5 12.6h13"/></svg><span><span class="devn">パソコン</span>のBOOKファイルを開く</span></button><button type="button" class="stkeep" id="stKeep">前回の設定のまま始める ›</button></div>
+      <div class="stfoot"><button type="button" class="stopen" id="stOpenFile" title="保存したBOOKファイル（.pbmk）を選びます。この画面にドラッグ＆ドロップしても開けます"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 3.8h9.6v6.9H3.2z"/><path d="M1.5 12.6h13"/></svg><span><span class="devn">パソコン</span>のBOOKファイルを開く</span></button><button type="button" class="stkeep" id="stKeep">前回の設定のまま始める ›</button><span class="stnote stnote-r">設定は編集中に変えられます。<button type="button" class="sthow" id="stHow" aria-expanded="false">? 使い方</button></span></div>
     </div>
     <div class="ststep" id="stStep2" hidden>
       <div class="sthead2"><i class="stic" id="stIc2"></i><div><span class="stkicker">STEP 2</span><h3 id="stTitle2"></h3></div><div class="stwarnbox" id="stWarn" hidden></div></div>
@@ -2696,7 +2701,176 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
 </div>
 
 <script>
+/* ---------- 共有リンクで開いたとき（?v=…）：編集ツールは出さず、本のようにめくって見るだけの画面 ----------
+   いろいろな端末・アプリ内ブラウザ（LINE など）で確実に見られるよう、古い仕組みだけで書いている */
 (function(){
+  var q = {}; try{ location.search.replace(/^\?/, '').split('&').forEach(function(kv){ var a = kv.split('='); if(a[0]) q[decodeURIComponent(a[0])] = decodeURIComponent(a[1] || ''); }); }catch(e){}
+  if(!q.v) return;
+  window.PBM_SHARE = true;
+  var KEY = (window.PBM_WEB && window.PBM_WEB.apiKey) || '', API = 'https://www.googleapis.com/drive/v3/files/';
+  var de = document.documentElement; de.className += ' shv';
+  var css = document.createElement('style');
+  css.textContent = [
+    'html.shv,html.shv body{margin:0;height:100%;background:#0E0F11;overflow:hidden}',
+    'html.shv body>*:not(#shv){display:none!important}',
+    '#shv{position:fixed;left:0;top:0;right:0;bottom:0;background:#0E0F11;color:#E9E8E4;font-family:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Yu Gothic",sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}',
+    '#shv .hd{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0;text-align:center;font-size:13px;letter-spacing:.08em;color:rgba(233,232,228,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '#shv .ft{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(12px + env(safe-area-inset-bottom,0px));text-align:center;font-size:12px;letter-spacing:.12em;color:rgba(233,232,228,.6)}',
+    '#shv .st{position:absolute;left:0;right:0;top:calc(36px + env(safe-area-inset-top,0px));bottom:calc(34px + env(safe-area-inset-bottom,0px));-webkit-perspective:3600px;perspective:3600px}',
+    '#shv .bk{position:absolute;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;box-shadow:0 10px 40px rgba(0,0,0,.45)}',
+    '#shv .hf{position:absolute;top:0;height:100%;background-repeat:no-repeat;background-color:#1a1b1e}',
+    '#shv .lf{position:absolute;top:0;height:100%;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;z-index:3}',
+    '#shv .lf .fc{position:absolute;left:0;top:0;width:100%;height:100%;background-repeat:no-repeat;background-color:#1a1b1e;-webkit-backface-visibility:hidden;backface-visibility:hidden}',
+    '#shv .lf .fc.bk2{-webkit-transform:rotateY(180deg);transform:rotateY(180deg)}',
+    '#shv .lf .sh{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;opacity:0}',
+    '#shv .nv{position:absolute;top:50%;width:46px;height:46px;margin-top:-23px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:26px;line-height:44px;padding:0;cursor:pointer;z-index:5}',
+    '#shv .nv.p{left:10px}#shv .nv.n{right:10px}#shv .nv[disabled]{opacity:0;pointer-events:none}',
+    '#shv .ld{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid rgba(255,255,255,.18);border-top-color:rgba(255,255,255,.75);border-radius:50%;-webkit-animation:shvr 1s linear infinite;animation:shvr 1s linear infinite}',
+    '@-webkit-keyframes shvr{to{-webkit-transform:rotate(360deg)}}@keyframes shvr{to{transform:rotate(360deg)}}',
+    '#shv .ms{position:absolute;left:50%;top:50%;width:min(86vw,360px);-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);text-align:center;font-size:14px;line-height:1.8}',
+    '#shv .ms a,#shv .ms button{display:inline-block;margin:10px 6px 0;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:none;color:#fff;font:inherit;font-size:14px;text-decoration:none;cursor:pointer}',
+    '#shv .ht{position:absolute;left:50%;bottom:calc(44px + env(safe-area-inset-bottom,0px));-webkit-transform:translateX(-50%);transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.12);font-size:12px;white-space:nowrap;-webkit-transition:opacity .6s;transition:opacity .6s}',
+    '@media (pointer:coarse){#shv .nv{background:rgba(255,255,255,.08)}}'
+  ].join('\n');
+  document.head.appendChild(css);
+
+  var root, stage, book, hd, ft, prevB, nextB, pages = [], man = null, pos = 0, busy = false, imgs = [];
+  function el(t, c, p){ var e = document.createElement(t); if(c) e.className = c; if(p) p.appendChild(e); return e; }
+  function urls(id){ return [API + encodeURIComponent(id) + '?alt=media&key=' + encodeURIComponent(KEY), 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w2400', 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=w2400']; }
+  // 画像を読む：だめなら別の取り出し口へ、ひと回りしてもだめならもう一度
+  function loadImg(k, cb){
+    var P = pages[k]; if(!P) return;
+    if(P.ok){ if(cb) cb(true); return; }
+    (P.cbs = P.cbs || []).push(cb || function(){});
+    if(P.loading) return; P.loading = true;
+    var list = urls(P.id), i = 0, round = 0;
+    (function next(){
+      if(i >= list.length){ if(++round < 2){ i = 0; return setTimeout(next, 1200); } P.loading = false; var c1 = P.cbs; P.cbs = []; c1.forEach(function(f){ f(false); }); return; }
+      var im = new Image(), u = list[i++], done = false;
+      var t = setTimeout(function(){ if(!done){ done = true; im.src = ''; next(); } }, 20000);
+      im.onload = function(){ if(done) return; done = true; clearTimeout(t); P.src = u; P.ok = true; P.loading = false; imgs[k] = im; var c2 = P.cbs; P.cbs = []; c2.forEach(function(f){ f(true); }); };
+      im.onerror = function(){ if(done) return; done = true; clearTimeout(t); next(); };
+      im.src = u;
+    })();
+  }
+  function warm(){ [pos + 1, pos - 1, pos + 2].forEach(function(k){ if(k >= 0 && k < pages.length) loadImg(k); });
+    // 残りも、ゆっくり順に
+    var k = 0; (function seq(){ while(k < pages.length && pages[k].ok) k++; if(k < pages.length) loadImg(k, function(){ k++; setTimeout(seq, 150); }); })(); }
+
+  var W = 0, H = 0;
+  function layout(){
+    if(!pages.length) return;
+    var P = pages[pos], ar = P.w / P.h, sw = stage.clientWidth - 24, sh = stage.clientHeight - 8;
+    if(window.matchMedia && matchMedia('(min-width:700px)').matches) sw -= 110;   // 左右の矢印のぶん
+    W = Math.floor(Math.min(sw, sh * ar)); H = Math.floor(W / ar);
+    book.style.width = W + 'px'; book.style.height = H + 'px';
+    book.style.left = Math.round((stage.clientWidth - W) / 2) + 'px'; book.style.top = Math.round((stage.clientHeight - H) / 2) + 'px';
+  }
+  // 見開き k の、左（0）か右（1）半分を背景にする
+  function face(e, k, side){
+    var P = pages[k];
+    if(!P || !P.ok){ e.style.backgroundImage = 'none'; return; }
+    var s = P.seam || .5, x0 = side ? s : 0, w = side ? 1 - s : s;
+    e.style.width = (W * w) + 'px';
+    e.style.backgroundImage = 'url("' + P.src + '")';
+    e.style.backgroundSize = W + 'px ' + H + 'px';
+    e.style.backgroundPosition = (-W * x0) + 'px 0';
+  }
+  var L, Rh;
+  function draw(){
+    layout();
+    book.innerHTML = ''; L = el('div', 'hf', book); Rh = el('div', 'hf', book);
+    var s = pages[pos].seam || .5; L.style.left = '0'; Rh.style.left = (W * s) + 'px';
+    face(L, pos, 0); face(Rh, pos, 1);
+    var spin = null;
+    if(!pages[pos].ok){ spin = el('div', 'ld', stage); loadImg(pos, function(ok){ if(spin && spin.parentNode) spin.parentNode.removeChild(spin); if(ok) draw(); else fail(pos); }); }
+    prevB.disabled = pos === 0; nextB.disabled = pos === pages.length - 1;
+    ft.textContent = (pos + 1) + ' / ' + pages.length;
+  }
+  function fail(k){
+    var m = el('div', 'ms', stage); m.innerHTML = 'この見開きを読み込めませんでした。<br>';
+    var b = el('button', '', m); b.textContent = 'もう一度'; b.onclick = function(){ m.parentNode.removeChild(m); pages[k].loading = false; draw(); };
+  }
+  var can3d = (function(){ try{ return window.CSS && CSS.supports && (CSS.supports('transform-style', 'preserve-3d') || CSS.supports('-webkit-transform-style', 'preserve-3d')); }catch(e){ return false; } })();
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function go(d){
+    var k = pos + d; if(busy || k < 0 || k >= pages.length) return;
+    if(!pages[k].ok){ loadImg(k, function(ok){ if(ok) go(d); else { pos = k; draw(); } }); return; }
+    if(!can3d || reduce || !pages[pos].ok){ pos = k; draw(); warm(); return; }
+    busy = true;
+    var fwd = d > 0, s = pages[pos].seam || .5, sN = pages[k].seam || .5;
+    // 下に見える半分：めくった先の側を、先に新しい見開きにしておく
+    if(fwd){ face(Rh, k, 1); Rh.style.left = (W * sN) + 'px'; } else { face(L, k, 0); }
+    var lf = el('div', 'lf', book), fr = el('div', 'fc', lf), bk = el('div', 'fc bk2', lf), sh = el('div', 'sh', fr), sh2 = el('div', 'sh', bk);
+    lf.style.left = fwd ? (W * s) + 'px' : '0'; lf.style.width = (W * (fwd ? 1 - s : s)) + 'px';
+    var org = fwd ? 'left center' : 'right center'; lf.style.webkitTransformOrigin = org; lf.style.transformOrigin = org;
+    face(fr, pos, fwd ? 1 : 0); face(bk, k, fwd ? 0 : 1);
+    fr.style.width = bk.style.width = '100%';
+    sh.style.background = 'linear-gradient(' + (fwd ? 'to right' : 'to left') + ',rgba(0,0,0,.35),rgba(0,0,0,0) 60%)';
+    sh2.style.background = 'linear-gradient(' + (fwd ? 'to left' : 'to right') + ',rgba(0,0,0,.35),rgba(0,0,0,0) 60%)';
+    var ms = 900, ease = 'cubic-bezier(.45,.05,.25,1)';
+    lf.style.webkitTransition = '-webkit-transform ' + ms + 'ms ' + ease; lf.style.transition = 'transform ' + ms + 'ms ' + ease;
+    [sh, sh2].forEach(function(x){ x.style.webkitTransition = x.style.transition = 'opacity ' + (ms / 2) + 'ms'; });
+    void lf.offsetWidth;
+    var rot = 'rotateY(' + (fwd ? -180 : 180) + 'deg)';
+    requestAnimationFrame(function(){ lf.style.webkitTransform = rot; lf.style.transform = rot; sh.style.opacity = '1'; setTimeout(function(){ sh2.style.opacity = '0'; }, ms / 2); sh2.style.opacity = '1'; });
+    setTimeout(function(){ pos = k; busy = false; draw(); warm(); }, ms + 40);
+  }
+  function msg(html, retry){
+    stage.innerHTML = ''; var m = el('div', 'ms', stage); m.innerHTML = html + '<br>';
+    if(retry){ var b = el('button', '', m); b.textContent = 'もう一度'; b.onclick = function(){ start(); }; }
+  }
+  function build(){
+    root = el('div'); root.id = 'shv'; document.body.appendChild(root);
+    hd = el('div', 'hd', root); stage = el('div', 'st', root); ft = el('div', 'ft', root);
+    prevB = el('button', 'nv p', root); prevB.innerHTML = '&#8249;'; prevB.setAttribute('aria-label', '前の見開き');
+    nextB = el('button', 'nv n', root); nextB.innerHTML = '&#8250;'; nextB.setAttribute('aria-label', '次の見開き');
+    prevB.onclick = function(e){ e.stopPropagation(); go(-1); }; nextB.onclick = function(e){ e.stopPropagation(); go(1); };
+    document.addEventListener('keydown', function(e){ if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); } else if(e.key === 'ArrowLeft') go(-1); });
+    // 画面の右側をタップで次、左側で前。横にスワイプでもめくれる（拡大中はめくらない）
+    var sx = 0, sy = 0, st0 = 0;
+    stage.addEventListener('touchstart', function(e){ var t = e.touches[0]; sx = t.clientX; sy = t.clientY; st0 = Date.now(); }, { passive: true });
+    stage.addEventListener('touchend', function(e){ if(e.touches && e.touches.length) return; var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if(window.visualViewport && visualViewport.scale > 1.05) return;
+      if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2){ go(dx < 0 ? 1 : -1); e.preventDefault(); } }, { passive: false });
+    stage.addEventListener('click', function(e){ if(window.visualViewport && visualViewport.scale > 1.05) return; if(e.target.closest && e.target.closest('.ms')) return; var r = stage.getBoundingClientRect(); go(e.clientX - r.left > r.width / 2 ? 1 : -1); });
+    window.addEventListener('resize', function(){ if(pages.length && !busy) draw(); });
+  }
+  function start(){
+    stage.innerHTML = ''; el('div', 'ld', stage);
+    var tries = 0;
+    (function get(){
+      if(!KEY){ msg('このリンクは、いま開けません。<br>しばらくしてから、もう一度お試しください。', true); return; }
+      var x = new XMLHttpRequest(); x.open('GET', API + encodeURIComponent(q.v) + '?alt=media&key=' + encodeURIComponent(KEY)); x.timeout = 20000;
+      x.onload = function(){
+        if(x.status === 200){ try{ man = JSON.parse(x.responseText); }catch(e){ man = null; } }
+        if(!man || !man.pages || !man.pages.length){
+          if(x.status === 404 || x.status === 403){ msg('この写真集は、見られなくなっています。<br>（共有が止められたか、削除されたようです）', false); return; }
+          if(++tries < 3) return setTimeout(get, 1500 * tries);
+          msg('読み込めませんでした。<br>電波のよいところで、もう一度お試しください。', true); return;
+        }
+        pages = man.pages.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.seam || .5 }; });
+        document.title = (man.title || 'PHOTO BOOK') + ' | PHOTO BOOK';
+        hd.textContent = man.title || '';
+        stage.innerHTML = ''; book = el('div', 'bk', stage); pos = 0;
+        loadImg(0, function(){ draw(); warm(); });
+        draw();
+        if(window.matchMedia && matchMedia('(pointer:coarse) and (orientation:portrait)').matches){
+          var h = el('div', 'ht', root); h.textContent = '横にすると、大きく見られます';
+          setTimeout(function(){ h.style.opacity = '0'; setTimeout(function(){ if(h.parentNode) h.parentNode.removeChild(h); }, 700); }, 3500);
+        }
+      };
+      x.onerror = x.ontimeout = function(){ if(++tries < 3) return setTimeout(get, 1500 * tries); msg('読み込めませんでした。<br>電波のよいところで、もう一度お試しください。', true); };
+      x.send();
+    })();
+  }
+  function boot(){ build(); start(); }
+  if(document.body) boot(); else document.addEventListener('DOMContentLoaded', boot);
+})();
+</script>
+<script>
+(function(){
+  if(window.PBM_SHARE) return;   // 共有リンクを見ているときは、編集ツールは動かさない
   const $ = id => document.getElementById(id);
   const MAX_PAIRS = 62;               // up to 120 pages (+1 spread and the cover card in 写真集 mode)
   let PAIRS = 12;                     // current page count / 2, set from #pages
@@ -3834,6 +4008,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function updateGlobal(){
     const n = allPairs().filter(pairReady).length;
     $('saveAll').disabled = n === 0;
+    if(WEB){ $('shareBook').hidden = false; $('shareBook').disabled = n === 0; }
     { const nm = booklet ? '写真集書き出し' : '見開一括書き出し';
       $('saveAll').innerHTML = n ? `${nm}<span class="sub">${isPdf() ? (booklet ? `PDF・${bookTotal()}ページ` : `PDF・${n}ページ`) : `JPG・${n}ファイル`}</span>` : `${nm}<span class="sub">${isPdf() ? 'PDF' : 'JPG'}</span>`; }
     $('saveSheet').disabled = sample || !slots.some(Boolean);   // the overview needs at least one real photo
@@ -8210,6 +8385,68 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   const gBooks = () => gList(`appProperties has { key='pbm' and value='book' } and trashed=false`);
 
+  // ---------- 共有リンク：見開きを自分の Google ドライブに置いて、リンクを知っている人が本のようにめくって見られる ----------
+  // 置き場所：「PHOTO BOOK MAKER / 共有 / （BOOK名）_日時」。見る側はログイン不要（API キーで読むだけ）。ツール側には何も残さない
+  const SHARE_LONG = 2400, SHARE_Q = .85;
+  const shareKey = () => (window.PBM_WEB && PBM_WEB.apiKey) || '';
+  const shareUrl = m => `${location.origin}${location.pathname.replace(/index\.html$/, '')}?v=${encodeURIComponent(m)}`;   // 見る人に、作った人のドライブの場所は渡さない
+  async function shareRoot(){
+    const root = await gRoot();
+    const f = await gList(`'${root}' in parents and appProperties has { key='pbm' and value='shares' } and trashed=false`, 'files(id,name)');
+    return f.length ? f[0].id : (await gCreate({ name: '共有', parents: [root], mimeType: 'application/vnd.google-apps.folder', appProperties: { pbm: 'shares' },
+      description: 'PHOTO BOOK MAKER の共有リンク用の写真です。フォルダを消したり共有をやめたりすると、そのリンクは見られなくなります。' })).id;
+  }
+  // 見る側と同じ読み方（ログインなし・API キー）で、本当に読めるか確かめる
+  async function shareCanRead(id){
+    try{ const r = await fetch(`${GAPI}/drive/v3/files/${encodeURIComponent(id)}?alt=media&key=${encodeURIComponent(shareKey())}`, { cache: 'no-store' }); return r.ok; }catch(e){ return false; }
+  }
+  async function shareBook(){
+    const list = allPairs().filter(pairReady);
+    if(!list.length) return;
+    if(!shareKey()){ askYesNo('共有リンクを作れません', '<p>共有リンクの準備（API キー）が、まだ設定されていません。</p>', () => {}, '閉じる', ''); return; }
+    if(!(await gEnsure(true))) return;
+    const title = (workTitle() || 'PHOTO BOOK').trim();
+    let folder = '';
+    try{
+      gBusy('共有リンクを作っています', `見開きを準備しています 1 / ${list.length}`, 0);
+      const sroot = await shareRoot();
+      folder = (await gCreate({ name: `${title.replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60)}_${stamp()}`, parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: { pbm: 'share' } })).id;
+      await gJson(`${GAPI}/drive/v3/files/${folder}/permissions?fields=id`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
+      await coverFontsReady();
+      const pages = [];
+      for(let i = 0; i < list.length; i++){
+        const p = list[i];
+        gBusy('', `見開きを準備しています ${i + 1} / ${list.length}`, i / list.length * .9);
+        const c = document.createElement('canvas');
+        exporting = true; try{ compose(p, c, SHARE_LONG); } finally { exporting = false; }
+        const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', SHARE_Q));
+        if(!blob) throw new Error('render');
+        gBusyImg(blob);
+        const f = await gUpload({ name: `${String(i + 1).padStart(2, '0')}.jpg`, parents: [folder] }, blob);
+        pages.push({ id: f.id, w: c.width, h: c.height, seam: +(((pairUI[p] || {}).seam) || .5).toFixed(4) });
+      }
+      gBusy('', 'リンクを仕上げています…', .95);
+      const man = { app: 'pbm-share', v: 1, title, at: Date.now(), pages };   // 作った人が分かる情報（フォルダの場所など）は入れない
+      const mf = await gUpload({ name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } }, new Blob([JSON.stringify(man)], { type: 'application/json' }));
+      // 見る側から本当に読めるか確かめる（読めなければ、1つずつ公開してもう一度）
+      if(!(await shareCanRead(mf.id)) || !(await shareCanRead(pages[0].id))){
+        for(const id of [mf.id, ...pages.map(x => x.id)]) await gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=id`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
+        await new Promise(r => setTimeout(r, 1500));
+        if(!(await shareCanRead(mf.id))) throw new Error('verify');
+      }
+      gBusyOff();
+      const url = shareUrl(mf.id);
+      askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p><input id="shareLink" readonly value="${esc2(url)}">`,
+        async () => { try{ await navigator.clipboard.writeText(url); status('共有リンクをコピーしました。'); }catch(e){ const el = $('shareLink'); if(el){ el.select(); document.execCommand('copy'); } status('共有リンクをコピーしました。'); } },
+        'リンクをコピー', '閉じる');
+      setTimeout(() => { const el = $('shareLink'); if(el){ el.addEventListener('focus', () => el.select()); } }, 0);
+    }catch(e){
+      console.warn(e); gBusyOff();
+      if(e && e.auth) return;
+      askYesNo('共有リンクを作れませんでした', `<p>もう一度お試しください。</p><p style="font-size:12px;color:var(--muted)">${esc2(e && e.message || String(e))}</p>`, () => {}, '閉じる', '');
+    }
+  }
+
   // BOOKをドライブに保存：BOOKごとのフォルダに book.json・サムネ・写真（元の名前のまま）。写真は1回だけ上げて、あとは中身の記録だけ
   // 保存・読み込み中の表示（frac が null のあいだは、流れるバー）
   function gBusy(title, text, frac){
@@ -8370,6 +8607,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     } else { n.removeAttribute('role'); n.removeAttribute('tabindex'); }
   }
   if(WEB){
+    $('shareBook').addEventListener('click', () => shareBook());
     $('workName').addEventListener('click', () => { if($('workName').classList.contains('wclick')) $('gConn').click(); });
     $('workName').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && $('workName').classList.contains('wclick')){ e.preventDefault(); $('gConn').click(); } });
     $('gConn').addEventListener('click', async () => {
