@@ -765,6 +765,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareMgr .shmeta small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
 #shareMgr .shbtns{display:flex;gap:6px;flex:0 0 auto;align-items:center}
 #shareMgr .shbtns button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+#shareMgr .shbtns button.cp{min-width:7.4em}
+#shareMgr .shbtns button.cp.copied{background:#2A8C7F;border-color:#2A8C7F;color:#fff}
 #shareMgr .shbtns .del{color:#C24A45;border-color:#E9C3C1}
 #shareMgr .shnote{font-size:13px;color:var(--muted);text-align:center;padding:18px 0}
 .sharemgr{display:block;width:100%;margin-top:6px;background:none;border:0;color:var(--accent);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
@@ -2775,7 +2777,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     '#shv .lf .fc{position:absolute;left:0;top:0;width:100%;height:100%;background-repeat:no-repeat;background-color:#1a1b1e;-webkit-backface-visibility:hidden;backface-visibility:hidden}',
     '#shv .lf .fc.bk2{-webkit-transform:rotateY(180deg);transform:rotateY(180deg)}',
     '#shv .lf .sh{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;opacity:0}',
-    '#shv .nv{position:absolute;top:50%;width:46px;height:46px;margin-top:-23px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:26px;line-height:44px;padding:0;cursor:pointer;z-index:5}',
+    '#shv .nv{position:absolute;top:50%;width:46px;height:46px;margin-top:-23px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;padding:0;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center}',
+    '#shv .nv svg{width:20px;height:20px;display:block}',
     '#shv .nv.p{left:10px}#shv .nv.n{right:10px}#shv .nv[disabled]{opacity:0;pointer-events:none}',
     '#shv .ld{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid rgba(255,255,255,.18);border-top-color:rgba(255,255,255,.75);border-radius:50%;-webkit-animation:shvr 1s linear infinite;animation:shvr 1s linear infinite}',
     '@-webkit-keyframes shvr{to{-webkit-transform:rotate(360deg)}}@keyframes shvr{to{transform:rotate(360deg)}}',
@@ -2860,8 +2863,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     ft.textContent = (pos + 1) + ' / ' + pages.length;
   }
   function fail(k){
-    var m = el('div', 'ms', stage); m.innerHTML = 'この見開きを読み込めませんでした。<br>少し時間をおいて、もう一度お試しください。<br>';
-    var b = el('button', '', m); b.textContent = 'もう一度'; b.onclick = function(){ m.parentNode.removeChild(m); pages[k].loading = false; draw(); };
+    var m = el('div', 'ms', stage); m.innerHTML = 'この見開きを準備しています。<br>少し時間をおいて、再読み込みしてください。<br>';
+    var b = el('button', '', m); b.textContent = '再読み込み'; b.onclick = function(){ m.parentNode.removeChild(m); pages[k].loading = false; draw(); };
   }
   var can3d = (function(){ try{ return window.CSS && CSS.supports && (CSS.supports('transform-style', 'preserve-3d') || CSS.supports('-webkit-transform-style', 'preserve-3d')); }catch(e){ return false; } })();
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2890,15 +2893,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function msg(html, retry){
     stage.innerHTML = ''; var m = el('div', 'ms', stage); m.innerHTML = html + '<br>';
-    if(retry){ var b = el('button', '', m); b.textContent = 'もう一度'; b.onclick = function(){ start(); }; }
+    if(retry){ var b = el('button', '', m); b.textContent = '再読み込み'; b.onclick = function(){ start(); }; }
   }
   function build(){
     root = el('div'); root.id = 'shv'; root.className = 'ns'; document.body.appendChild(root);
     // 見る画面は、右クリック・長押しのメニューとドラッグを出さない
     document.addEventListener('contextmenu', function(e){ e.preventDefault(); }); document.addEventListener('dragstart', function(e){ e.preventDefault(); });
     hd = el('div', 'hd', root); stage = el('div', 'st', root); ft = el('div', 'ft', root);
-    prevB = el('button', 'nv p', root); prevB.innerHTML = '&#8249;'; prevB.setAttribute('aria-label', '前の見開き');
-    nextB = el('button', 'nv n', root); nextB.innerHTML = '&#8250;'; nextB.setAttribute('aria-label', '次の見開き');
+    prevB = el('button', 'nv p', root); prevB.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 5l-7 7 7 7"/></svg>'; prevB.setAttribute('aria-label', '前の見開き');
+    nextB = el('button', 'nv n', root); nextB.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5l7 7-7 7"/></svg>'; nextB.setAttribute('aria-label', '次の見開き');
     prevB.onclick = function(e){ e.stopPropagation(); go(-1); }; nextB.onclick = function(e){ e.stopPropagation(); go(1); };
     document.addEventListener('keydown', function(e){ if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); } else if(e.key === 'ArrowLeft') go(-1); });
     // 画面の右側をタップで次、左側で前。横にスワイプでもめくれる（拡大中はめくらない）
@@ -2914,7 +2917,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     stage.innerHTML = ''; el('div', 'ld', stage);
     var tries = 0;
     (function get(){
-      if(!KEY){ msg('このリンクは、いま開けません。<br>しばらくしてから、もう一度お試しください。', true); return; }
+      if(!KEY){ msg('このリンクは、いま開けません。<br>少し時間をおいて、再読み込みしてください。', true); return; }
       var x = new XMLHttpRequest(); x.open('GET', API + encodeURIComponent(q.v) + '?alt=media&key=' + encodeURIComponent(KEY)); x.timeout = 20000;
       x.onload = function(){
         if(x.status === 200){ try{ man = JSON.parse(x.responseText); }catch(e){ man = null; } }
@@ -2922,13 +2925,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           // 作られた直後は、公開が行き渡るまで少し読めないことがあるので、しばらく待ってから判断する
           if((x.status === 404 || x.status === 403) && !/rate|limit|quota/i.test(x.responseText || '')){ if(++tries < 3) return setTimeout(get, 5000 * tries); msg('この写真集は、見られなくなっています。<br>（共有が止められたか、削除されたようです）', false); return; }
           if(++tries < 3) return setTimeout(get, 4000 * tries);
-          msg('ただいま混み合っています。<br>少し時間をおいて、もう一度お試しください。', true); return;
+          msg('写真集を準備しています。<br>少し時間をおいて、再読み込みしてください。', true); return;
         }
         if(man.exp && Date.now() > man.exp){ msg('この写真集の公開期間は、終わりました。', false); return; }
         pages = man.pages.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.flat ? 1 : (p.seam || .5), flat: !!p.flat, iv: p.iv || '' }; });
         if(man.enc) askPw(); else open1(man.title);
       };
-      x.onerror = x.ontimeout = function(){ if(++tries < 3) return setTimeout(get, 4000 * tries); msg('ただいま混み合っています。<br>少し時間をおいて、もう一度お試しください。', true); };
+      x.onerror = x.ontimeout = function(){ if(++tries < 3) return setTimeout(get, 4000 * tries); msg('写真集を準備しています。<br>少し時間をおいて、再読み込みしてください。', true); };
       x.send();
     })();
   }
@@ -8845,11 +8848,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
         row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">リンクをコピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? 'ON' : 'OFF'}</span></button><button type="button" class="del">削除</button></div>`;
         const cp = row.querySelector('.cp'); if(cp) cp.onclick = async () => {
-          const url = shareUrl(ap.m);
-          if(ap.pw !== '1'){ shareCopy(url); return; }
-          let pw = ''; try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){}
-          if(pw) shareCopy(shareText(url, pw), 'URLとパスワードをコピーしました。');
-          else shareCopy(url, 'リンクをコピーしました（このリンクのパスワードは控えがないため、入っていません）。');
+          const url = shareUrl(ap.m); let ok;
+          if(ap.pw !== '1') ok = await shareCopy(url);
+          else {
+            let pw = ''; try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){}
+            ok = pw ? await shareCopy(shareText(url, pw), 'URLとパスワードをコピーしました。') : await shareCopy(url, 'リンクをコピーしました（このリンクのパスワードは控えがないため、入っていません）。');
+          }
+          // コピーできたら「✓ コピー済み」に（ほかの行は元に戻す）
+          if(ok) box.querySelectorAll('.cp').forEach(b => { const on = b === cp; b.classList.toggle('copied', on); b.textContent = on ? '✓ コピー済み' : 'リンクをコピー'; });
         };
         if(cp && ap.pw === '1') cp.title = 'リンクとパスワードを一緒にコピーします';
         // 押したらすぐ見た目を切り替え、ドライブ側はうしろで反映（失敗したら元に戻す）
