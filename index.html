@@ -8726,7 +8726,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       for(let round = 1; round <= TRIES && !ok; round++){
         chk();
         if(folder){ trash(folder); folder = ''; await sleep(5000); }
-        const ap = { pbm: 'share' }; if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
+        if(!workId) workId = newId();
+        const ap = { pbm: 'share', book: String(workId) }; if(opt.exp)   // どの BOOK の共有か（共有中のリンクは、開いている BOOK の分だけ出す） ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
         folder = (await gCreate({ name: `${title.replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60)}_${stamp()}`, parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
         await sharePubRetry(folder);
         const pages = [];
@@ -8834,11 +8835,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       let items;
       if(cached && shCache){ items = shCache.slice(); cached = false; }
       else {
-        try{ items = await shareItems(); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
+        try{ items = (await shareItems()).filter(f => workId && (f.appProperties || {}).book === String(workId)); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
         { const old = items.filter(sharePast); if(old.length){ await Promise.all(old.map(shareExpire)); items = items.filter(f => !sharePast(f)); } }
         shCache = items.slice();
       }
-      if(!items.length){ box.innerHTML = '<p class="shnote">まだ共有リンクはありません。</p>'; return; }
+      if(!items.length){ box.innerHTML = '<p class="shnote">このBOOKの共有リンクは、まだありません。</p>'; return; }
       box.innerHTML = '';
       items.sort((a, b) => (b.createdTime || '').localeCompare(a.createdTime || ''));
       items.forEach(f => {
