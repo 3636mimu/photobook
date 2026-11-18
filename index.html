@@ -5101,6 +5101,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     ["欧文 手書き（ペン・ブラシ）", false, ["Caveat", "Caveat Brush", "Reenie Beanie", "Nothing You Could Do", "Cedarville Cursive", "Homemade Apple", "La Belle Aurore", "Shadows Into Light", "Kalam", "Indie Flower", "Gochi Hand", "Covered By Your Grace", "Permanent Marker", "Rock Salt"]],
     ["欧文 筆記体", false, ["Great Vibes", "Dancing Script", "Allura", "Sacramento", "Pinyon Script", "Parisienne", "Pacifico", "Lobster", "Alex Brush", "Italianno", "Tangerine", "Allison", "Corinthia", "Mea Culpa", "Monsieur La Doulaise", "Herr Von Muellerhoff", "Mrs Saint Delafield", "Satisfy", "Kaushan Script", "Yellowtail", "Cookie", "Ballet", "WindSong", "Birthstone", "The Nautigal", "Petit Formal Script"]],
   ];
+  // おすすめ：Photoback の書体に近いもの（Photoback での名前, 書体, 和文か）
+  const FONT_REC = [["教科書体", "Klee One", true], ["明朝体", "Shippori Mincho", true], ["明朝体 OLD", "Zen Old Mincho", true], ["新ゴシック体", "Zen Kaku Gothic New", true], ["中ゴシック体", "Noto Sans JP", true],
+    ["Frutiger", "Work Sans", false], ["Helvetica", "Inter", false], ["Garamond", "EB Garamond", false], ["Greg's Other Hand", "Gochi Hand", false], ["手書き風書体", "Yomogi", true]];
   const TEXT_KEY = 'mihiraki-cover-text-v1';
   const SWATCHES = ['#FFFFFF','#111214','#F4EDE0','#C9A86A','#B23B30','#2D4A73','#6B7F5E','#E8B4B8'];
   // coverTexts = the list of the spread being edited (tPair); it is written back into decos on every save
@@ -5138,7 +5141,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // when most of them fail it is the network, not the names: keep every button then
     Promise.all(jobs).then(() => {
       if(fontBad.size > all / 2){ fontBad.clear(); return; }
-      fontBad.forEach(f => { const b = document.querySelector(`#tFonts .tfont[data-f="${f}"]`); if(b) b.hidden = true; });
+      fontBad.forEach(f => document.querySelectorAll(`#tFonts .tfont[data-f="${f}"]`).forEach(b => { b.hidden = true; }));
     });
     fontCss = Promise.race([Promise.all(jobs), new Promise(res => setTimeout(res, 5000))]);
     return fontCss;
@@ -5846,6 +5849,23 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function tFontsUI(){
     const box = $('tFonts'); if(box.childElementCount) return;
+    const fontBtn = (f, jp, label, tip) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'tfont'; b.dataset.f = f;
+      b.innerHTML = `<span class="fs"></span><small></small>`;
+      b.querySelector('.fs').style.fontFamily = fontStack(f);
+      b.querySelector('.fs').textContent = jp ? '写真集 あア' : 'Photo Book';
+      { const sm = b.querySelector('small'); String(label).split('\n').forEach((t, k) => { if(k) sm.appendChild(document.createElement('br')); sm.appendChild(document.createTextNode(t)); }); } if(tip) b.title = tip;
+      b.addEventListener('click', () => { const t = tCur(); if(!t) return; t.font = f; tSync(); tChanged(); });
+      return b;
+    };
+    // おすすめ（Photoback に近い書体）がいちばん上
+    { const d = document.createElement('details'); d.className = 'fgrp'; d.open = true;
+      const sm = document.createElement('summary');
+      sm.innerHTML = '<span class="gn">おすすめ（Photobackに近い書体）</span><span class="gc"></span><span class="chev" aria-hidden="true"></span>';
+      sm.querySelector('.gc').textContent = FONT_REC.length;
+      const grid = document.createElement('div'); grid.className = 'fgrid';
+      FONT_REC.forEach(([pb, f, jp]) => grid.appendChild(fontBtn(f, jp, `${pb}\n${f}`, `Photobackの「${pb}」に近い書体（${f}）`)));
+      d.append(sm, grid); box.appendChild(d); }
     // 自分のフォント (loaded files) come first
     const my = document.createElement('details'); my.className = 'fgrp'; my.id = 'tMyFontGrp';
     my.innerHTML = '<summary><span class="gn">自分のフォント</span><span class="gc" id="tMyFontCount">0</span><span class="chev" aria-hidden="true"></span></summary>'
@@ -5862,15 +5882,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       sm.querySelector('.gn').textContent = name; sm.querySelector('.gc').textContent = list.length;
       const grid = document.createElement('div'); grid.className = 'fgrid';
       d.append(sm, grid); box.appendChild(d);
-      list.forEach(f => {
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'tfont'; b.dataset.f = f;
-        b.innerHTML = `<span class="fs"></span><small></small>`;
-        b.querySelector('.fs').style.fontFamily = fontStack(f);
-        b.querySelector('.fs').textContent = jp ? '写真集 あア' : 'Photo Book';
-        b.querySelector('small').textContent = f;
-        b.addEventListener('click', () => { const t = tCur(); if(!t) return; t.font = f; tSync(); tChanged(); });
-        grid.appendChild(b);
-      });
+      list.forEach(f => grid.appendChild(fontBtn(f, jp, f)));
     });
     const sw = $('tColors');
     SWATCHES.forEach(c => {
