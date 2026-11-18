@@ -8818,7 +8818,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(folder){ trash(folder); folder = ''; await sleep(5000); }
         if(!workId) workId = newId();
         const ap = { pbm: 'share', book: String(workId), nm: fitBytes(title, 100) };
-        if(fileHandle && fileHandle.drive && fileHandle.folderId) ap.bf = String(fileHandle.folderId);   // ドライブに保存した BOOK なら、その BOOK のフォルダも印にする（開き直しても変わらない） if(opt.exp)   // どの BOOK の共有か（共有中のリンクは、開いている BOOK の分だけ出す） ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
+        if(fileHandle && fileHandle.drive && fileHandle.folderId) ap.bf = String(fileHandle.folderId);   // ドライブに保存した BOOK なら、その BOOK のフォルダも印にする（開き直しても変わらない）
+        if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';   // 有効期限・パスワードの有無（共有中のリンクの表示と、期限切れの片付けに使う）
         folder = (await gCreate({ name: shareFolderName(title), parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
         await sharePubRetry(folder);
         const pages = [];
