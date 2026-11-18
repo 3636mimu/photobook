@@ -8938,9 +8938,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       items.forEach(f => {
         const ap = f.appProperties || {}, exp = +(ap.exp || 0), on = shareOn(f), past = exp && exp < Date.now();
         const nm = (f.appProperties || {}).nm || (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');   // 一覧には共有の名前（フォルダ名ではなく）
-        const sub = [fmtUntil(f.createdTime), exp ? (past ? '期限切れ' : `${fmtUntil(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : ''].filter(Boolean).join('・');
+        // 上の行：作成日時／下の行：期限・パスワード
+        const sub1 = fmtUntil(f.createdTime), sub2 = [exp ? (past ? '期限切れ' : `${fmtUntil(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : ''].filter(Boolean).join('・');
         const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
-        row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">リンクをコピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? '公開中' : '非公開'}</span></button><button type="button" class="del">削除</button></div>`;
+        row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub1)}<br>${esc2(sub2)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">リンクをコピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? '公開中' : '非公開'}</span></button><button type="button" class="del">削除</button></div>`;
         const cp = row.querySelector('.cp'); if(cp) cp.onclick = async () => {
           const url = shareUrl(ap.m), ex = +(ap.exp || 0); let pw = '';
           if(ap.pw === '1'){ try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){} }
