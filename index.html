@@ -8602,7 +8602,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const title = (workTitle() || 'PHOTO BOOK').trim();
     let folder = '';
     try{
-      gBusy('共有リンクを作っています', `見開きを準備しています 1 / ${list.length}`, 0);
+      gBusy('写真集の共有リンクを作っています', `見開きを準備しています 1 / ${list.length}`, 0);
       const sroot = await shareRoot();
       let key = null, enc = null;
       if(opt.pw){ const salt = crypto.getRandomValues(new Uint8Array(16)), iter = 210000; key = await shareDeriveKey(opt.pw, salt, iter); enc = { salt: b64(salt), iter }; }
@@ -8635,18 +8635,26 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const mf = await gUpload({ name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } }, new Blob([JSON.stringify(man)], { type: 'application/json' }));
       try{ await gPatch(folder, { appProperties: { m: mf.id } }); }catch(e){}
       // 見る側から本当に読めるか確かめる（読めなければ、1つずつ公開してもう一度）
-      if(!(await shareCanRead(mf.id)) || !(await shareCanRead(pages[0].id))){
+      // 公開の設定がドライブ全体に行き渡るまで、数秒〜数十秒かかることがあるので、待ちながら何度か確かめる
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      const readable = async () => (await shareCanRead(mf.id)) && (await shareCanRead(pages[0].id)) && (await shareCanRead(pages[pages.length - 1].id));
+      let ok = await readable();
+      for(const w of [1500, 2500]){ if(ok) break; gBusy('', '公開の反映を待っています…', .97); await sleep(w); ok = await readable(); }
+      if(!ok){
+        // それでも読めなければ、1つずつ公開してから、もう少し待つ
         for(const id of [mf.id, ...pages.map(x => x.id)]) await sharePublic(id);
         try{ await gPatch(folder, { appProperties: { pf: '1' } }); }catch(e){}
-        await new Promise(r => setTimeout(r, 1500));
-        if(!(await shareCanRead(mf.id))) throw new Error('verify');
+        for(const w of [1500, 3000, 5000, 8000, 12000]){ gBusy('', '公開の反映を待っています…', .98); await sleep(w); if(ok = await readable()) break; }
       }
+      if(!ok) throw new Error('verify');
       gBusyOff();
       shareDone(shareUrl(mf.id), opt);
     }catch(e){
       console.warn(e); gBusyOff();
+      if(folder) try{ await gPatch(folder, { trashed: true }); }catch(_){}   // 作りかけは残さない
       if(e && e.auth) return;
-      askYesNo('共有リンクを作れませんでした', `<p>もう一度お試しください。</p><p style="font-size:12px;color:var(--muted)">${esc2(e && e.message || String(e))}</p>`, () => {}, '閉じる', '');
+      const why = e && e.message === 'verify' ? 'Google ドライブ側で公開の反映が遅れていて、見る人が開けるか確かめられませんでした。少し時間をおいて、もう一度作ってください。' : 'もう一度お試しください。';
+      askYesNo('共有リンクを作れませんでした', `<p>${why}</p>${e && e.message === 'verify' ? '' : `<p style="font-size:12px;color:var(--muted)">${esc2(e && e.message || String(e))}</p>`}`, () => {}, '閉じる', '');
     }
   }
   const fmtDay = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
