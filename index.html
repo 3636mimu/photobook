@@ -2916,7 +2916,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(x.status === 200){ try{ man = JSON.parse(x.responseText); }catch(e){ man = null; } }
         if(!man || !man.pages || !man.pages.length){
           // 作られた直後は、公開が行き渡るまで少し読めないことがあるので、しばらく待ってから判断する
-          if(x.status === 404 || x.status === 403){ if(++tries < 7) return setTimeout(get, 1500 * tries); msg('この写真集は、見られなくなっています。<br>（共有が止められたか、削除されたようです）', false); return; }
+          if(x.status === 404 || x.status === 403){ if(++tries < 12) return setTimeout(get, Math.min(15000, 1500 * tries)); msg('この写真集は、見られなくなっています。<br>（共有が止められたか、削除されたようです）', false); return; }
           if(++tries < 3) return setTimeout(get, 1500 * tries);
           msg('読み込めませんでした。<br>電波のよいところで、もう一度お試しください。', true); return;
         }
@@ -8645,21 +8645,21 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const title = (workTitle() || 'PHOTO BOOK').trim();
     let folder = '', stop = false;
     const chk = () => { if(stop){ const e = new Error('cancel'); e.cancel = true; throw e; } };
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const trash = id => gPatch(id, { trashed: true }).catch(() => {});
     try{
       gBusy('写真集の共有リンクを作っています', `見開きを準備しています 1 / ${list.length}`, 0);
       // 中止：押したらその場で窓を閉じ、作りかけはうしろでゴミ箱へ
-      { const cb = $('gBusyCancel'); cb.hidden = false; cb.onclick = () => { stop = true; gBusyOff(); status('共有リンクの作成を中止しました。'); }; }
+      { const cb = $('gBusyCancel'); cb.hidden = false; cb.onclick = () => { stop = true; gBusyOff(); askYesNo('中止しました', '<p>共有リンクの作成を中止しました。<br>作りかけのデータは残りません。</p>', () => {}, '閉じる', ''); }; }
       const sroot = await shareRoot();
       let key = null, enc = null;
       if(opt.pw){ const salt = crypto.getRandomValues(new Uint8Array(16)), iter = 210000; key = await shareDeriveKey(opt.pw, salt, iter); enc = { salt: b64(salt), iter }; }
-      const ap = { pbm: 'share', pf: '1' }; if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
-      folder = (await gCreate({ name: `${title.replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60)}_${stamp()}`, parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
-      await sharePublic(folder);
       await coverFontsReady();
-      const pages = [];
+      // 1) 見開きを作る（作り直しのときに使い回せるよう、手元に持っておく）
+      const made = [];
       for(let i = 0; i < list.length; i++){
         const p = list[i]; chk();
-        gBusy('', `見開きを準備しています ${i + 1} / ${list.length}`, i / list.length * .9);
+        gBusy('', `見開きを準備しています ${i + 1} / ${list.length}`, i / list.length * .45);
         const c = document.createElement('canvas');
         exporting = true; try{ compose(p, c, SHARE_LONG); } finally { exporting = false; }
         const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', SHARE_Q));
@@ -8668,46 +8668,60 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const pg = { w: c.width, h: c.height, seam: +(((pairUI[p] || {}).seam) || .5).toFixed(4) };
         let up = blob, nm = `${String(i + 1).padStart(2, '0')}.jpg`;
         if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); nm = `${String(i + 1).padStart(2, '0')}.bin`; }
-        chk(); pg.id = (await gUpload({ name: nm, parents: [folder] }, up)).id;
-        await sharePubRetry(pg.id);   // フォルダの公開を待たず、1枚ずつ確実に公開しておく
-        pages.push(pg);
+        made.push({ pg, up, nm });
       }
-      chk();
-      gBusy('', 'リンクを仕上げています…', .95);
-      // 作った人が分かる情報（フォルダの場所など）は入れない。パスワード付きのときは、題名も暗号化する
-      const man = { app: 'pbm-share', v: 2, at: Date.now(), pages };
-      if(opt.exp) man.exp = opt.exp;
-      if(opt.ns) man.ns = 1;
-      if(key){ const t = await shareEnc(key, new TextEncoder().encode(JSON.stringify({ title }))); man.enc = Object.assign(enc, { tiv: t.iv, t: b64(t.c) }); }
-      else man.title = title;
-      const mf = await gUpload({ name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } }, new Blob([JSON.stringify(man)], { type: 'application/json' }));
-      await sharePubRetry(mf.id);
-      try{ await gPatch(folder, { appProperties: { m: mf.id } }); }catch(e){}
-      // 見る人と同じ条件で、本当に開けるか確かめる。ドライブ全体に公開が行き渡るまで時間がかかることがあるので、
-      // 開けるようになるまで待ち続ける（時間切れで失敗にはしない）。中止はいつでもできる。設定の誤りなど、待っても直らないときだけ止める
-      { const cb = $('gBusyCancel'); cb.hidden = false; }
-      const sleep = ms => new Promise(r => setTimeout(r, ms));
-      const targets = [mf.id, pages[0].id, pages[pages.length - 1].id];
+      let tblob = null;
+      if(key){ const t = await shareEnc(key, new TextEncoder().encode(JSON.stringify({ title }))); tblob = { tiv: t.iv, t: b64(t.c) }; }
+      // 2) アップロードして公開 → 見る人と同じ条件で開けるか確かめる。
+      //    しばらく待っても開けなければ、自動で作り直す（最大3回）。設定の誤りなど、作り直しても直らないときだけ止める
       const fatal = /keyInvalid|ipRefererBlocked|API_KEY|accessNotConfigured|PERMISSION_DENIED_BY_POLICY|dailyLimitExceeded/i;
-      const t0 = Date.now(); let n = 0;
-      for(;;){
+      const TRIES = 3, WAIT = 40000;
+      let mfId = '', ok = false, lastWhy = '';
+      for(let round = 1; round <= TRIES && !ok; round++){
         chk();
-        const rs = []; for(const id of targets){ const r = await shareProbe(id); rs.push(r); if(!r.ok) break; }
-        if(rs.length === targets.length && rs.every(r => r.ok)) break;
-        const bad = rs.find(r => !r.ok);
-        if(bad && fatal.test(bad.why || '')){ const e = new Error('config'); e.why = bad.why; throw e; }
-        if(++n === 4) for(const id of [mf.id, ...pages.map(x => x.id)]){ chk(); try{ await sharePublic(id); }catch(e){} }   // 念のため、もう一度公開し直す
-        const sec = Math.round((Date.now() - t0) / 1000); chk();
-        gBusy('', sec < 20 ? '公開を確かめています…' : 'そのままお待ちください', null);
-        await sleep(Math.min(15000, 1500 * n));
+        if(folder){ trash(folder); folder = ''; }
+        const ap = { pbm: 'share', pf: '1' }; if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
+        folder = (await gCreate({ name: `${title.replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60)}_${stamp()}`, parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
+        await sharePubRetry(folder);
+        const pages = [];
+        for(let i = 0; i < made.length; i++){
+          chk();
+          gBusy('', round === 1 ? `アップロードしています ${i + 1} / ${made.length}` : `もう一度作っています ${i + 1} / ${made.length}`, .45 + i / made.length * .45);
+          const { pg, up, nm } = made[i];
+          const id = (await gUpload({ name: nm, parents: [folder] }, up)).id;
+          await sharePubRetry(id);   // フォルダの公開を待たず、1枚ずつ確実に公開しておく
+          pages.push(Object.assign({}, pg, { id }));
+        }
+        chk();
+        // 作った人が分かる情報（フォルダの場所など）は入れない。パスワード付きのときは、題名も暗号化する
+        const man = { app: 'pbm-share', v: 2, at: Date.now(), pages };
+        if(opt.exp) man.exp = opt.exp;
+        if(tblob) man.enc = Object.assign({}, enc, tblob); else man.title = title;
+        mfId = (await gUpload({ name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } }, new Blob([JSON.stringify(man)], { type: 'application/json' }))).id;
+        await sharePubRetry(mfId);
+        try{ await gPatch(folder, { appProperties: { m: mfId } }); }catch(e){}
+        // 確かめる
+        const targets = [mfId, pages[0].id, pages[pages.length - 1].id], t0 = Date.now();
+        for(let n = 1; ; n++){
+          chk();
+          const rs = []; for(const id of targets){ const r = await shareProbe(id); rs.push(r); if(!r.ok) break; }
+          if(rs.length === targets.length && rs.every(r => r.ok)){ ok = true; break; }
+          const bad = rs.find(r => !r.ok) || {};
+          lastWhy = `${bad.st || ''} ${bad.why || ''}`.trim(); console.warn('share probe', round, n, lastWhy);
+          if(fatal.test(bad.why || '')){ const e = new Error('config'); e.why = bad.why; throw e; }
+          if(Date.now() - t0 > WAIT) break;   // 待っても開けない → 作り直す
+          chk(); gBusy('', '仕上げています…', .95);
+          await sleep(Math.min(8000, 1500 * n));
+        }
       }
       chk(); $('gBusyCancel').hidden = true;
       if(opt.pw) await sharePwSave(folder, opt.pw);
       gBusyOff();
-      shareDone(shareUrl(mf.id), opt);
+      // 作り直しても確かめきれなかったときも、リンクは渡す（見る側は、開けるようになるまで待って読み込む）
+      shareDone(shareUrl(mfId), opt, ok ? '' : lastWhy || '?');
     }catch(e){
       console.warn(e); gBusyOff();
-      if(folder) try{ await gPatch(folder, { trashed: true }); }catch(_){}   // 作りかけは残さない
+      if(folder) trash(folder);   // 作りかけは残さない
       if(stop || (e && e.auth)) return;
       const why = e && e.message === 'config' ? '共有リンクの設定に問題があり、見る人が開けない状態です。' : 'もう一度お試しください。';
       askYesNo('共有リンクを作れませんでした', `<p>${why}</p><p style="font-size:12px;color:var(--muted)">${esc2(e && (e.why || e.message) || String(e))}</p>`, () => {}, '閉じる', '');
@@ -8718,8 +8732,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   async function shareCopy(url, msg, quiet){ let ok = false; try{ await navigator.clipboard.writeText(url); ok = true; }catch(e){ const t = document.createElement('textarea'); t.value = url; document.body.append(t); t.select(); try{ ok = document.execCommand('copy'); }catch(_){} t.remove(); } if(ok || !quiet) status(ok ? (msg || '共有リンクをコピーしました。') : 'コピーできませんでした。リンクを選んでコピーしてください。'); return ok; }
   // コピーする中身：パスワード付きなら「URL：…」「パスワード：…」の2行、なしなら URL だけ
   const shareText = (url, pw) => pw ? `URL：${url}\nパスワード：${pw}` : url;
-  function shareDone(url, opt){
+  function shareDone(url, opt, unverified){
     const notes = [], pw = (opt && opt.pw) || '';
+    if(unverified) notes.push(`開けるようになるまで、数分かかることがあります。<span style="opacity:.6">（${esc2(unverified)}）</span>`);
     if(pw) notes.push('パスワードは、リンクとは別に伝えてください。');
     if(opt && opt.exp) notes.push(`${fmtUntil(opt.exp)} まで見られます。`);
     const row = (lbl, id, v) => `<div class="shlbl">${lbl}</div><input id="${id}" class="shbox" readonly value="${esc2(v)}">`;
@@ -8916,7 +8931,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       status('Google ドライブから開いています…'); gBusy('Google ドライブから開いています', `「${f.name}」を読み込んでいます…`, null);
       // 読み込みの中止：写真を全部受け取り終えるまでは、編集画面に何も入れないので、いつ止めても元のまま
       canceled = false; const cb = $('gBusyCancel'); cb.hidden = false;
-      cb.onclick = () => { canceled = true; gBusyOff(); status('読み込みを中止しました。'); };
+      cb.onclick = () => { canceled = true; gBusyOff(); askYesNo('中止しました', '<p>読み込みを中止しました。</p>', () => {}, '閉じる', ''); };
       try{ await go2(); } finally { if(!canceled) gBusyOff(); }
     };
     const go2 = async () => {
