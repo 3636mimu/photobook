@@ -750,6 +750,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareMgr .shitem{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 #shareMgr .shitem.off{opacity:.6}
 #shareMgr .toggle.busy{cursor:progress}
+.pwmask{-webkit-text-security:disc}
 #shareMgr .shmeta{flex:1 1 auto;min-width:0}
 #shareMgr .shmeta b{display:block;font-size:13.5px;font-weight:600;word-break:break-all;line-height:1.4}
 #shareMgr .shmeta small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
@@ -8532,15 +8533,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!m){
         m = document.createElement('div'); m.className = 'modal'; m.id = 'shareOpt'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
         m.innerHTML = `<div class="sheet gpsheet"><h3>共有リンクを作る</h3>
-          <div class="shrow"><b>パスワード</b><div class="shin"><input type="password" id="shPw" autocomplete="new-password" placeholder="空欄ならなし"><button type="button" class="pweye" id="shPwEye">表示</button></div></div>
+          <div class="shrow"><b>パスワード</b><div class="shin"><input type="text" id="shPw" class="pwmask" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore placeholder="空欄ならなし"><button type="button" class="pweye" id="shPwEye">表示</button></div></div>
           <div class="shrow"><b>有効期限</b><div class="shin"><select id="shExp"><option value="0">なし</option><option value="7">1週間</option><option value="30">1か月</option><option value="90">3か月</option><option value="d">日付を指定</option></select><input type="date" id="shExpD" hidden></div></div>
           <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">作る</button></div></div>`;
         document.body.append(m);
-        $('shPwEye').onclick = () => { const i = $('shPw'), on = i.type === 'password'; i.type = on ? 'text' : 'password'; $('shPwEye').textContent = on ? '隠す' : '表示'; };
+        // 「パスワードを保存しますか？」を出させないため、ふつうの文字欄を ● で隠す（隠せないブラウザだけ password 欄）
+        if(!(window.CSS && CSS.supports('-webkit-text-security', 'disc'))) $('shPw').type = 'password';
+        $('shPwEye').onclick = () => { const i = $('shPw'), hid = i.type === 'password' || i.classList.contains('pwmask');
+          if(i.type === 'password' || (!hid && !(window.CSS && CSS.supports('-webkit-text-security', 'disc')))) i.type = hid ? 'text' : 'password';
+          else i.classList.toggle('pwmask', !hid);
+          $('shPwEye').textContent = hid ? '隠す' : '表示'; };
         $('shExp').onchange = () => { const d = $('shExpD'); d.hidden = $('shExp').value !== 'd'; if(!d.hidden && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; } };
       }
-      $('shPw').value = ''; $('shPw').type = 'password'; $('shPwEye').textContent = '表示';
-      const fin = r => { m.hidden = true; m.onkeydown = null; done(r); };
+      { const i = $('shPw'); i.value = ''; i.classList.add('pwmask'); if(!(window.CSS && CSS.supports('-webkit-text-security', 'disc'))) i.type = 'password'; else i.type = 'text'; } $('shPwEye').textContent = '表示';
+      const fin = r => { $('shPw').value = ''; m.hidden = true; m.onkeydown = null; done(r); };
       $('shNo').onclick = () => fin(null);
       $('shGo').onclick = () => {
         const v = $('shExp').value; let exp = 0;
