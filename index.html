@@ -2946,6 +2946,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     var mask = !!(window.CSS && CSS.supports && CSS.supports('-webkit-text-security', 'disc')); inp.type = mask ? 'text' : 'password';
     inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.setAttribute('data-lpignore', 'true'); inp.setAttribute('data-1p-ignore', ''); inp.style.cssText = 'font:inherit;font-size:16px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.08);color:#fff;width:70%;max-width:240px;text-align:center';
     if(mask) inp.style.webkitTextSecurity = 'disc';
+    // 半角英数字・記号だけ（日本語入力は受け付けない。全角英数は半角に直す）
+    inp.setAttribute('inputmode', 'email'); inp.setAttribute('lang', 'en');
+    (function(){ var comp = false; function fix(){ var v = inp.value, w = v.replace(/[\uFF01-\uFF5E]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/[^\x21-\x7E]/g, ''); if(v !== w) inp.value = w; }
+      inp.addEventListener('compositionstart', function(){ comp = true; }); inp.addEventListener('compositionend', function(){ comp = false; fix(); }); inp.addEventListener('input', function(){ if(!comp) fix(); }); })();
     bt.type = 'submit'; bt.textContent = 'ひらく'; er.style.cssText = 'margin-top:10px;font-size:13px;color:#F2A29E;min-height:1.4em';
     f.onsubmit = function(e){
       e.preventDefault(); if(!inp.value) return; bt.disabled = true; bt.textContent = '確かめています…'; er.textContent = '';
@@ -8552,6 +8556,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // ボタンの下の小さな文字：つながっていないときは、押す前に分かるように
   function shareSub(){ const b = $('shareBook'), sub = b && b.querySelector('.sub'); if(!sub) return;
     sub.textContent = (gValid() || GD.email) ? '本のようにめくって見られるリンク' : 'Google ドライブにつなぐと使えます'; }
+  // パスワード欄は半角英数字・記号だけ（日本語入力は受け付けない。全角英数は半角に直す）
+  function pwAsciiOnly(i){
+    i.setAttribute('inputmode', 'email'); i.setAttribute('lang', 'en'); i.style.imeMode = 'disabled';
+    let comp = false;
+    const fix = () => { const v = i.value, w = v.replace(/[\uFF01-\uFF5E]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/[^\x21-\x7E]/g, ''); if(v !== w){ const p = i.selectionStart - (v.length - w.length); i.value = w; try{ i.setSelectionRange(Math.max(0, p), Math.max(0, p)); }catch(e){} } };
+    i.addEventListener('compositionstart', () => { comp = true; });
+    i.addEventListener('compositionend', () => { comp = false; fix(); });
+    i.addEventListener('input', () => { if(!comp) fix(); });
+  }
   // 共有の設定を選ぶ窓（パスワード・有効期限）
   function shareAskOpt(){
     return new Promise(done => {
@@ -8565,6 +8578,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         document.body.append(m);
         // 「パスワードを保存しますか？」を出させないため、ふつうの文字欄を ● で隠す（隠せないブラウザだけ password 欄）
         if(!(window.CSS && CSS.supports('-webkit-text-security', 'disc'))) $('shPw').type = 'password';
+        pwAsciiOnly($('shPw'));
         $('shPwEye').onclick = () => { const i = $('shPw'), hid = i.type === 'password' || i.classList.contains('pwmask');
           if(i.type === 'password' || (!hid && !(window.CSS && CSS.supports('-webkit-text-security', 'disc')))) i.type = hid ? 'text' : 'password';
           else i.classList.toggle('pwmask', !hid);
