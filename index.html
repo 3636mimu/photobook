@@ -800,6 +800,11 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .qbtn.keep{background:#B9AF9F !important;color:#3F3A33 !important}
 .qbtn.drop{background:#E05A55 !important;color:#fff !important}
 .qbtn.save{background:#2A8C7F !important;color:#fff !important}
+/* どの窓も、戻る・進むのボタンは同じ大きさの丸いボタン（「共有リンクを作る」と同じ形） */
+#pagesModal:not(.qdlg) .actions{justify-content:center;gap:12px;margin-top:20px}
+#pagesModal:not(.qdlg) .qbtn{flex:0 0 130px;padding:10px 12px !important}
+#saveNo,#driveClose,#bookDelCancel{flex:0 0 130px;padding:10px 12px !important}
+#gBusy .gbcancel.qbtn{display:block;width:130px;margin:16px auto 0;padding:9px 12px !important;font-size:13.5px !important}
 /* その確認の窓：真ん中ぞろえで、まわりにゆとり */
 #pagesModal.qdlg .sheet{max-width:500px !important;padding:28px 34px 26px;text-align:center}
 #pagesModal.qdlg h3{margin:0;font-size:15px;font-weight:500}
@@ -2439,7 +2444,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     </div>
     <div class="actions" style="justify-content:flex-end">
       <button type="button" class="saveas" id="saveAsBtn" hidden></button><button type="button" class="saveas" id="saveLocal" hidden></button><button class="primary" id="saveYes" type="button" hidden></button>
-      <button class="outline" id="saveNo" type="button" style="min-width:90px">キャンセル</button>
+      <button class="qbtn keep" id="saveNo" type="button">キャンセル</button>
     </div>
   </div>
 </div>
@@ -2449,7 +2454,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <div class="gbimg" id="gBusyImgBox" hidden><img id="gBusyImg" alt=""></div>
     <div class="gbar wait" id="gBusyBar"><i></i></div>
     <p id="gBusyText">準備しています…</p>
-    <button type="button" class="outline gbcancel" id="gBusyCancel" hidden>中止</button>
+    <button type="button" class="qbtn keep gbcancel" id="gBusyCancel" hidden>中止</button>
   </div>
 </div>
 <div class="modal" id="driveModal" hidden role="dialog" aria-modal="true" aria-labelledby="driveTitle">
@@ -2460,7 +2465,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <p class="drivehid"><button type="button" class="saveas" id="driveShowHid" hidden></button></p>
     <div class="actions" style="justify-content:flex-end">
       <button type="button" class="saveas" id="driveLocal"><span class="devn">パソコン</span>のBOOKファイル（.pbmk）を開く…</button>
-      <button class="outline" id="driveClose" type="button" style="min-width:90px">閉じる</button>
+      <button class="qbtn keep" id="driveClose" type="button">閉じる</button>
     </div>
   </div>
 </div>
@@ -2470,7 +2475,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <p class="bdname" id="bookDelName"></p>
     <button type="button" class="bdopt sdopt" id="bookDelHide"><b>一覧から外す</b><small>表示だけを消します。Google ドライブのデータはそのまま残り、「すべて見る」からいつでも戻せます。</small><span class="sdgo sub">外す</span></button>
     <button type="button" class="bdopt sdopt danger" id="bookDelTrash"><b>Google ドライブから削除</b><small>写真ごと Google ドライブのゴミ箱に移します。30日のあいだは、ドライブのゴミ箱から戻せます。</small><span class="sdgo del">削除</span></button>
-    <div class="actions" style="justify-content:flex-end"><button class="outline" id="bookDelCancel" type="button" style="min-width:90px">キャンセル</button></div>
+    <div class="actions" style="justify-content:flex-end"><button class="qbtn keep" id="bookDelCancel" type="button">キャンセル</button></div>
   </div>
 </div>
 <div class="modal" id="savedModal" hidden role="dialog" aria-modal="true" aria-labelledby="savedTitle">
@@ -2486,9 +2491,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   <div class="sheet" style="max-width:420px">
     <h3 id="pagesTitle">ページ数を減らします</h3>
     <p id="pagesMsg" style="margin:0;font-size:14px;line-height:1.7"></p>
-    <div class="actions" style="justify-content:flex-end">
-      <button class="outline" id="pagesNo" type="button" style="min-width:90px">NO</button>
-      <button class="danger" id="pagesYes" type="button" style="min-width:90px;background:#B23B30;color:#fff">YES</button>
+    <div class="actions">
+      <button class="qbtn keep" id="pagesNo" type="button">NO</button>
+      <button class="qbtn save" id="pagesYes" type="button">YES</button>
     </div>
   </div>
 </div>
@@ -7401,6 +7406,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function gpLogo(html){ return String(html).split('Google フォト').join(GPL).split('Google ドライブ').join(GDL); }
   function gpTxt(el, t){ const v = String(t == null ? '' : t); if(v.includes('Google フォト') || v.includes('Google ドライブ')) el.innerHTML = gpLogo(esc2(v)); else el.textContent = v; }
   function askYesNo(title, html, onYes, yesLabel, noLabel, onNo){
+    // ボタンはどの窓も同じ形：戻る側はベージュ、進む側は緑。取り消せない操作（削除など）だけ赤
+    $('pagesNo').className = 'qbtn keep'; $('pagesYes').className = 'qbtn ' + (/削除|ゴミ箱|取り除|消す|上書き|解除/.test(yesLabel || '') ? 'drop' : 'save');
     $('pagesYes').classList.remove('copied'); gpTxt($('pagesYes'), yesLabel || 'YES'); gpTxt($('pagesNo'), noLabel || 'NO');
     gpTxt($('pagesTitle'), title);
     $('pagesMsg').innerHTML = gpLogo(html);
@@ -8683,7 +8690,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         // それでも読めなければ、1つずつ公開してから、もう少し待つ
         for(const id of [mf.id, ...pages.map(x => x.id)]) await sharePublic(id);
         try{ await gPatch(folder, { appProperties: { pf: '1' } }); }catch(e){}
-        for(const w of [1500, 3000, 5000, 8000, 12000]){ gBusy('', '公開の反映を待っています…', .98); await sleep(w); if(ok = await readable()) break; }
+        for(const w of [1500, 3000, 5000, 8000, 12000, 15000, 20000, 25000]){ gBusy('', '公開の反映を待っています…', .98); await sleep(w); if(ok = await readable()) break; }
       }
       if(!ok) throw new Error('verify');
       if(opt.pw) await sharePwSave(folder, opt.pw);
@@ -8693,7 +8700,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       console.warn(e); gBusyOff();
       if(folder) try{ await gPatch(folder, { trashed: true }); }catch(_){}   // 作りかけは残さない
       if(stop || (e && e.auth)) return;
-      const why = e && e.message === 'verify' ? 'Google ドライブ側で公開の反映が遅れていて、見る人が開けるか確かめられませんでした。少し時間をおいて、もう一度作ってください。' : 'もう一度お試しください。';
+      const why = e && e.message === 'verify' ? '公開の準備が間に合いませんでした。少し時間をおいて、もう一度お試しください。' : 'もう一度お試しください。';
       askYesNo('共有リンクを作れませんでした', `<p>${why}</p>${e && e.message === 'verify' ? '' : `<p style="font-size:12px;color:var(--muted)">${esc2(e && e.message || String(e))}</p>`}`, () => {}, '閉じる', '');
     }
   }
