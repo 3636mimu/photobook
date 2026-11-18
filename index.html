@@ -2868,7 +2868,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function go(d){
     var k = pos + d; if(busy || k < 0 || k >= pages.length) return;
     if(!pages[k].ok){ loadImg(k, function(ok){ if(ok) go(d); else { pos = k; draw(); } }); return; }
-    if(!can3d || reduce || !pages[pos].ok){ pos = k; draw(); warm(); return; }
+    if(!can3d || reduce || !pages[pos].ok || pages[pos].flat || pages[k].flat){ pos = k; draw(); warm(); return; }   // 一覧のページは、めくらずに切り替える
     busy = true;
     var fwd = d > 0, s = pages[pos].seam || .5, sN = pages[k].seam || .5;
     // 下に見える半分：めくった先の側を、先に新しい見開きにしておく
@@ -2925,7 +2925,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           msg('ただいま混み合っています。<br>少し時間をおいて、もう一度お試しください。', true); return;
         }
         if(man.exp && Date.now() > man.exp){ msg('この写真集の公開期間は、終わりました。', false); return; }
-        pages = man.pages.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.seam || .5, iv: p.iv || '' }; });
+        pages = man.pages.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.flat ? 1 : (p.seam || .5), flat: !!p.flat, iv: p.iv || '' }; });
         if(man.enc) askPw(); else open1(man.title);
       };
       x.onerror = x.ontimeout = function(){ if(++tries < 3) return setTimeout(get, 4000 * tries); msg('ただいま混み合っています。<br>少し時間をおいて、もう一度お試しください。', true); };
@@ -8628,10 +8628,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         m.innerHTML = `<div class="sheet gpsheet"><h3>写真集の共有リンクを作成</h3>
           <div class="shrow"><b>パスワード</b><div class="shin"><input type="text" id="shPw" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore placeholder="空欄ならなし"></div></div>
           <div class="shrow"><b>有効期限</b><div class="shin"><select id="shExp"><option value="0">なし</option><option value="7">1週間</option><option value="30">1か月</option><option value="90">3か月</option><option value="d">日時を指定</option></select><input type="datetime-local" id="shExpD" step="60" hidden></div></div>
+          <div class="shrow"><b>最後に一覧</b><div class="shin"><button class="toggle" id="shSheet" type="button" role="switch" aria-checked="false"><span class="knob"></span><span class="tl">OFF</span></button></div></div>
           <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">作る</button></div></div>`;
         document.body.append(m);
         // パスワードは隠さずに見せる（ふつうの文字欄なので「パスワードを保存しますか？」も出ない）
         pwAsciiOnly($('shPw'));
+        // 最後のページに、全部の見開きを並べた一覧を入れるか
+        $('shSheet').onclick = () => { const b = $('shSheet'), on = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.querySelector('.tl').textContent = on ? 'ON' : 'OFF'; };
         $('shExp').onchange = () => { const d = $('shExpD'); d.hidden = $('shExp').value !== 'd'; if(!d.hidden && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}T23:59`; } };
       }
       $('shPw').value = '';
@@ -8641,7 +8644,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const v = $('shExp').value; let exp = 0;
         if(v === 'd'){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d.length <= 10 ? d + 'T23:59:59' : d).getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
         else if(+v){ const t = new Date(Date.now() + (+v) * 864e5); t.setHours(23, 59, 59, 0); exp = t.getTime(); }   // その日の 23:59 まで
-        fin({ pw: $('shPw').value, exp });
+        fin({ pw: $('shPw').value, exp, sheet: $('shSheet').getAttribute('aria-checked') === 'true' });
       };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
       m.hidden = false; $('shPw').focus();
@@ -8691,6 +8694,23 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         let up = blob, nm = `${String(i + 1).padStart(2, '0')}.jpg`;
         if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); nm = `${String(i + 1).padStart(2, '0')}.bin`; }
         made.push({ pg, up, nm });
+      }
+      // 最後に一覧（全部の見開きを並べた1枚）。めくらずに1枚で見せるページ
+      if(opt.sheet){
+        chk(); gBusy('', '一覧を作っています', .45);
+        const sh = buildSheet();
+        if(sh){
+          const LONG = 3600, k = Math.min(1, LONG / Math.max(sh.width, sh.height));
+          let c = sh; if(k < 1){ c = document.createElement('canvas'); c.width = Math.round(sh.width * k); c.height = Math.round(sh.height * k); const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(sh, 0, 0, c.width, c.height); }
+          const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', SHARE_Q));
+          if(blob){
+            gBusyImg(blob);
+            const n = String(made.length + 1).padStart(2, '0'), pg = { w: c.width, h: c.height, seam: 1, flat: 1 };
+            let up = blob, nm = `${n}.jpg`;
+            if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); nm = `${n}.bin`; }
+            made.push({ pg, up, nm });
+          }
+        }
       }
       let tblob = null;
       if(key){ const t = await shareEnc(key, new TextEncoder().encode(JSON.stringify({ title }))); tblob = { tiv: t.iv, t: b64(t.c) }; }
