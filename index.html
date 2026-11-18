@@ -2750,7 +2750,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     '#shv{position:fixed;left:0;top:0;right:0;bottom:0;background:#0E0F11;color:#E9E8E4;font-family:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Yu Gothic",sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}',
     '#shv .hd{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0;text-align:center;font-size:13px;letter-spacing:.08em;color:rgba(233,232,228,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '#shv .ft{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(12px + env(safe-area-inset-bottom,0px));text-align:center;font-size:12px;letter-spacing:.12em;color:rgba(233,232,228,.6)}',
-    '#shv .st{position:absolute;left:0;right:0;top:calc(36px + env(safe-area-inset-top,0px));bottom:calc(34px + env(safe-area-inset-bottom,0px));-webkit-perspective:3600px;perspective:3600px}',
+    '#shv .st{position:absolute;left:0;right:0;top:calc(34px + env(safe-area-inset-top,0px));bottom:calc(34px + env(safe-area-inset-bottom,0px));-webkit-perspective:3600px;perspective:3600px}',
     '#shv .bk{position:absolute;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;box-shadow:0 10px 40px rgba(0,0,0,.45)}',
     '#shv .hf{position:absolute;top:0;height:100%;background-repeat:no-repeat;background-color:#1a1b1e}',
     '#shv .lf{position:absolute;top:0;height:100%;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;z-index:3}',
@@ -2914,7 +2914,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function open1(title){
         document.title = (title || 'PHOTO BOOK') + ' | PHOTO BOOK';
-        hd.textContent = title || '';
+        hd.hidden = true;   // 上の題名は出さない（写真だけを見せる）
         stage.innerHTML = ''; book = el('div', 'bk', stage); pos = 0;
         loadImg(0, function(){ draw(); warm(); });
         draw();
@@ -8634,11 +8634,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!on) for(const x of pub) await gFetch(`${GAPI}/drive/v3/files/${id}/permissions/${x.id}`, { method: 'DELETE' });
     }
   }
-  // 期限の切れた共有を止める（ツールを開いて、ドライブにつながったとき）
+  // 期限の切れた共有は、公開を止めてからゴミ箱へ（ツールを開いて、ドライブにつながったとき・共有中のリンクを開いたとき）
+  const sharePast = f => { const exp = +((f.appProperties || {}).exp || 0); return !!exp && exp < Date.now(); };
+  async function shareExpire(f){ try{ if(shareOn(f)) await shareSet(f, false); }catch(e){} try{ await gPatch(f.id, { trashed: true }); }catch(e){ console.warn(e); } }
   let shareSwept = false;
   async function shareSweep(){
     if(shareSwept || !WEB || !gValid() || !shareKey()) return; shareSwept = true;
-    try{ for(const f of await shareItems()){ const exp = +((f.appProperties || {}).exp || 0); if(exp && exp < Date.now() && shareOn(f)) try{ await shareSet(f, false); }catch(e){} } }catch(e){ console.warn(e); }
+    try{ for(const f of await shareItems()) if(sharePast(f)) await shareExpire(f); }catch(e){ console.warn(e); }
   }
   async function shareManager(){
     if(!(await gEnsure(true))) return;
@@ -8653,6 +8655,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const box = $('shList'); box.innerHTML = '<p class="shnote">読み込んでいます…</p>'; m.hidden = false;
     const draw = async () => {
       let items; try{ items = await shareItems(); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
+      { const old = items.filter(sharePast); if(old.length){ await Promise.all(old.map(shareExpire)); items = items.filter(f => !sharePast(f)); } }
       if(!items.length){ box.innerHTML = '<p class="shnote">まだ共有リンクはありません。</p>'; return; }
       box.innerHTML = '';
       items.sort((a, b) => (b.createdTime || '').localeCompare(a.createdTime || ''));
