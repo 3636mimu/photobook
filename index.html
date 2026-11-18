@@ -353,13 +353,20 @@ button{font:inherit}
 .stage:hover .blkbtn,.blkbtn.on,.blkbtn:focus-visible{opacity:1}
 .blkbtn.on{background:#2A8C7F;border-color:#2A8C7F;color:#fff}
 @media (pointer:coarse){.blkbtn{opacity:.92}}
-.sharebtn{width:100%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.35}.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
+.sharebtn{width:100%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.35}
+/* アイコン付きのメニューボタン：アイコンは左、文字は左右の余白をそろえて、題も補足も均等に割り付け */
+#saveAll,#saveSheet,#saveSingles,#shareBook{display:grid !important;grid-template-columns:22px minmax(0,1fr) 22px;column-gap:12px;align-items:center;padding:6px 14px !important;height:auto !important;min-height:48px;text-align:left}
+#saveAll .mi,#saveSheet .mi,#saveSingles .mi,#shareBook .mi{display:block;width:22px;height:22px;font-style:normal}
+#saveAll .mi svg,#saveSheet .mi svg,#saveSingles .mi svg,#shareBook .mi svg{display:block;width:22px;height:22px}
+#saveAll .mt,#saveSheet .mt,#saveSingles .mt,#shareBook .mt{display:block;min-width:0;line-height:1.3}
+#saveAll .mt b,#saveSheet .mt b,#saveSingles .mt b,#shareBook .mt b{display:block;font-weight:700;text-align:justify;text-align-last:justify;white-space:nowrap}
+#saveAll .mt .sub,#saveSheet .mt .sub,#saveSingles .mt .sub,#shareBook .mt .sub{display:block;margin-top:2px;text-align:center;letter-spacing:.02em;font-size:10.5px;line-height:1.3;white-space:nowrap}.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
 .shlbl{font-size:11.5px;color:var(--muted);margin:12px 0 -6px}
 .shrow2{display:flex;gap:8px;align-items:center;margin-top:10px}
 .shrow2 .shbox{margin-top:0;flex:1 1 auto;width:auto;min-width:0}
 .shcp1{flex:0 0 auto;min-width:72px;text-align:center;text-decoration:none;box-sizing:border-box;font:inherit;font-size:12.5px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#5a554e;cursor:pointer;white-space:nowrap}
 .shcp1:hover{background:#f4f2ee}
-.shbox{display:block;width:100%;margin-top:10px;box-sizing:border-box;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;letter-spacing:.06em;background:#f6f5f2;color:#333}
+.shbox{display:block;width:100%;margin-top:10px;box-sizing:border-box;height:34px;padding:6px 10px;border:1px solid #dcd9d3;border-radius:6px;font:inherit;font-size:13.5px;font-weight:400;letter-spacing:0;background:#f6f5f2;color:#222;outline:none}
 #shareLink{font-size:13px;letter-spacing:0}
 .hint{font-size:12px;color:var(--muted);margin:0}
 .linkbtn{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0;cursor:pointer;font:inherit}
@@ -1940,6 +1947,21 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
 :root{--sidecol:clamp(250px,28vw,300px)}
 @media (pointer:coarse) and (orientation:landscape) and (max-height:500px){ :root{--sidecol:clamp(250px,38vw,290px)} }
 #tStage.tvert .cnav.prev{left:5px}#tStage.tvert .cnav.next{right:5px}
+
+/* 入力欄はアプリ全体で同じ見た目（Synology の共有画面に合わせた形）：細い枠線・角丸6px・太字にしない・入力中は緑の縁取り */
+:root{--fld-bg:#fff;--fld-line:#dcd9d3;--fld-tx:#222;--fld-dis:#f6f5f2}
+:root[data-theme="dark"]{--fld-bg:#1f2023;--fld-line:#3a3b40;--fld-tx:#eee;--fld-dis:#2a2b2f}
+#saveName,#tStyName,#gpTitle,#gpDupName,#gpDup textarea,.shbox,
+#shareOpt input[type=text],#shareOpt input[type=password],#shareOpt input[type=datetime-local],#shareOpt input[type=date],#shareOpt select,
+.setsh-body select,.tpanel textarea#tText,.ios .titxt textarea#tText,.ios #tStyName{
+  box-sizing:border-box !important;font-family:inherit !important;font-size:13.5px !important;font-weight:400 !important;letter-spacing:0 !important;
+  color:var(--fld-tx) !important;background:var(--fld-bg) !important;border:1px solid var(--fld-line) !important;border-radius:6px !important;
+  padding:6px 10px !important;box-shadow:none !important;outline:none !important;transition:border-color .15s,box-shadow .15s}
+#saveName,#tStyName,.shbox,#shareOpt input[type=text],#shareOpt input[type=password],#shareOpt input[type=datetime-local],#shareOpt input[type=date],#shareOpt select,.setsh-body select,.ios #tStyName{min-height:34px}
+#gpTitle,#gpDupName,#gpDup textarea,.tpanel textarea#tText,.ios .titxt textarea#tText{line-height:1.6 !important;padding:7px 10px !important}
+#saveName:focus,#tStyName:focus,#gpTitle:focus,#gpDupName:focus,#gpDup textarea:focus,#shareOpt input:not([type=checkbox]):focus,#shareOpt select:focus,.setsh-body select:focus,.tpanel textarea#tText:focus,.ios .titxt textarea#tText:focus{border-color:#2A8C7F !important;box-shadow:0 0 0 3px rgba(42,140,127,.14) !important}
+.shbox,#shareOpt input:disabled,#saveName:disabled{background:var(--fld-dis) !important}
+#shareOpt input:disabled{color:#b3aea6 !important}
 </style>
 </head>
 <body>
@@ -2005,7 +2027,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
         <button class="primary" id="saveAll" disabled>見開一括書き出し</button>
         <button class="primary" id="saveSheet" disabled>一覧書き出し</button>
         <button class="primary" id="saveSingles" disabled title="調整した写真を1枚ずつ JPG で保存">1枚ずつ書き出し</button>
-        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled>共有リンクを作る<span class="sub">本のようにめくって見られるリンク</span></button>
+        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled><i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg></i><span class="mt"><b>共有リンクを作る</b><span class="sub">めくって見られるリンク</span></span></button>
         <button class="sharemgr" id="shareMgrBtn" type="button" hidden>共有中のリンク</button>
         <input type="file" id="workFile" class="vh" accept=".pbmk">
         <div id="pgTip" class="pgtip" aria-hidden="true">配置写真を調整</div><div id="dTapTip" class="pgtip" aria-hidden="true"></div>
@@ -4165,16 +4187,24 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   fitSelects(); if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitSelects);
   function renderAll(){ markDirty(); syncPageMode(); if(typeof flipCache !== 'undefined') flipCache.clear(); cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { allPairs().forEach(renderPair); }); }
+  // メニューのボタン：左にアイコン、文字は左右の余白をそろえて均等に割り付ける
+  const MICON = {
+    book: '<path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6v13"/><path d="M12 6v13"/><path d="M21 6v13"/>',
+    grid: '<path d="M4 4h6v6h-6z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6h-6z"/><path d="M14 14h6v6h-6z"/>',
+    photo: '<path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-12a3 3 0 0 1-3-3z"/><path d="M3 16l5-5c.928-.893 2.072-.893 3 0l5 5"/><path d="M14 14l1-1c.928-.893 2.072-.893 3 0l3 3"/>',
+    link: '<path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/>'
+  };
+  const mbtn = (icon, title, sub) => `<i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${MICON[icon]}</svg></i><span class="mt"><b>${title}</b><span class="sub">${sub}</span></span>`;
   function updateGlobal(){
     const n = allPairs().filter(pairReady).length;
     $('saveAll').disabled = n === 0;
     if(WEB){ $('shareBook').hidden = false; $('shareBook').disabled = n === 0; $('shareMgrBtn').hidden = false; try{ shareSub(); }catch(e){} }
     { const nm = booklet ? '写真集書き出し' : '見開一括書き出し';
-      $('saveAll').innerHTML = n ? `${nm}<span class="sub">${isPdf() ? (booklet ? `PDF・${bookTotal()}ページ` : `PDF・${n}ページ`) : `JPG・${n}ファイル`}</span>` : `${nm}<span class="sub">${isPdf() ? 'PDF' : 'JPG'}</span>`; }
+      $('saveAll').innerHTML = mbtn('book', nm, n ? (isPdf() ? (booklet ? `PDF・${bookTotal()}ページ` : `PDF・${n}ページ`) : `JPG・${n}ファイル`) : (isPdf() ? 'PDF' : 'JPG')); }
     $('saveSheet').disabled = sample || !slots.some(Boolean);   // the overview needs at least one real photo
-    $('saveSheet').innerHTML = `一覧書き出し<span class="sub">JPG</span>`;
+    $('saveSheet').innerHTML = mbtn('grid', '一覧書き出し', 'JPG');
     { const ns = singleList().length, pb = booklet && backOff(), nm = pb ? 'Photoback 入稿用' : '1枚ずつ書き出し';
-      $('saveSingles').disabled = !ns; $('saveSingles').innerHTML = ns ? `${nm}<span class="sub">1枚ずつ JPG・${ns}ファイル</span>` : `${nm}<span class="sub">1枚ずつ JPG</span>`;
+      $('saveSingles').disabled = !ns; $('saveSingles').innerHTML = mbtn('photo', nm, ns ? `JPG・${ns}ファイル` : 'JPG');
       $('saveSingles').title = pb ? '各ページを Photoback のページ番号つきの JPG で保存します。そのまま Photoback の各ページに取り込めます' : '調整した写真を1枚ずつ JPG で保存';
       // Photoback: the files that go into Photoback come first
       const host = $('saveAll').parentNode;
@@ -8645,7 +8675,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // ボタンの下の小さな文字：つながっていないときは、押す前に分かるように
   function shareSub(){ const b = $('shareBook'), sub = b && b.querySelector('.sub'); if(!sub) return;
-    sub.textContent = (gValid() || GD.email) ? '本のようにめくって見られるリンク' : 'Google ドライブにつなぐと使えます'; }
+    sub.textContent = (gValid() || GD.email) ? 'めくって見られるリンク' : 'ドライブ連携で使えます'; }
   // パスワード欄は半角英数字・記号だけ（日本語入力は受け付けない。全角英数は半角に直す）
   function pwAsciiOnly(i){
     i.setAttribute('inputmode', 'email'); i.setAttribute('lang', 'en'); i.style.imeMode = 'disabled';
@@ -8834,19 +8864,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const fmtDay = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
   async function shareCopy(url, msg, quiet){ let ok = false; try{ await navigator.clipboard.writeText(url); ok = true; }catch(e){ const t = document.createElement('textarea'); t.value = url; document.body.append(t); t.select(); try{ ok = document.execCommand('copy'); }catch(_){} t.remove(); } if(ok || !quiet) status(ok ? (msg || '共有リンクをコピーしました。') : 'コピーできませんでした。リンクを選んでコピーしてください。'); return ok; }
   // コピーする中身：パスワード付きなら「URL：…」「パスワード：…」の2行、なしなら URL だけ
-  const shareText = (url, pw) => pw ? `URL：${url}\nパスワード：${pw}` : url;
+  // コピーする中身：URL・パスワード・有効期限の3行（ないものは「なし」）
+  const shareText = (url, pw, exp) => `URL：${url}\nパスワード：${pw || 'なし'}\n有効期限：${exp ? fmtUntil(exp) + ' まで' : 'なし'}`;
   function shareDone(url, opt, unverified){
     const notes = [], pw = (opt && opt.pw) || '';
     if(unverified) notes.push(`開けるようになるまで、数分かかることがあります。<span style="opacity:.6">（${esc2(unverified)}）</span>`);
     if(pw) notes.push('パスワードは、リンクとは別に伝えてください。');
     if(opt && opt.exp) notes.push(`${fmtUntil(opt.exp)} まで見られます。`);
     const row = (lbl, id, v, open) => `${lbl ? `<div class="shlbl">${lbl}</div>` : ''}<div class="shrow2"><input id="${id}" class="shbox" readonly value="${esc2(v)}">${open ? `<a class="shcp1" href="${esc2(v)}" target="_blank" rel="noopener">開く</a>` : ''}</div>`;
-    const label = pw ? 'URLとパスワードをコピー' : 'URLをコピー';
+    const label = 'コピー';
     askYesNo('写真集が公開されました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('', 'shareLink', url, true)}${pw ? row('パスワード', 'sharePw', pw) : ''}`,
       () => {}, label, '閉じる');
     // コピーのボタンは下の1つだけ。押しても窓は閉じず、「コピー済み」に変わる（URL の横の［開く］で、自分でも見て確かめられる）
     const yes = $('pagesYes'); yes.classList.add('shcpall');
-    yes.onclick = async () => { if(await shareCopy(shareText(url, pw), pw ? 'URLとパスワードをコピーしました。' : 'URLをコピーしました。')){ yes.textContent = '✓ コピー済み'; yes.classList.add('copied'); } };
+    yes.onclick = async () => { if(await shareCopy(shareText(url, pw, opt && opt.exp), 'URL・パスワード・有効期限をコピーしました。')){ yes.textContent = '✓ コピー済み'; yes.classList.add('copied'); } };
     ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
   }
   // ---------- 共有中のリンク（一覧・オン／オフ・コピー・削除） ----------
@@ -8910,16 +8941,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
         row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">リンクをコピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? '公開中' : '非公開'}</span></button><button type="button" class="del">削除</button></div>`;
         const cp = row.querySelector('.cp'); if(cp) cp.onclick = async () => {
-          const url = shareUrl(ap.m); let ok;
-          if(ap.pw !== '1') ok = await shareCopy(url);
-          else {
-            let pw = ''; try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){}
-            ok = pw ? await shareCopy(shareText(url, pw), 'URLとパスワードをコピーしました。') : await shareCopy(url, 'リンクをコピーしました（このリンクのパスワードは控えがないため、入っていません）。');
-          }
+          const url = shareUrl(ap.m), ex = +(ap.exp || 0); let pw = '';
+          if(ap.pw === '1'){ try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){} }
+          // パスワード付きで控えがないもの（以前に作ったリンク）は、パスワードの行を「（控えなし）」にする
+          const ok = await shareCopy(ap.pw === '1' && !pw ? shareText(url, '（控えなし）', ex) : shareText(url, pw, ex), 'URL・パスワード・有効期限をコピーしました。');
           // コピーできたら「✓ コピー済み」に（ほかの行は元に戻す）
           if(ok) box.querySelectorAll('.cp').forEach(b => { const on = b === cp; b.classList.toggle('copied', on); b.textContent = on ? '✓ コピー済み' : 'リンクをコピー'; });
         };
-        if(cp && ap.pw === '1') cp.title = 'リンクとパスワードを一緒にコピーします';
+        if(cp) cp.title = 'URL・パスワード・有効期限をまとめてコピーします';
         // 押したらすぐ見た目を切り替え、ドライブ側はうしろで反映（失敗したら元に戻す）
         const tg = row.querySelector('.tg'), small = row.querySelector('.shmeta small');
         const look = v => { tg.setAttribute('aria-checked', v ? 'true' : 'false'); tg.querySelector('.tl').textContent = v ? '公開中' : '非公開'; row.classList.toggle('off', !v); };
