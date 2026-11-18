@@ -8477,7 +8477,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const r = await fetch(url, Object.assign({}, opt, { headers: Object.assign({ Authorization: 'Bearer ' + GD.tok }, opt.headers || {}) }));
     if(r.status === 401){ GD.tok = ''; gSync(); const e = new Error('auth'); e.auth = true; throw e; }
     if(!r.ok){ const e = new Error('drive ' + r.status); e.status = r.status; try{ const j = await r.clone().json(); const er = (j.error && j.error.errors && j.error.errors[0]) || {}; e.reason = er.reason || ''; if(e.reason) e.message += ' ' + e.reason; const what = er.location || er.message || (j.error && j.error.message) || ''; if(what) e.message += ' (' + String(what).slice(0, 80) + ')'; }catch(_){}
-      try{ e.message += ' @' + (opt.method || 'GET') + ' ' + String(url).replace(/^https:\/\/www\.googleapis\.com/, '').split('?')[0].replace(/\/[A-Za-z0-9_-]{20,}/g, '/…'); }catch(_){} throw e; }
+      try{ e.message += ' @' + (opt.method || 'GET') + ' ' + String(url).replace(/^https:\/\/www\.googleapis\.com/, '').split('?')[0].replace(/\/[A-Za-z0-9_-]{20,}/g, '/{id}'); }catch(_){} throw e; }
     return r;
   }
   const gJson = async (url, opt) => (await gFetch(url, opt)).json();
@@ -8666,14 +8666,23 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const shareLimited = e => /sharingRateLimitExceeded|userRateLimitExceeded|rateLimitExceeded/.test((e && (e.reason || e.message)) || '') || (e && e.status === 429);
   async function sharePubRetry(id){ for(let k = 0; ; k++){ try{ return await sharePublic(id); }catch(e){ if((e && e.auth) || shareLimited(e) || k >= 2) throw e; await new Promise(r => setTimeout(r, 2000 * (k + 1))); } } }
   const sharePublic = id => gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=id`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
-  // ドライブのフォルダ名：「共有の名前_BOOK名」
+  // ドライブのフォルダ名：「共有の名前_BOOK名_日時」
   function shareFolderName(name){
     const clean = x => (x || '').replace(/[\\/:*?"<>|]+/g, '_').trim();
     const book = clean((bookFile || '').replace(/\.pbmk?$/i, ''));
-    return [clean(name).slice(0, 80), book.slice(0, 80)].filter(Boolean).join('_') || 'PHOTO BOOK';
+    return ([clean(name).slice(0, 80), book.slice(0, 80)].filter(Boolean).join('_') || 'PHOTO BOOK') + '_' + stamp();   // 同じ名前のフォルダと重ならないよう、末尾に日時
   }
   // appProperties は「キー＋値」で124バイトまで：収まるように切る
   function fitBytes(t, max){ const enc = new TextEncoder(); let s = String(t || ''); while(s && enc.encode(s).length > max) s = s.slice(0, -1); return s; }
+  // この BOOK の共有か：ドライブの BOOK フォルダ → BOOK の印 → フォルダ名の末尾（_BOOK名）の順で見る
+  function shareMine(f){
+    const ap = f.appProperties || {}, bf = fileHandle && fileHandle.drive && fileHandle.folderId;
+    if(bf && ap.bf) return ap.bf === String(bf);
+    if(workId && ap.book === String(workId)) return true;
+    const book = (bookFile || '').replace(/\.pbmk?$/i, '').replace(/[\\/:*?"<>|]+/g, '_').trim().slice(0, 80);
+    const nm = (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');
+    return !!book && nm.endsWith('_' + book);
+  }
   async function shareBook(){
     const list = allPairs().filter(pairReady);
     if(!list.length) return;
@@ -8738,7 +8747,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         chk();
         if(folder){ trash(folder); folder = ''; await sleep(5000); }
         if(!workId) workId = newId();
-        const ap = { pbm: 'share', book: String(workId), nm: fitBytes(title, 100) }; if(opt.exp)   // どの BOOK の共有か（共有中のリンクは、開いている BOOK の分だけ出す） ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
+        const ap = { pbm: 'share', book: String(workId), nm: fitBytes(title, 100) };
+        if(fileHandle && fileHandle.drive && fileHandle.folderId) ap.bf = String(fileHandle.folderId);   // ドライブに保存した BOOK なら、その BOOK のフォルダも印にする（開き直しても変わらない） if(opt.exp)   // どの BOOK の共有か（共有中のリンクは、開いている BOOK の分だけ出す） ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
         folder = (await gCreate({ name: shareFolderName(title), parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
         await sharePubRetry(folder);
         const pages = [];
@@ -8846,7 +8856,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       let items;
       if(cached && shCache){ items = shCache.slice(); cached = false; }
       else {
-        try{ items = (await shareItems()).filter(f => workId && (f.appProperties || {}).book === String(workId)); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
+        try{ items = (await shareItems()).filter(shareMine); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
         { const old = items.filter(sharePast); if(old.length){ await Promise.all(old.map(shareExpire)); items = items.filter(f => !sharePast(f)); } }
         shCache = items.slice();
       }
