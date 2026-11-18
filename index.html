@@ -8553,6 +8553,27 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   async function shareCanRead(id){
     try{ const r = await fetch(`${GAPI}/drive/v3/files/${encodeURIComponent(id)}?alt=media&key=${encodeURIComponent(shareKey())}`, { cache: 'no-store' }); return r.ok; }catch(e){ return false; }
   }
+  // 共有のパスワードの控え：公開していない「共有」フォルダの中の1つのファイルにまとめて置く（見る人からは読めない）。
+  // 画面には出さず、「共有中のリンク」の［リンクをコピー］で、リンクと一緒にコピーするためだけに使う
+  async function sharePwFile(){
+    const sroot = await shareRoot();
+    const f = await gList(`'${sroot}' in parents and appProperties has { key='pbm' and value='sharepw' } and trashed=false`, 'files(id)');
+    return { sroot, id: f.length ? f[0].id : '' };
+  }
+  async function sharePwRead(){
+    const { sroot, id } = await sharePwFile(); let map = {};
+    if(id){ try{ map = await gJson(`${GAPI}/drive/v3/files/${id}?alt=media`) || {}; }catch(e){ map = {}; } }
+    return { sroot, id, map };
+  }
+  async function sharePwSave(folderId, pw){
+    try{
+      const { sroot, id, map } = await sharePwRead();
+      if(pw) map[folderId] = pw; else delete map[folderId];
+      const blob = new Blob([JSON.stringify(map)], { type: 'application/json' });
+      if(id) await gUpload({}, blob, id);
+      else if(pw) await gUpload({ name: '_パスワードの控え.json', parents: [sroot], appProperties: { pbm: 'sharepw' } }, blob);
+    }catch(e){ console.warn(e); }
+  }
   // ボタンの下の小さな文字：つながっていないときは、押す前に分かるように
   function shareSub(){ const b = $('shareBook'), sub = b && b.querySelector('.sub'); if(!sub) return;
     sub.textContent = (gValid() || GD.email) ? '本のようにめくって見られるリンク' : 'Google ドライブにつなぐと使えます'; }
@@ -8665,6 +8686,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         for(const w of [1500, 3000, 5000, 8000, 12000]){ gBusy('', '公開の反映を待っています…', .98); await sleep(w); if(ok = await readable()) break; }
       }
       if(!ok) throw new Error('verify');
+      if(opt.pw) await sharePwSave(folder, opt.pw);
       gBusyOff();
       shareDone(shareUrl(mf.id), opt);
     }catch(e){
@@ -8681,14 +8703,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const notes = [];
     if(opt && opt.pw) notes.push('パスワードは、リンクとは別に伝えてください。');
     if(opt && opt.exp) notes.push(`${fmtDay(opt.exp)} まで見られます。`);
-    // リンクもパスワードも、枠の横に［コピー］。リンクは開いた時点でコピー済み（Box と同じ）
-    const row = (lbl, id, v) => `<div class="shlbl">${lbl}</div><div class="shpwrow"><input id="${id}" class="shbox" readonly value="${esc2(v)}"><button type="button" class="shcp copied" id="${id}Cp">✓ コピー済み</button></div>`;
+    // リンクもパスワードも、枠の横に［コピー］。押したほうを「コピー済み」に（自動ではコピーしない：ブラウザの許可の確認が出るため）
+    const row = (lbl, id, v) => `<div class="shlbl">${lbl}</div><div class="shpwrow"><input id="${id}" class="shbox" readonly value="${esc2(v)}"><button type="button" class="shcp" id="${id}Cp">コピー</button></div>`;
     askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('リンク', 'shareLink', url)}${opt && opt.pw ? row('パスワード', 'sharePw', opt.pw) : ''}`,
       () => {}, '閉じる', '');
     const lb = $('shareLinkCp'), pb = $('sharePwCp');
     const mark = b => { [lb, pb].forEach(x => { if(!x) return; const on = x === b; x.classList.toggle('copied', on); x.textContent = on ? '✓ コピー済み' : 'コピー'; }); };
-    mark(lb);   // 最初からコピー済み（できなかったときだけ戻す）
-    shareCopy(url, '共有リンクをコピーしました。', true).then(ok => { if(!ok && $('shareLinkCp') === lb) mark(null); });
     lb.onclick = async () => { if(await shareCopy(url)) mark(lb); };
     if(pb) pb.onclick = async () => { if(await shareCopy(opt.pw, 'パスワードをコピーしました。')) mark(pb); };
     ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
@@ -8753,7 +8773,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const sub = [`${fmtDay(f.createdTime)} 作成`, exp ? (past ? '期限切れ' : `${fmtDay(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : '', on ? '公開中' : '停止中'].filter(Boolean).join('・');
         const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
         row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">リンクをコピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? 'ON' : 'OFF'}</span></button><button type="button" class="del">削除</button></div>`;
-        const cp = row.querySelector('.cp'); if(cp) cp.onclick = () => shareCopy(shareUrl(ap.m));
+        const cp = row.querySelector('.cp'); if(cp) cp.onclick = async () => {
+          const url = shareUrl(ap.m);
+          if(ap.pw !== '1'){ shareCopy(url); return; }
+          let pw = ''; try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){}
+          if(pw) shareCopy(`${url}\nパスワード：${pw}`, 'リンクとパスワードをコピーしました。');
+          else shareCopy(url, 'リンクをコピーしました（このリンクのパスワードは控えがないため、入っていません）。');
+        };
+        if(cp && ap.pw === '1') cp.title = 'リンクとパスワードを一緒にコピーします';
         // 押したらすぐ見た目を切り替え、ドライブ側はうしろで反映（失敗したら元に戻す）
         const tg = row.querySelector('.tg'), small = row.querySelector('.shmeta small');
         const look = v => { tg.setAttribute('aria-checked', v ? 'true' : 'false'); tg.querySelector('.tl').textContent = v ? 'ON' : 'OFF'; row.classList.toggle('off', !v); small.textContent = small.textContent.replace(/(公開中|停止中|切り替えています…)$/, v ? '公開中' : '停止中'); };
@@ -8767,7 +8794,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         row.querySelector('.del').onclick = () => askYesNo('この共有リンクを削除しますか？', `<p>「${esc2(nm)}」のリンクを送った相手は、写真集を見られなくなります。</p><p><b>消えるもの</b><br>このリンクのために作った見開きの画像（Google ドライブの「PHOTO BOOK MAKER ＞ 共有」の中。ゴミ箱に入ります）</p><p><b>消えないもの</b><br>BOOKのデータ、元の写真、ほかの共有リンク</p><p style="color:var(--muted);font-size:12px">しばらく見せないだけなら、削除せずにスイッチをOFFにしてください。</p>`, async () => {
           if(shCache) shCache = shCache.filter(x => x !== f);
           shareManager(true);   // 一覧からはすぐ消し、ドライブ側はうしろで
-          try{ await gPatch(f.id, { trashed: true }); }catch(e){ status('削除できませんでした。'); shCache = null; if(!$('shareMgr').hidden) shareManager(); } }, '削除', 'キャンセル', () => shareManager(true));
+          try{ await gPatch(f.id, { trashed: true }); if(ap.pw === '1') sharePwSave(f.id, ''); }catch(e){ status('削除できませんでした。'); shCache = null; if(!$('shareMgr').hidden) shareManager(); } }, '削除', 'キャンセル', () => shareManager(true));
         box.append(row);
       });
     };
