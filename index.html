@@ -8698,7 +8698,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(bad && fatal.test(bad.why || '')){ const e = new Error('config'); e.why = bad.why; throw e; }
         if(++n === 4) for(const id of [mf.id, ...pages.map(x => x.id)]){ chk(); try{ await sharePublic(id); }catch(e){} }   // 念のため、もう一度公開し直す
         const sec = Math.round((Date.now() - t0) / 1000); chk();
-        gBusy('', sec < 20 ? '公開を確かめています…' : 'Google ドライブの公開を待っています。そのままお待ちください', null);
+        gBusy('', sec < 20 ? '公開を確かめています…' : 'そのままお待ちください', null);
         await sleep(Math.min(15000, 1500 * n));
       }
       chk(); $('gBusyCancel').hidden = true;
