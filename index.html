@@ -752,12 +752,19 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .shrow > b{font-size:14px;font-weight:600;flex:0 0 6.5em}
 #shareOpt .shrow small{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px}
 #shareOpt .shin{display:flex;gap:6px;align-items:center;flex:1 1 auto;justify-content:flex-start;min-width:0}
-#shareOpt input[type=password],#shareOpt input[type=text],#shareOpt input[type=date],#shareOpt input[type=datetime-local],#shareOpt select{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#111;min-width:0}
+#shareOpt input[type=password],#shareOpt input[type=text],#shareOpt input[type=date],#shareOpt input[type=datetime-local],#shareOpt select{height:34px;box-sizing:border-box;font:inherit;font-size:13.5px;padding:6px 10px;border:1px solid #dcd9d3;border-radius:6px;background:#fff;color:#222;min-width:0;outline:none;transition:border-color .15s,box-shadow .15s}
+#shareOpt input:not([type=checkbox]):focus{border-color:#2A8C7F;box-shadow:0 0 0 3px rgba(42,140,127,.14)}
 #shareOpt #shPw{width:100%}
 #shareOpt #shName{width:100%}
-#shareOpt .shprot{display:block}
-#shareOpt .shprot > b{display:block;margin-bottom:10px}
-#shareOpt .shgrid{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center}
+/* Synology の共有画面に合わせた並び：見出しを上に、入力欄は横いっぱい。区切り線なしで、間隔で分ける */
+#shareOpt .shsec{margin-top:20px}
+#shareOpt h3 + .shsec{margin-top:6px}
+#shareOpt .shsec > b{display:block;font-size:14px;font-weight:600;margin-bottom:9px}
+#shareOpt .shsec.shsw{display:flex;align-items:center;justify-content:space-between}
+#shareOpt .shsec.shsw > b{margin:0}
+#shareOpt .shsec.shsw .shin{flex:0 0 auto}
+#shareOpt #shName{width:100%;box-sizing:border-box}
+#shareOpt .shgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-items:center}
 #shareOpt .shgrid input[type=text],#shareOpt .shgrid input[type=datetime-local]{width:100%;max-width:none;box-sizing:border-box}
 #shareOpt .shgrid input:disabled{background:#f6f5f2;color:#b3aea6;border-color:#ece9e3}
 #shareOpt .shck{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;white-space:nowrap}
@@ -8655,19 +8662,18 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!m){
         m = document.createElement('div'); m.className = 'modal'; m.id = 'shareOpt'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
         m.innerHTML = `<div class="sheet gpsheet"><h3>写真集の共有リンクを作成</h3>
-          <div class="shrow"><b>名前</b><div class="shin"><input type="text" id="shName" maxlength="60" autocomplete="off" spellcheck="false" placeholder="PHOTO BOOK"></div></div>
-          <div class="shrow shprot"><b>リンク保護</b>
+          <div class="shsec"><b>共有名</b><input type="text" id="shName" maxlength="60" autocomplete="off" spellcheck="false" placeholder="PHOTO BOOK"></div>
+          <div class="shsec"><b>リンク保護</b>
             <div class="shgrid">
               <label class="shck"><input type="checkbox" id="shPwOn"><span>パスワードが必要</span></label><input type="text" id="shPw" disabled autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore>
               <label class="shck"><input type="checkbox" id="shExpOn"><span>有効期限</span></label><input type="datetime-local" id="shExpD" step="60" disabled>
             </div></div>
-          <div class="shrow"><b>一覧を含める</b><div class="shin"><button class="toggle" id="shSheet" type="button" role="switch" aria-checked="false"><span class="knob"></span><span class="tl">OFF</span></button></div></div>
+          <div class="shsec"><b>オプション</b><label class="shck"><input type="checkbox" id="shSheet"><span>一覧を含める</span></label></div>
           <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">保存</button></div></div>`;
         document.body.append(m);
         // パスワードは隠さずに見せる（ふつうの文字欄なので「パスワードを保存しますか？」も出ない）
         pwAsciiOnly($('shPw'));
         // 最後のページに、全部の見開きを並べた一覧を入れるか
-        $('shSheet').onclick = () => { const b = $('shSheet'), on = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.querySelector('.tl').textContent = on ? 'ON' : 'OFF'; };
         // リンク保護：チェックを入れた項目だけ、右の欄に入力できる
         $('shPwOn').onchange = () => { const on = $('shPwOn').checked, i = $('shPw'); i.disabled = !on; if(on) i.focus(); else i.value = ''; };
         $('shExpOn').onchange = () => { const on = $('shExpOn').checked, d = $('shExpD'); d.disabled = !on;
@@ -8682,7 +8688,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         let exp = 0, pw = '';
         if($('shPwOn').checked){ pw = $('shPw').value; if(!pw){ $('shPw').focus(); return; } }
         if($('shExpOn').checked){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d.length <= 10 ? d + 'T23:59:59' : d).getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
-        fin({ pw, exp, sheet: $('shSheet').getAttribute('aria-checked') === 'true', name: $('shName').value.trim() });
+        fin({ pw, exp, sheet: $('shSheet').checked, name: $('shName').value.trim() });
       };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
       m.hidden = false; $('shName').focus(); $('shName').select();
