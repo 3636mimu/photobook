@@ -2274,7 +2274,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <tr><th><span class="btn">プレビュー</span></th><td>見開きを1組ずつ大きく表示します。背景は「詳細設定」の「一覧書き出し仕様」の背景（白・黒）と同じです。<kbd>←</kbd> <kbd>→</kbd> キー、スワイプ、写真のクリック（右半分で次へ・左半分で前へ）で、本のようにページがめくれます。右上の <span class="btn">一覧</span> で全部の見開きを並べた表示に切り替わり（1行に並べる数と背景は、詳細設定の「一覧書き出し仕様」と同じ。保存される一覧画像と同じ見た目で確認できます）、見開きを押すとその見開きに戻ります（一覧のときはボタンが <span class="btn">見開き</span> になります）。</td></tr>
       <tr><th><span class="btn fill">見開一括書き出し</span></th><td>（写真集モードのときは「写真集書き出し」という名前になります）写真が入っている見開きを、全部 JPG で保存します。片方だけの見開きも保存でき、空いたページは「空きページの色」（白か黒）で塗られます。Chrome・Edge では押すたびに保存先のフォルダを聞かれるので、選んだフォルダに全部まとめて書き出します。それ以外のブラウザや Claude 上のページでは、全部を1つの ZIP にまとめて保存します。画面上部の「保存形式」を PDF にすると、全部の見開きを1見開き1ページの PDF 1つにまとめて保存します。</td></tr>
       <tr><th><span class="btn fill">一覧書き出し</span></th><td>全部の見開きを並べた、1枚の JPG 画像を保存します（保存形式が PDF のときも JPG です）。横幅 4500px で、JPG の画質は「詳細設定」の「画質」に従います。各見開きは一覧の枠の大きさに合わせて1回だけ縮めて作ります。見開一括書き出しと同じく、保存先のフォルダを選べます（選べない環境ではダウンロードフォルダに保存）。写真が1枚も入っていないときは押せません。</td></tr>
-      <tr><th><span class="btn fill">1枚ずつ書き出し</span></th><td>入っている写真を、このツールで調整したとおり（トリミング・拡大縮小・回転・傾き補正・反転）に1枚ずつ JPG で保存します。ノドの影・グリッドは入りません。写真が入っていないページでも、装飾（文字・画像）がそのページにかかっていれば書き出します。写真集モードの表紙・裏表紙・表紙の裏・裏表紙の裏も同じで、文字だけのページとして書き出せます（ファイル名の末尾は cover / backcover / cover_inside / backcover_inside）。写真集モードで表紙・裏表紙に文字を入れているときは、その写真のページ部分の文字も入ります（またいだ文字はそれぞれのページの分だけ）。1枚写真の見開きは横長の1枚になります。大きさは「ページの解像度」、画質は「詳細設定」の「画質」に従います。保存形式が PDF でも JPG で保存します。まとめ方は見開一括書き出しと同じで、フォルダを選ぶとそこへ、選べないときは ZIP になります。</td></tr>
+      <tr><th><span class="btn fill">1枚ずつ書き出し</span></th><td>入っている写真を、このツールで調整したとおり（トリミング・拡大縮小・回転・傾き補正・反転）に1枚ずつ JPG で保存します。ノドの影・グリッドは入りません。写真が入っていないページでも、装飾（文字・画像）がそのページにかかっていれば書き出します。写真集モードの表紙・裏表紙・表紙の裏・裏表紙の裏も同じで、文字だけのページとして書き出せます（ファイル名は本の並び順の連番で、表紙が 000、裏表紙が最後の番号）。写真集モードで表紙・裏表紙に文字を入れているときは、その写真のページ部分の文字も入ります（またいだ文字はそれぞれのページの分だけ）。1枚写真の見開きは横長の1枚になります。大きさは「ページの解像度」、画質は「詳細設定」の「画質」に従います。保存形式が PDF でも JPG で保存します。まとめ方は見開一括書き出しと同じで、フォルダを選ぶとそこへ、選べないときは ZIP になります。</td></tr>
     </table></div>
     <p>1組だけ保存したいときは、各見開きの右下の <span class="btn fill">保存</span> を押します。</p>
     <p><b>グリッド</b>（書き出しボタンの下のスイッチ）をオンにすると、各ページに構図の目安の赤線が重なります。スイッチの下で種類を選べます：分割系：<b>6×6</b>（縦横6等分）／<b>3分割</b>／<b>黄金比（ファイグリッド）</b>（約 38:62 の位置）／<b>中心（十字）</b>。斜め系：<b>対角線（X）</b>／<b>斜め45°</b>（四隅から45度の線。Lightroom の「対角線」と同じもの）／<b>三角構図</b>・<b>三角構図（反転）</b>（対角線と、残りの角から下ろした垂線）。<b>黄金螺旋</b>：渦の中心が右下・左下・右上・左上の4種類。このグリッドは、一覧・見開き・プレビュー・保存画像に入ります（初期値はオフ、種類は 6×6）。写真の調整画面（初期値：ON・3分割）と装飾の画面（初期値：OFF・3分割）の下にもそれぞれ「グリッド」があり、一覧とは別に ON / OFF と種類を選べます（この2つの画面のグリッドは保存画像には入りません）。</p>
@@ -2340,7 +2340,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <tr><td>写真集 PDF のページの形</td><td>アスペクト比が A・B判のときは、コンビニのマルチコピー機の「小冊子」印刷用に A4 ページの PDF になります。それ以外の比率（1:1・2:3・4:3・Photoback など）では、各ページが画面に表示されている比率そのままの形の PDF になり、余白は入りません。1枚ずつ書き出しの JPG も同じく画面の比率のままです。</td></tr>
       <tr><td>写真集モード × Photoback</td><td>写真集モードでアスペクト比を Photoback LIFE / GRAPH にすると、Photoback では裏表紙に印刷できないため、裏表紙は空白になり写真も装飾も入れられなくなります（装飾画面では裏表紙が暗く表示され、そこに置いた文字は表示されません）。入れていた写真や装飾は消えずに残っていて、ほかの比率に戻すとまた表示されます。</td></tr>
       <tr><td>扉・奥付（Photoback）</td><td>写真集モードで Photoback LIFE / GRAPH を選ぶと、必ず Photoback と同じページ構成になります（切り替えスイッチはありません）：表紙（写真1枚）／扉／2-3（左は白紙）／4-5 …／22-23（右は白紙）／奥付。ページ数は表紙を除いた中身のページ数で、24ページなら写真は20枚＋表紙1枚です。扉・奥付・白紙のページに写真は入りません。扉と奥付の文字・ロゴは「装飾」で入れられ、1枚ずつ書き出しでは tobira / okuzuke の名前で保存されます。ほかの仕上がりサイズに切り替えても、入れた写真は順番どおりに並び直します。</td></tr>
-      <tr><td>Photoback への入稿</td><td>Photoback は印刷して届けるサービスなので、見開きの確認やデータの書き出しはできません。このツールで並べ替え・調整・装飾まで済ませて、右の「Photoback 入稿用」（Photoback のときは書き出しボタンの一番上）で各ページを JPG で保存します。ファイル名は Photoback のページ番号どおり（cover＝表紙、p01_tobira＝扉、p03 … p22、p24_okuzuke＝奥付）なので、Photoback の同じページにそのまま取り込めば入稿は完了です。白紙のページ（2・23ページ）と裏表紙は書き出しません。</td></tr>
+      <tr><td>Photoback への入稿</td><td>Photoback は印刷して届けるサービスなので、見開きの確認やデータの書き出しはできません。このツールで並べ替え・調整・装飾まで済ませて、右の「Photoback 入稿用」（Photoback のときは書き出しボタンの一番上）で各ページを JPG で保存します。ファイル名は Photoback のページ番号どおり（p00＝表紙、p01_tobira＝扉、p03 … p22、p24_okuzuke＝奥付）なので、Photoback の同じページにそのまま取り込めば入稿は完了です。白紙のページ（2・23ページ）と裏表紙は書き出しません。</td></tr>
       <tr><td>画素不足の警告</td><td>トリミングや拡大のあとの写真の画素が、ページの解像度に対して足りず 1.2 倍以上に引き伸ばすことになる写真には、カードのその写真の左下に赤い「画素不足」の印が出ます（写真の調整画面にも表示）。見開一括書き出し・見開きごとの保存・1枚ずつ書き出しのときは、該当する写真の一覧を出して「このまま保存しますか？」と確認します（保存はできます）。ページの解像度が「元の解像度」のときは出ません。</td></tr>
       <tr><td>仕上がりサイズ</td><td>A・B判（小冊子。A3・B4・A4・B5 の紙で刷れます。A判と B判は同じ形なので、どれでも同じデータで大丈夫です）/ Photoback LIFE（1783×2551px）/ Photoback GRAPH（2220×3000px）/ 1:1（スクエア）/ 2:3 / 4:3 / トリミングしない。ページは縦向きなので、4:3 は縦 3:4 で切り取ります。形が違う写真だけこの比率に切り取ります。選ぶとページの解像度も切り替わります（1:1・2:3・4:3 → 1600px、しない → 元の解像度、LIFE → 2551px、GRAPH → 3000px、A・B判 → 3508px）。A判で 3508px にすると、1ページが A4 300dpi（2480×3508px）、見開きが A3 横の大きさになり、PDF もちょうど A3 横（420×297mm）で保存されます</td><td class="def">2:3</td></tr>
       <tr><td>ページの解像度</td><td>1080 / 1600 / 2400 / 2551（Photoback LIFE）/ 3000（Photoback GRAPH）/ 3508（A3 小冊子用）px / 元の解像度</td><td class="def">1600px（2:3 のとき 1067×1600px）</td></tr>
@@ -6728,7 +6728,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!img){ status(`見開き ${p+1} の書き出しに失敗しました。ページの解像度を下げてください。`); return; }
       const pdf = isPdf();
       const blob = pdf ? await makePdf([img]) : await withExif(img.blob, exifAt(t0, done));
-      const filename = `mihiraki_${st}_${isCover(p) ? 'cover' : String(p+1).padStart(2,'0')}.${pdf ? 'pdf' : 'jpg'}`;
+      const filename = `mihiraki_${st}_${isCover(p) ? '00' : String(p+1).padStart(2,'0')}.${pdf ? 'pdf' : 'jpg'}`;
       if(downloads){
         try{ await downloads.save({filename, data:blob}); done++; }
         catch(e){
@@ -6910,7 +6910,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!img){ gBusyOff(); status('書き出しに失敗しました。ページの解像度を下げてください。'); return; }
       gBusyImg(img.blob);
       imgs.push(img);
-      if(!pdf) files.push({ name: `mihiraki_${st}_${isCover(p) ? 'cover' : String(p+1).padStart(2,'0')}.jpg`, blob: await withExif(img.blob, exifAt(t0, files.length)) });
+      if(!pdf) files.push({ name: `mihiraki_${st}_${isCover(p) ? '00' : String(p+1).padStart(2,'0')}.jpg`, blob: await withExif(img.blob, exifAt(t0, files.length)) });
     }
     // JPG のときは、見開きの最後に一覧（index）を足す（一覧書き出しと同じ設定：列数・背景色）
     if(!pdf){
@@ -7188,16 +7188,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   const isInside = i => booklet && (i === 0 || i === bodyLen() - 1);
   const singleSpecial = i => booklet && (i >= bodyLen() || isInside(i) || isTobira(i));
-  function singleName(st, i, k){
+  // 1枚ずつのファイル名：本の並び順の連番。表紙は 0、裏表紙は最後の番号（cover などの名前は付けない）
+  function singleOrder(list){
+    const front = booklet ? list.filter(i => i === slots.length - 1) : [], back = booklet ? list.filter(i => i === slots.length - 2) : [];
+    return [...front, ...list.filter(i => !front.includes(i) && !back.includes(i)), ...back];
+  }
+  function singleName(st, i, n){
     // Photoback (扉・奥付つき): name each file by its Photoback page number, so it goes straight into that page
-    if(tobiraLayout && i < bodyLen()){
-      const w = Math.max(2, String(bodyLen() - 2).length), pn = 'p' + String(i).padStart(w, '0');
-      return `${st}_${isTobira(i) ? pn + (i === 1 ? '_tobira' : '_okuzuke') : pn}.jpg`;
+    if(tobiraLayout){
+      const w = Math.max(2, String(bodyLen()).length), pn = k => 'p' + String(k).padStart(w, '0');
+      if(i === slots.length - 1) return `${st}_${pn(0)}.jpg`;                 // 表紙
+      if(i === slots.length - 2) return `${st}_${pn(bodyLen())}.jpg`;         // 裏表紙：最後の番号
+      return `${st}_${isTobira(i) ? pn(i) + (i === 1 ? '_tobira' : '_okuzuke') : pn(i)}.jpg`;
     }
-    if(tobiraLayout && i === slots.length - 1) return `${st}_cover.jpg`;
-    const lbl = !singleSpecial(i) ? String(k + 1).padStart(3, '0')
-      : i === slots.length - 1 ? 'cover' : i === slots.length - 2 ? 'backcover' : i === 0 ? 'cover_inside' : isTobira(i) ? (i === 1 ? 'tobira' : 'okuzuke') : 'backcover_inside';
-    return `${st}_${lbl}.jpg`;
+    return `${st}_${String(n).padStart(3, '0')}.jpg`;
   }
   async function saveSingles(){
     const list = singleList();
@@ -7205,12 +7209,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     let toDir;
     try{ toDir = await ensureDir(); }catch(e){ status('保存しませんでした。フォルダを選んだあと「このサイトにファイルの編集を許可しますか？」で「許可する」を押すと保存できます。'); return; }
     const st = stamp(), files = [], t0 = new Date();
-    let k = 0;
-    for(const i of list){
+    const order = singleOrder(list), hasFront = booklet && order[0] === slots.length - 1;
+    for(let n = 0; n < order.length; n++){
+      const i = order[n];
       status(`写真 ${files.length + 1} / ${list.length} を書き出し中…`);
       const blob = await renderSingle(i);
       if(!blob){ status('書き出しに失敗しました。ページの解像度を下げてください。'); return; }
-      files.push({ name: singleName(st, i, singleSpecial(i) ? 0 : k++), blob: await withExif(blob, exifAt(t0, files.length)) });
+      files.push({ name: singleName(st, i, hasFront ? n : n + 1), blob: await withExif(blob, exifAt(t0, files.length)) });
     }
     if(toDir){
       try{
