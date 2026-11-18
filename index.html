@@ -355,9 +355,7 @@ button{font:inherit}
 @media (pointer:coarse){.blkbtn{opacity:.92}}
 .sharebtn{width:100%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.35}.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
 .shlbl{font-size:11.5px;color:var(--muted);margin:12px 0 -6px}
-.shpwrow{display:flex;gap:8px;align-items:center;margin-top:10px}
-.shpwrow .shbox,#sharePw{flex:1;min-width:0;box-sizing:border-box;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;letter-spacing:.06em;background:#f6f5f2;color:#333}
-#sharePwCp,.shpwrow .shcp{flex:none;min-width:7.2em;font:inherit;font-size:12.5px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#333;cursor:pointer}
+.shbox{display:block;width:100%;margin-top:10px;box-sizing:border-box;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;letter-spacing:.06em;background:#f6f5f2;color:#333}
 #shareLink{font-size:13px;letter-spacing:0}
 .hint{font-size:12px;color:var(--muted);margin:0}
 .linkbtn{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0;cursor:pointer;font:inherit}
@@ -750,7 +748,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .shin{display:flex;gap:6px;align-items:center;flex:1 1 auto;justify-content:flex-end;min-width:0}
 #shareOpt input[type=password],#shareOpt input[type=text],#shareOpt input[type=date],#shareOpt select{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#111;min-width:0}
 #shareOpt #shPw{width:100%;max-width:220px}
-#shareOpt #shExp{flex:0 0 auto;width:auto}#shareOpt #shExpD{flex:0 1 150px;width:150px}
+#shareOpt #shExp{flex:0 0 auto;width:auto}#shareOpt #shExpD{flex:0 1 200px;width:200px}
 #shareOpt .pweye{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:12px;cursor:pointer;color:var(--muted);white-space:nowrap}
 #shareOpt .actions,#shareMgr .actions{justify-content:center;margin-top:18px}
 #shareOpt .actions .qbtn,#shareMgr .actions .qbtn{flex:0 0 130px}
@@ -758,7 +756,6 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareMgr .shitem{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 #shareMgr .shitem.off{opacity:.6}
 #shareMgr .toggle.busy{cursor:progress}
-.pwmask{-webkit-text-security:disc}
 #shareMgr .shmeta{flex:1 1 auto;min-width:0}
 #shareMgr .shmeta b{display:block;font-size:13.5px;font-weight:600;word-break:break-all;line-height:1.4}
 #shareMgr .shmeta small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
@@ -804,7 +801,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #pagesModal:not(.qdlg) .actions{justify-content:center;gap:12px;margin-top:20px}
 #pagesModal:not(.qdlg) .qbtn{flex:0 0 130px;padding:10px 12px !important}
 #saveNo,#driveClose,#bookDelCancel{flex:0 0 130px;padding:10px 12px !important}
-#gBusy .gbcancel.qbtn{display:block;width:130px;margin:16px auto 0;padding:9px 12px !important;font-size:13.5px !important}
+#gBusy .gbcancel.qbtn{display:block;width:130px;margin:18px auto 0;padding:10px 12px !important}
 /* その確認の窓：真ん中ぞろえで、まわりにゆとり */
 #pagesModal.qdlg .sheet{max-width:500px !important;padding:28px 34px 26px;text-align:center}
 #pagesModal.qdlg h3{margin:0;font-size:15px;font-weight:500}
@@ -904,8 +901,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .strhead{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px}
 .glogo{width:16px;height:16px;object-fit:contain;flex:none;vertical-align:-3px}
 img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertical-align:-.2em}
+#pagesModal:not(.qdlg) .qbtn.shcpall{flex:0 0 auto;min-width:130px;padding:10px 18px !important}
 #pagesYes.copied{background:#2A8C7F !important;border-color:#2A8C7F !important;color:#fff !important}
-.shpwrow .shcp.copied{background:#2A8C7F;border-color:#2A8C7F;color:#fff}
 #pagesYes img.glogo.gpl{width:1.1em;height:1.1em;padding:2px;margin-right:.4em;background:#fff;border-radius:50%;vertical-align:-.3em}
 .ghead{display:inline-flex;align-items:center;gap:6px}
 .glink{color:inherit;text-decoration:underline;text-decoration-color:rgba(0,0,0,.25);text-underline-offset:3px;display:inline-flex;align-items:center;gap:3px}
@@ -7408,7 +7405,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function gpTxt(el, t){ const v = String(t == null ? '' : t); if(v.includes('Google フォト') || v.includes('Google ドライブ')) el.innerHTML = gpLogo(esc2(v)); else el.textContent = v; }
   function askYesNo(title, html, onYes, yesLabel, noLabel, onNo){
     // ボタンはどの窓も同じ形：戻る側はベージュ、進む側は緑。取り消せない操作（削除など）だけ赤
-    $('pagesNo').className = 'qbtn keep'; $('pagesYes').className = 'qbtn ' + (/削除|ゴミ箱|取り除|消す|上書き|解除/.test(yesLabel || '') ? 'drop' : 'save');
+    $('pagesNo').className = 'qbtn keep'; $('pagesYes').className = 'qbtn ' + (/削除|ゴミ箱|取り除|消す|上書き|解除/.test(yesLabel || '') ? 'drop' : /^(閉じる|キャンセル|やめる|戻る)$/.test(yesLabel || '') ? 'keep' : 'save');
     $('pagesYes').classList.remove('copied'); gpTxt($('pagesYes'), yesLabel || 'YES'); gpTxt($('pagesNo'), noLabel || 'NO');
     gpTxt($('pagesTitle'), title);
     $('pagesMsg').innerHTML = gpLogo(html);
@@ -8608,26 +8605,21 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!m){
         m = document.createElement('div'); m.className = 'modal'; m.id = 'shareOpt'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
         m.innerHTML = `<div class="sheet gpsheet"><h3>共有リンクを作る</h3>
-          <div class="shrow"><b>パスワード</b><div class="shin"><input type="text" id="shPw" class="pwmask" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore placeholder="空欄ならなし"><button type="button" class="pweye" id="shPwEye">表示</button></div></div>
-          <div class="shrow"><b>有効期限</b><div class="shin"><select id="shExp"><option value="0">なし</option><option value="7">1週間</option><option value="30">1か月</option><option value="90">3か月</option><option value="d">日付を指定</option></select><input type="date" id="shExpD" hidden></div></div>
+          <div class="shrow"><b>パスワード</b><div class="shin"><input type="text" id="shPw" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore placeholder="空欄ならなし"></div></div>
+          <div class="shrow"><b>有効期限</b><div class="shin"><select id="shExp"><option value="0">なし</option><option value="7">1週間</option><option value="30">1か月</option><option value="90">3か月</option><option value="d">日時を指定</option></select><input type="datetime-local" id="shExpD" step="60" hidden></div></div>
           <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">作る</button></div></div>`;
         document.body.append(m);
-        // 「パスワードを保存しますか？」を出させないため、ふつうの文字欄を ● で隠す（隠せないブラウザだけ password 欄）
-        if(!(window.CSS && CSS.supports('-webkit-text-security', 'disc'))) $('shPw').type = 'password';
+        // パスワードは隠さずに見せる（ふつうの文字欄なので「パスワードを保存しますか？」も出ない）
         pwAsciiOnly($('shPw'));
-        $('shPwEye').onclick = () => { const i = $('shPw'), hid = i.type === 'password' || i.classList.contains('pwmask');
-          if(i.type === 'password' || (!hid && !(window.CSS && CSS.supports('-webkit-text-security', 'disc')))) i.type = hid ? 'text' : 'password';
-          else i.classList.toggle('pwmask', !hid);
-          $('shPwEye').textContent = hid ? '隠す' : '表示'; };
-        $('shExp').onchange = () => { const d = $('shExpD'); d.hidden = $('shExp').value !== 'd'; if(!d.hidden && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; } };
+        $('shExp').onchange = () => { const d = $('shExpD'); d.hidden = $('shExp').value !== 'd'; if(!d.hidden && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}T23:59`; } };
       }
-      { const i = $('shPw'); i.value = ''; i.classList.add('pwmask'); if(!(window.CSS && CSS.supports('-webkit-text-security', 'disc'))) i.type = 'password'; else i.type = 'text'; } $('shPwEye').textContent = '表示';
+      $('shPw').value = '';
       const fin = r => { $('shPw').value = ''; m.hidden = true; m.onkeydown = null; done(r); };
       $('shNo').onclick = () => fin(null);
       $('shGo').onclick = () => {
         const v = $('shExp').value; let exp = 0;
-        if(v === 'd'){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d + 'T23:59:59').getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
-        else if(+v) exp = Date.now() + (+v) * 864e5;
+        if(v === 'd'){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d.length <= 10 ? d + 'T23:59:59' : d).getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
+        else if(+v){ const t = new Date(Date.now() + (+v) * 864e5); t.setHours(23, 59, 59, 0); exp = t.getTime(); }   // その日の 23:59 まで
         fin({ pw: $('shPw').value, exp });
       };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
@@ -8721,20 +8713,22 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       askYesNo('共有リンクを作れませんでした', `<p>${why}</p><p style="font-size:12px;color:var(--muted)">${esc2(e && (e.why || e.message) || String(e))}</p>`, () => {}, '閉じる', '');
     }
   }
+  const fmtUntil = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };   // 期限は時刻まで
   const fmtDay = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
   async function shareCopy(url, msg, quiet){ let ok = false; try{ await navigator.clipboard.writeText(url); ok = true; }catch(e){ const t = document.createElement('textarea'); t.value = url; document.body.append(t); t.select(); try{ ok = document.execCommand('copy'); }catch(_){} t.remove(); } if(ok || !quiet) status(ok ? (msg || '共有リンクをコピーしました。') : 'コピーできませんでした。リンクを選んでコピーしてください。'); return ok; }
+  // コピーする中身：パスワード付きなら「URL：…」「パスワード：…」の2行、なしなら URL だけ
+  const shareText = (url, pw) => pw ? `URL：${url}\nパスワード：${pw}` : url;
   function shareDone(url, opt){
-    const notes = [];
-    if(opt && opt.pw) notes.push('パスワードは、リンクとは別に伝えてください。');
-    if(opt && opt.exp) notes.push(`${fmtDay(opt.exp)} まで見られます。`);
-    // リンクもパスワードも、枠の横に［コピー］。押したほうを「コピー済み」に（自動ではコピーしない：ブラウザの許可の確認が出るため）
-    const row = (lbl, id, v) => `<div class="shlbl">${lbl}</div><div class="shpwrow"><input id="${id}" class="shbox" readonly value="${esc2(v)}"><button type="button" class="shcp" id="${id}Cp">コピー</button></div>`;
-    askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('リンク', 'shareLink', url)}${opt && opt.pw ? row('パスワード', 'sharePw', opt.pw) : ''}`,
-      () => {}, '閉じる', '');
-    const lb = $('shareLinkCp'), pb = $('sharePwCp');
-    const mark = b => { [lb, pb].forEach(x => { if(!x) return; const on = x === b; x.classList.toggle('copied', on); x.textContent = on ? '✓ コピー済み' : 'コピー'; }); };
-    lb.onclick = async () => { if(await shareCopy(url)) mark(lb); };
-    if(pb) pb.onclick = async () => { if(await shareCopy(opt.pw, 'パスワードをコピーしました。')) mark(pb); };
+    const notes = [], pw = (opt && opt.pw) || '';
+    if(pw) notes.push('パスワードは、リンクとは別に伝えてください。');
+    if(opt && opt.exp) notes.push(`${fmtUntil(opt.exp)} まで見られます。`);
+    const row = (lbl, id, v) => `<div class="shlbl">${lbl}</div><input id="${id}" class="shbox" readonly value="${esc2(v)}">`;
+    const label = pw ? 'URLとパスワードをコピー' : 'URLをコピー';
+    askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('URL', 'shareLink', url)}${pw ? row('パスワード', 'sharePw', pw) : ''}`,
+      () => {}, label, '閉じる');
+    // コピーのボタンは1つだけ。押しても窓は閉じず、「コピー済み」に変わる
+    const yes = $('pagesYes'); yes.classList.add('shcpall');
+    yes.onclick = async () => { if(await shareCopy(shareText(url, pw), pw ? 'URLとパスワードをコピーしました。' : 'URLをコピーしました。')){ yes.textContent = '✓ コピー済み'; yes.classList.add('copied'); } };
     ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
   }
   // ---------- 共有中のリンク（一覧・オン／オフ・コピー・削除） ----------
@@ -8794,14 +8788,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       items.forEach(f => {
         const ap = f.appProperties || {}, exp = +(ap.exp || 0), on = shareOn(f), past = exp && exp < Date.now();
         const nm = (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');
-        const sub = [`${fmtDay(f.createdTime)} 作成`, exp ? (past ? '期限切れ' : `${fmtDay(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : '', on ? '公開中' : '停止中'].filter(Boolean).join('・');
+        const sub = [`${fmtDay(f.createdTime)} 作成`, exp ? (past ? '期限切れ' : `${fmtUntil(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : '', on ? '公開中' : '停止中'].filter(Boolean).join('・');
         const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
         row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">リンクをコピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? 'ON' : 'OFF'}</span></button><button type="button" class="del">削除</button></div>`;
         const cp = row.querySelector('.cp'); if(cp) cp.onclick = async () => {
           const url = shareUrl(ap.m);
           if(ap.pw !== '1'){ shareCopy(url); return; }
           let pw = ''; try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){}
-          if(pw) shareCopy(`${url}\nパスワード：${pw}`, 'リンクとパスワードをコピーしました。');
+          if(pw) shareCopy(shareText(url, pw), 'URLとパスワードをコピーしました。');
           else shareCopy(url, 'リンクをコピーしました（このリンクのパスワードは控えがないため、入っていません）。');
         };
         if(cp && ap.pw === '1') cp.title = 'リンクとパスワードを一緒にコピーします';
