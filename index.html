@@ -8866,9 +8866,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       items.forEach(f => {
         const ap = f.appProperties || {}, exp = +(ap.exp || 0), on = shareOn(f), past = exp && exp < Date.now();
         const nm = (f.appProperties || {}).nm || (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');   // 一覧には共有の名前（フォルダ名ではなく）
-        const sub = [`${fmtDay(f.createdTime)} 作成`, exp ? (past ? '期限切れ' : `${fmtUntil(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : '', on ? '公開中' : '停止中'].filter(Boolean).join('・');
+        const sub = [fmtUntil(f.createdTime), exp ? (past ? '期限切れ' : `${fmtUntil(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : ''].filter(Boolean).join('・');
         const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
-        row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">リンクをコピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? 'ON' : 'OFF'}</span></button><button type="button" class="del">削除</button></div>`;
+        row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">リンクをコピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? '公開中' : '非公開'}</span></button><button type="button" class="del">削除</button></div>`;
         const cp = row.querySelector('.cp'); if(cp) cp.onclick = async () => {
           const url = shareUrl(ap.m); let ok;
           if(ap.pw !== '1') ok = await shareCopy(url);
@@ -8882,7 +8882,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(cp && ap.pw === '1') cp.title = 'リンクとパスワードを一緒にコピーします';
         // 押したらすぐ見た目を切り替え、ドライブ側はうしろで反映（失敗したら元に戻す）
         const tg = row.querySelector('.tg'), small = row.querySelector('.shmeta small');
-        const look = v => { tg.setAttribute('aria-checked', v ? 'true' : 'false'); tg.querySelector('.tl').textContent = v ? 'ON' : 'OFF'; row.classList.toggle('off', !v); small.textContent = small.textContent.replace(/(公開中|停止中|切り替えています…)$/, v ? '公開中' : '停止中'); };
+        const look = v => { tg.setAttribute('aria-checked', v ? 'true' : 'false'); tg.querySelector('.tl').textContent = v ? '公開中' : '非公開'; row.classList.toggle('off', !v); };
         let busy = false;
         tg.onclick = async () => {
           if(busy) return; busy = true;
