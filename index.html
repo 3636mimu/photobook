@@ -8476,7 +8476,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!gValid()){ const e = new Error('auth'); e.auth = true; throw e; }
     const r = await fetch(url, Object.assign({}, opt, { headers: Object.assign({ Authorization: 'Bearer ' + GD.tok }, opt.headers || {}) }));
     if(r.status === 401){ GD.tok = ''; gSync(); const e = new Error('auth'); e.auth = true; throw e; }
-    if(!r.ok){ const e = new Error('drive ' + r.status); e.status = r.status; try{ const j = await r.clone().json(); e.reason = ((j.error && j.error.errors && j.error.errors[0]) || {}).reason || ''; if(e.reason) e.message += ' ' + e.reason; }catch(_){} throw e; }
+    if(!r.ok){ const e = new Error('drive ' + r.status); e.status = r.status; try{ const j = await r.clone().json(); const er = (j.error && j.error.errors && j.error.errors[0]) || {}; e.reason = er.reason || ''; if(e.reason) e.message += ' ' + e.reason; const what = er.location || er.message || (j.error && j.error.message) || ''; if(what) e.message += ' (' + String(what).slice(0, 80) + ')'; }catch(_){}
+      try{ e.message += ' @' + (opt.method || 'GET') + ' ' + String(url).replace(/^https:\/\/www\.googleapis\.com/, '').split('?')[0].replace(/\/[A-Za-z0-9_-]{20,}/g, '/…'); }catch(_){} throw e; }
     return r;
   }
   const gJson = async (url, opt) => (await gFetch(url, opt)).json();
@@ -8642,7 +8643,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         $('shSheet').onclick = () => { const b = $('shSheet'), on = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.querySelector('.tl').textContent = on ? 'ON' : 'OFF'; };
         $('shExp').onchange = () => { const d = $('shExpD'); d.hidden = $('shExp').value !== 'd'; if(!d.hidden && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}T23:59`; } };
       }
-      $('shPw').value = ''; $('shName').value = (workTitle() || '').trim();   // 名前は BOOK の名前から（自由に変えられる）
+      $('shPw').value = ''; $('shName').value = [workTitle(), (bookFile || '').replace(/\.pbmk?$/i, '')].map(x => (x || '').trim()).filter(Boolean).join(' ');   // 名前の初期値：表紙などの文字＋BOOK名（自由に変えられる）
       const fin = r => { $('shPw').value = ''; m.hidden = true; m.onkeydown = null; done(r); };
       $('shNo').onclick = () => fin(null);
       $('shGo').onclick = () => {
@@ -8665,6 +8666,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const shareLimited = e => /sharingRateLimitExceeded|userRateLimitExceeded|rateLimitExceeded/.test((e && (e.reason || e.message)) || '') || (e && e.status === 429);
   async function sharePubRetry(id){ for(let k = 0; ; k++){ try{ return await sharePublic(id); }catch(e){ if((e && e.auth) || shareLimited(e) || k >= 2) throw e; await new Promise(r => setTimeout(r, 2000 * (k + 1))); } } }
   const sharePublic = id => gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=id`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
+  // ドライブのフォルダ名：「共有の名前_BOOK名」
+  function shareFolderName(name){
+    const clean = x => (x || '').replace(/[\\/:*?"<>|]+/g, '_').trim();
+    const book = clean((bookFile || '').replace(/\.pbmk?$/i, ''));
+    return [clean(name).slice(0, 80), book.slice(0, 80)].filter(Boolean).join('_') || 'PHOTO BOOK';
+  }
+  // appProperties は「キー＋値」で124バイトまで：収まるように切る
+  function fitBytes(t, max){ const enc = new TextEncoder(); let s = String(t || ''); while(s && enc.encode(s).length > max) s = s.slice(0, -1); return s; }
   async function shareBook(){
     const list = allPairs().filter(pairReady);
     if(!list.length) return;
@@ -8729,8 +8738,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         chk();
         if(folder){ trash(folder); folder = ''; await sleep(5000); }
         if(!workId) workId = newId();
-        const ap = { pbm: 'share', book: String(workId) }; if(opt.exp)   // どの BOOK の共有か（共有中のリンクは、開いている BOOK の分だけ出す） ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
-        folder = (await gCreate({ name: `${title.replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60)}_${stamp()}`, parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
+        const ap = { pbm: 'share', book: String(workId), nm: fitBytes(title, 100) }; if(opt.exp)   // どの BOOK の共有か（共有中のリンクは、開いている BOOK の分だけ出す） ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
+        folder = (await gCreate({ name: shareFolderName(title), parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
         await sharePubRetry(folder);
         const pages = [];
         for(let i = 0; i < made.length; i++){
@@ -8846,7 +8855,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       items.sort((a, b) => (b.createdTime || '').localeCompare(a.createdTime || ''));
       items.forEach(f => {
         const ap = f.appProperties || {}, exp = +(ap.exp || 0), on = shareOn(f), past = exp && exp < Date.now();
-        const nm = (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');
+        const nm = (f.appProperties || {}).nm || (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');   // 一覧には共有の名前（フォルダ名ではなく）
         const sub = [`${fmtDay(f.createdTime)} 作成`, exp ? (past ? '期限切れ' : `${fmtUntil(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : '', on ? '公開中' : '停止中'].filter(Boolean).join('・');
         const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
         row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">リンクをコピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? 'ON' : 'OFF'}</span></button><button type="button" class="del">削除</button></div>`;
