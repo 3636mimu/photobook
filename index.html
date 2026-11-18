@@ -4010,7 +4010,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function updateGlobal(){
     const n = allPairs().filter(pairReady).length;
     $('saveAll').disabled = n === 0;
-    if(WEB){ $('shareBook').hidden = false; $('shareBook').disabled = n === 0; }
+    if(WEB){ $('shareBook').hidden = false; $('shareBook').disabled = n === 0; try{ shareSub(); }catch(e){} }
     { const nm = booklet ? '写真集書き出し' : '見開一括書き出し';
       $('saveAll').innerHTML = n ? `${nm}<span class="sub">${isPdf() ? (booklet ? `PDF・${bookTotal()}ページ` : `PDF・${n}ページ`) : `JPG・${n}ファイル`}</span>` : `${nm}<span class="sub">${isPdf() ? 'PDF' : 'JPG'}</span>`; }
     $('saveSheet').disabled = sample || !slots.some(Boolean);   // the overview needs at least one real photo
@@ -8405,6 +8405,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   async function shareCanRead(id){
     try{ const r = await fetch(`${GAPI}/drive/v3/files/${encodeURIComponent(id)}?alt=media&key=${encodeURIComponent(shareKey())}`, { cache: 'no-store' }); return r.ok; }catch(e){ return false; }
   }
+  // ボタンの下の小さな文字：つながっていないときは、押す前に分かるように
+  function shareSub(){ const b = $('shareBook'), sub = b && b.querySelector('.sub'); if(!sub) return;
+    sub.textContent = (gValid() || GD.email) ? '本のようにめくって見られるリンク' : 'Google ドライブにつなぐと使えます'; }
   async function shareBook(){
     const list = allPairs().filter(pairReady);
     if(!list.length) return;
@@ -8592,6 +8595,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const esc2 = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function gSync(){
     if(!WEB) return;
+    try{ shareSub(); }catch(e){}
     styBkSync();
     const b = $('gConn'); b.hidden = false;
     b.innerHTML = `<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">` + (gValid() ? '' : GD.email ? '<em>つなぐ</em>' : '<span>Google ドライブとつなぐ</span>');   // つないでいるときはロゴだけ（アカウントはマウスを乗せると出る）
