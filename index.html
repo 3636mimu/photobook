@@ -349,6 +349,10 @@ button{font:inherit}
 .primary:disabled,.small:disabled{opacity:.4;cursor:not-allowed}
 .small{background:var(--accent);color:var(--accent-ink);border:0;border-radius:3px;padding:6px 10px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}
 .outline{background:none;color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:7px 12px;font-weight:700;font-size:13px;cursor:pointer}
+.blkbtn{position:absolute;z-index:3;transform:translate(-50%,-100%);font:inherit;font-size:11px;line-height:1.4;padding:3px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.14);background:rgba(255,255,255,.9);color:#5a554e;cursor:pointer;white-space:nowrap;opacity:0;transition:opacity .15s}
+.stage:hover .blkbtn,.blkbtn.on,.blkbtn:focus-visible{opacity:1}
+.blkbtn.on{background:#2A8C7F;border-color:#2A8C7F;color:#fff}
+@media (pointer:coarse){.blkbtn{opacity:.92}}
 .sharebtn{width:100%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.35}.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
 #shareLink{width:100%;box-sizing:border-box;margin:10px 0 2px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;background:#f6f5f2;color:#333}
 .hint{font-size:12px;color:var(--muted);margin:0}
@@ -726,6 +730,33 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #pagesModal{z-index:60}
 /* 書き出し先（パソコン／Google フォト） */
 #gpModal{z-index:58}
+/* 共有リンク：作るときの設定・共有中のリンク */
+#shareOpt,#shareMgr{z-index:58}
+#shareOpt .gpsheet,#shareMgr .gpsheet{max-width:480px;padding:26px 28px 22px}
+#shareMgr .gpsheet{max-width:560px}
+#shareOpt h3,#shareMgr h3{margin:0 0 14px;font-size:17px;font-weight:600}
+#shareOpt .shrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+#shareOpt .shrow:first-of-type{border-top:0}
+#shareOpt .shrow > b{font-size:14px;font-weight:600;flex:0 0 auto}
+#shareOpt .shrow small{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px}
+#shareOpt .shin{display:flex;gap:6px;align-items:center;flex:1 1 auto;justify-content:flex-end;min-width:0}
+#shareOpt input[type=password],#shareOpt input[type=text],#shareOpt input[type=date],#shareOpt select{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#111;min-width:0}
+#shareOpt #shPw{width:100%;max-width:220px}
+#shareOpt #shExp{flex:0 0 auto;width:auto}#shareOpt #shExpD{flex:0 1 150px;width:150px}
+#shareOpt .pweye{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:12px;cursor:pointer;color:var(--muted);white-space:nowrap}
+#shareOpt .actions,#shareMgr .actions{justify-content:center;margin-top:18px}
+#shareOpt .actions .qbtn,#shareMgr .actions .qbtn{flex:0 0 130px}
+#shareMgr .shlist{display:flex;flex-direction:column;gap:8px;max-height:min(60vh,520px);overflow:auto}
+#shareMgr .shitem{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+#shareMgr .shitem.off{opacity:.6}
+#shareMgr .shmeta{flex:1 1 auto;min-width:0}
+#shareMgr .shmeta b{display:block;font-size:13.5px;font-weight:600;word-break:break-all;line-height:1.4}
+#shareMgr .shmeta small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+#shareMgr .shbtns{display:flex;gap:6px;flex:0 0 auto;align-items:center}
+#shareMgr .shbtns button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+#shareMgr .shbtns .del{color:#C24A45;border-color:#E9C3C1}
+#shareMgr .shnote{font-size:13px;color:var(--muted);text-align:center;padding:18px 0}
+.sharemgr{display:block;width:100%;margin-top:6px;background:none;border:0;color:var(--accent);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 #gpDup{z-index:59}
 #gpDup .gpsheet{max-width:520px;padding:26px 28px 22px}
 #gpDup h3{margin:0;font-size:17px;font-weight:600;text-align:left}
@@ -1937,6 +1968,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
         <button class="primary" id="saveSheet" disabled>一覧書き出し</button>
         <button class="primary" id="saveSingles" disabled title="調整した写真を1枚ずつ JPG で保存">1枚ずつ書き出し</button>
         <button class="outline sharebtn" id="shareBook" type="button" hidden disabled>共有リンクを作る<span class="sub">本のようにめくって見られるリンク</span></button>
+        <button class="sharemgr" id="shareMgrBtn" type="button" hidden>共有中のリンク</button>
         <input type="file" id="workFile" class="vh" accept=".pbmk">
         <div id="pgTip" class="pgtip" aria-hidden="true">配置写真を調整</div><div id="dTapTip" class="pgtip" aria-hidden="true"></div>
         <input type="file" id="fileRelink" class="vh" accept="image/*" multiple>
@@ -2732,7 +2764,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     '#shv .ms{position:absolute;left:50%;top:50%;width:min(86vw,360px);-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);text-align:center;font-size:14px;line-height:1.8}',
     '#shv .ms a,#shv .ms button{display:inline-block;margin:10px 6px 0;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:none;color:#fff;font:inherit;font-size:14px;text-decoration:none;cursor:pointer}',
     '#shv .ht{position:absolute;left:50%;bottom:calc(44px + env(safe-area-inset-bottom,0px));-webkit-transform:translateX(-50%);transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.12);font-size:12px;white-space:nowrap;-webkit-transition:opacity .6s;transition:opacity .6s}',
-    '@media (pointer:coarse){#shv .nv{background:rgba(255,255,255,.08)}}'
+    '@media (pointer:coarse){#shv .nv{background:rgba(255,255,255,.08)}}',
+    '#shv.ns,#shv.ns *{-webkit-touch-callout:none}'
   ].join('\n');
   document.head.appendChild(css);
 
@@ -2740,11 +2773,30 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function el(t, c, p){ var e = document.createElement(t); if(c) e.className = c; if(p) p.appendChild(e); return e; }
   function urls(id){ return [API + encodeURIComponent(id) + '?alt=media&key=' + encodeURIComponent(KEY), 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w2400', 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=w2400']; }
   // 画像を読む：だめなら別の取り出し口へ、ひと回りしてもだめならもう一度
+  var CK = null;   // パスワードから作った鍵（パスワード付きのとき）
+  function u8(b64s){ var s = atob(b64s), a = new Uint8Array(s.length); for(var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
+  // パスワード付き：暗号化された写真を読んで、この端末の中で元に戻す
+  function loadEnc(k){
+    var P = pages[k], tries = 0;
+    (function get(){
+      var x = new XMLHttpRequest(); x.open('GET', API + encodeURIComponent(P.id) + '?alt=media&key=' + encodeURIComponent(KEY)); x.responseType = 'arraybuffer'; x.timeout = 30000;
+      var bad = function(){ if(++tries < 4) return setTimeout(get, 1200 * tries); P.loading = false; var c = P.cbs; P.cbs = []; c.forEach(function(f){ f(false); }); };
+      x.onload = function(){
+        if(x.status !== 200) return bad();
+        crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8(P.iv) }, CK, x.response).then(function(buf){
+          P.src = URL.createObjectURL(new Blob([buf], { type: 'image/jpeg' }));
+          var im = new Image(); im.onload = function(){ P.ok = true; P.loading = false; imgs[k] = im; var c = P.cbs; P.cbs = []; c.forEach(function(f){ f(true); }); }; im.onerror = bad; im.src = P.src;
+        }, bad);
+      };
+      x.onerror = x.ontimeout = bad; x.send();
+    })();
+  }
   function loadImg(k, cb){
     var P = pages[k]; if(!P) return;
     if(P.ok){ if(cb) cb(true); return; }
     (P.cbs = P.cbs || []).push(cb || function(){});
     if(P.loading) return; P.loading = true;
+    if(P.iv){ loadEnc(k); return; }
     var list = urls(P.id), i = 0, round = 0;
     (function next(){
       if(i >= list.length){ if(++round < 2){ i = 0; return setTimeout(next, 1200); } P.loading = false; var c1 = P.cbs; P.cbs = []; c1.forEach(function(f){ f(false); }); return; }
@@ -2851,9 +2903,18 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           if(++tries < 3) return setTimeout(get, 1500 * tries);
           msg('読み込めませんでした。<br>電波のよいところで、もう一度お試しください。', true); return;
         }
-        pages = man.pages.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.seam || .5 }; });
-        document.title = (man.title || 'PHOTO BOOK') + ' | PHOTO BOOK';
-        hd.textContent = man.title || '';
+        if(man.exp && Date.now() > man.exp){ msg('この写真集の公開期間は、終わりました。', false); return; }
+        if(man.ns){ root.className = 'ns'; document.addEventListener('contextmenu', function(e){ e.preventDefault(); }); document.addEventListener('dragstart', function(e){ e.preventDefault(); }); }
+        pages = man.pages.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.seam || .5, iv: p.iv || '' }; });
+        if(man.enc) askPw(); else open1(man.title);
+      };
+      x.onerror = x.ontimeout = function(){ if(++tries < 3) return setTimeout(get, 1500 * tries); msg('読み込めませんでした。<br>電波のよいところで、もう一度お試しください。', true); };
+      x.send();
+    })();
+  }
+  function open1(title){
+        document.title = (title || 'PHOTO BOOK') + ' | PHOTO BOOK';
+        hd.textContent = title || '';
         stage.innerHTML = ''; book = el('div', 'bk', stage); pos = 0;
         loadImg(0, function(){ draw(); warm(); });
         draw();
@@ -2861,10 +2922,25 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           var h = el('div', 'ht', root); h.textContent = '横にすると、大きく見られます';
           setTimeout(function(){ h.style.opacity = '0'; setTimeout(function(){ if(h.parentNode) h.parentNode.removeChild(h); }, 700); }, 3500);
         }
-      };
-      x.onerror = x.ontimeout = function(){ if(++tries < 3) return setTimeout(get, 1500 * tries); msg('読み込めませんでした。<br>電波のよいところで、もう一度お試しください。', true); };
-      x.send();
-    })();
+  }
+  // パスワードを聞く
+  function askPw(){
+    if(!(window.crypto && crypto.subtle)){ msg('この写真集はパスワード付きです。<br>このブラウザでは開けないため、別のブラウザ（Safari・Chrome など）で開いてください。', false); return; }
+    stage.innerHTML = ''; var m = el('div', 'ms', stage);
+    m.innerHTML = '<div style="margin-bottom:12px">パスワードを入れてください</div>';
+    var f = el('form', '', m), inp = el('input', '', f), bt = el('button', '', f), er = el('div', '', m);
+    inp.type = 'password'; inp.autocomplete = 'off'; inp.style.cssText = 'font:inherit;font-size:16px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.08);color:#fff;width:70%;max-width:240px;text-align:center';
+    bt.type = 'submit'; bt.textContent = 'ひらく'; er.style.cssText = 'margin-top:10px;font-size:13px;color:#F2A29E;min-height:1.4em';
+    f.onsubmit = function(e){
+      e.preventDefault(); if(!inp.value) return; bt.disabled = true; bt.textContent = '確かめています…'; er.textContent = '';
+      var E = man.enc;
+      crypto.subtle.importKey('raw', new TextEncoder().encode(inp.value), 'PBKDF2', false, ['deriveKey']).then(function(base){
+        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: u8(E.salt), iterations: E.iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+      }).then(function(k){
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8(E.tiv) }, k, u8(E.t)).then(function(buf){ CK = k; var t = ''; try{ t = JSON.parse(new TextDecoder().decode(buf)).title; }catch(_){} open1(t); });
+      }).catch(function(){ bt.disabled = false; bt.textContent = 'ひらく'; er.textContent = 'パスワードがちがいます'; inp.select(); });
+    };
+    setTimeout(function(){ try{ inp.focus(); }catch(e){} }, 50);
   }
   function boot(){ build(); start(); }
   if(document.body) boot(); else document.addEventListener('DOMContentLoaded', boot);
@@ -2911,6 +2987,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const sideLabels = p => isCover(p) ? ['裏表紙', '表紙'] : !booklet ? [String(p*2+1), String(p*2+2)] : p === 0 ? ['', tobiraLayout ? '扉' : '1'] : p === PAIRS - 1 ? [tobiraLayout ? '奥付' : String(p*2), ''] : [String(p*2), String(p*2+1)];
   const slotLabel = i => !booklet ? `${i+1}枚目` : i >= bodyLen() ? (i === slots.length - 1 ? '表紙' : '裏表紙') : i === 0 ? '表紙の裏' : i === bodyLen() - 1 ? '裏表紙の裏' : isTobira(i) ? (i === 1 ? '扉' : '奥付') : isWhiteP(i) ? '白紙（印刷なし）' : `${i}ページ`;
   const slots = Array.from({length:PAIRS*2}, () => null); // {src,url,name}
+  // わざと空白にしたページ（写真なし。書き出しには必ず含める）
+  const blankSet = new Set();
+  const hasBlank = p => blankSet.has(p*2) || blankSet.has(p*2+1);
+  const blankable = i => !sample && !slots[i] && !isLocked(i) && !isCover(i >> 1) && !wide.has(i >> 1) && i < bodyLen();
+  function swapBlank(i, j){ const a = blankSet.has(i), b = blankSet.has(j); if(a) blankSet.add(j); else blankSet.delete(j); if(b) blankSet.add(i); else blankSet.delete(i); }
   // 装飾（文字・画像）: one list per spread. key 'c' = the 写真集 cover, otherwise the spread index
   const DECO_KEY = 'mihiraki-deco-v1';
   let decos = {};
@@ -2951,7 +3032,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     card.className = 'spread';
     card.setAttribute('aria-label', `見開き ${p+1}`);
     card.innerHTML = `
-      <div class="stage"><canvas></canvas><span class="lowres" hidden></span><span class="lowres" hidden></span><button class="spine" type="button" title="見開きごと移動" aria-label="見開き${p+1}をつかんで移動"><span class="bars"></span></button></div>
+      <div class="stage"><canvas></canvas><span class="lowres" hidden></span><span class="lowres" hidden></span><button class="blkbtn" type="button" hidden></button><button class="blkbtn" type="button" hidden></button><button class="spine" type="button" title="見開きごと移動" aria-label="見開き${p+1}をつかんで移動"><span class="bars"></span></button></div>
       <div class="bar">
         <div class="bside l"><button class="num vopen pn" type="button" title="この見開きをプレビュー">${p*2+1}</button></div><span class="pval l"></span><span class="pval r"></span>
         <div class="pairslots">
@@ -2974,6 +3055,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     pairUI.push(ui);
 
     ui.cv.dataset.pair = p;
+    card.querySelectorAll('.blkbtn').forEach((b, n) => {
+      ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+      b.addEventListener('click', e => { e.stopPropagation(); const i = p*2 + n; if(!blankable(i)) return;
+        if(blankSet.has(i)) blankSet.delete(i); else blankSet.add(i);
+        renderPair(p); status(blankSet.has(i) ? `${slotLabel(i)}を空白ページにしました。` : '空白ページの指定をやめました。'); });
+    });
     card.querySelectorAll('.vopen').forEach(b => b.addEventListener('click', () => openViewer(p)));
     // 下の行の幅が変わったら（並べ方・画面の向き・サイドの開閉・文字の読み込みなど）、テンプレの値の置き場所を決め直す
     if(window.ResizeObserver){ let t = 0; new ResizeObserver(() => { cancelAnimationFrame(t); t = requestAnimationFrame(() => fitVals(p)); }).observe(card.querySelector('.bar')); }
@@ -3030,7 +3117,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       });
     });
     card.querySelector('.swap').addEventListener('click', () => {
-      [slots[p*2], slots[p*2+1]] = [slots[p*2+1], slots[p*2]];
+      [slots[p*2], slots[p*2+1]] = [slots[p*2+1], slots[p*2]]; swapBlank(p*2, p*2+1);
       renderSlot(p*2); renderSlot(p*2+1); renderPair(p);
     });
     card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('dragover'); });
@@ -3157,7 +3244,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     dropSamples();
     // fill empty slots starting at startIdx, then wrap to the beginning
     const order = [];
-    for(let i=0;i<slots.length;i++){ const j=(startIdx+i)%slots.length; if(!slots[j] && !(j % 2 === 1 && wide.has(j >> 1)) && (j < bodyLen() || startIdx >= bodyLen()) && !isLocked(j)) order.push(j); }
+    for(let i=0;i<slots.length;i++){ const j=(startIdx+i)%slots.length; if(!slots[j] && !blankSet.has(j) && !(j % 2 === 1 && wide.has(j >> 1)) && (j < bodyLen() || startIdx >= bodyLen()) && !isLocked(j)) order.push(j); }
     const take = list.slice(0, order.length);
     if(list.length > order.length) status(`空き枠が足りないため ${list.length-order.length} 枚は入れていません。`);
     const loaded = await Promise.allSettled(take.map(loadFile));
@@ -3177,6 +3264,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // ---------- render ----------
   function renderSlot(i){
     const el = pairUI[i>>1].slots[i&1], s = slots[i];
+    if(s && blankSet.has(i)) blankSet.delete(i);   // 写真を入れたら、空白の印は外す
     el.classList.toggle('lost', !s && !sample && !!lost[i]);
     el.innerHTML = '';
     el.setAttribute('aria-label', `${i+1}枚目の写真を選ぶ`);
@@ -3846,11 +3934,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(A){
       drawCropped(g,A,rA,0,0,sa,ch);
       if(gridOut()) drawGuide(g,0,0,sa,ch,'#ff0000',gridWidth(target));
-    } else placeholder(g,0,sa,ch,isCover(p) && backOff() ? '裏表紙（印刷なし）' : slotHint(p*2),!!B || isLocked(p*2) || (exporting && hasDeco(p)),pairUI[p] && target === pairUI[p].cv);
+    } else placeholder(g,0,sa,ch,isCover(p) && backOff() ? '裏表紙（印刷なし）' : blankSet.has(p*2) && !sample ? '' : slotHint(p*2),!!B || blankSet.has(p*2) || isLocked(p*2) || (exporting && hasDeco(p)),pairUI[p] && target === pairUI[p].cv);
     if(B){
       drawCropped(g,B,rB,sa+sg,0,sb,ch);
       if(gridOut()) drawGuide(g,sa+sg,0,sb,ch,'#ff0000',gridWidth(target));
-    } else placeholder(g,sa+sg,sb,ch,slotHint(p*2+1),!!A || isLocked(p*2+1) || (exporting && hasDeco(p)),pairUI[p] && target === pairUI[p].cv);
+    } else placeholder(g,sa+sg,sb,ch,blankSet.has(p*2+1) && !sample ? '' : slotHint(p*2+1),!!A || blankSet.has(p*2+1) || isLocked(p*2+1) || (exporting && hasDeco(p)),pairUI[p] && target === pairUI[p].cv);
     const cx = sa + sg/2, half = (cw*P.shW/100)/2;
     if(pairUI[p] && target === pairUI[p].cv) pairUI[p].seam = cx / cw;
     // on the list card the insides of the cover are left out (nothing ever goes there): only the other page shows
@@ -3939,7 +4027,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
 
   // a spread that actually shows a photo (a one-photo spread shows only its left slot)
   function hasPhoto(p){ return !!(wide.has(p) ? slots[p*2] : (slots[p*2] || slots[p*2+1])); }
-  function pairReady(p){ return !sample && (hasPhoto(p) || hasDeco(p)); }
+  function pairReady(p){ return !sample && (hasPhoto(p) || hasDeco(p) || hasBlank(p)); }
   // keep a one-photo spread showing a photo: if its left slot empties while the right one still holds a photo, use that
   function normalizeWide(p){
     if(wide.has(p) && !slots[p*2] && slots[p*2+1]){ slots[p*2] = slots[p*2+1]; slots[p*2+1] = null; renderSlot(p*2); renderSlot(p*2+1); }
@@ -3984,6 +4072,18 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         b.style.transform = 'translateY(-100%)';
         b.style.maxWidth = Math.max(40, half - 2 * m) + 'px';
       }); }
+    // 写真のないページ：［空白にする］（わざと空白のページとして、書き出しに必ず含める）
+    { const bb = ui.card.querySelectorAll('.blkbtn'), cv = ui.cv;
+      [p*2, p*2+1].forEach((i, n) => {
+        const b = bb[n], can = blankable(i), on = can && blankSet.has(i);
+        if(!can && blankSet.has(i) && !sample && slots[i]) blankSet.delete(i);
+        b.hidden = !can; if(!can) return;
+        b.classList.toggle('on', on); b.textContent = on ? '空白ページ ✓' : '空白にする';
+        b.title = on ? '押すと、空白ページの指定をやめます' : 'このページを空白のまま書き出します';
+        const seam = (ui.seam || .5), half = cv.offsetWidth * (n ? 1 - seam : seam);
+        b.style.left = (cv.offsetLeft + (n ? cv.offsetWidth * seam : 0) + half / 2) + 'px';
+        b.style.top = (cv.offsetTop + cv.offsetHeight - (colsNow() >= 4 ? 8 : 12)) + 'px';
+      }); }
     ui.cv.classList.toggle('filled', !sample && hasPhoto(p));
     ui.fb.hidden = true;
     updateGlobal();
@@ -4010,7 +4110,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function updateGlobal(){
     const n = allPairs().filter(pairReady).length;
     $('saveAll').disabled = n === 0;
-    if(WEB){ $('shareBook').hidden = false; $('shareBook').disabled = n === 0; try{ shareSub(); }catch(e){} }
+    if(WEB){ $('shareBook').hidden = false; $('shareBook').disabled = n === 0; $('shareMgrBtn').hidden = false; try{ shareSub(); }catch(e){} }
     { const nm = booklet ? '写真集書き出し' : '見開一括書き出し';
       $('saveAll').innerHTML = n ? `${nm}<span class="sub">${isPdf() ? (booklet ? `PDF・${bookTotal()}ページ` : `PDF・${n}ページ`) : `JPG・${n}ファイル`}</span>` : `${nm}<span class="sub">${isPdf() ? 'PDF' : 'JPG'}</span>`; }
     $('saveSheet').disabled = sample || !slots.some(Boolean);   // the overview needs at least one real photo
@@ -4059,7 +4159,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function swapSlots(i, j){
     if(i === j) return;
     [slots[i], slots[j]] = [slots[j], slots[i]];
-    [lost[i], lost[j]] = [lost[j], lost[i]];
+    [lost[i], lost[j]] = [lost[j], lost[i]]; swapBlank(i, j);
     normalizeWide(i>>1); normalizeWide(j>>1);
     renderSlot(i); renderSlot(j);
     renderPair(i>>1); if((j>>1) !== (i>>1)) renderPair(j>>1);
@@ -4173,7 +4273,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function swapPairs(a, b){
     if(a === b || isEnd(a) || isEnd(b)) return;
-    for(let k=0;k<2;k++){ [slots[a*2+k], slots[b*2+k]] = [slots[b*2+k], slots[a*2+k]]; [lost[a*2+k], lost[b*2+k]] = [lost[b*2+k], lost[a*2+k]]; }
+    for(let k=0;k<2;k++){ [slots[a*2+k], slots[b*2+k]] = [slots[b*2+k], slots[a*2+k]]; [lost[a*2+k], lost[b*2+k]] = [lost[b*2+k], lost[a*2+k]]; swapBlank(a*2+k, b*2+k); }
     const wa = wide.has(a), wb = wide.has(b);
     if(wb) wide.add(a); else wide.delete(a);
     if(wa) wide.add(b); else wide.delete(b);
@@ -7009,7 +7109,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     allPairs().forEach(p => [p*2, p*2+1].forEach(i => {
       // 表紙の裏・裏表紙の裏 have no photo, but text / logos on them are written out too
       if(isLocked(i) && !((isInside(i) || isTobira(i)) && decoOnPage(p, i % 2))) return;
-      if(!slots[i] && !decoOnPage(p, i % 2)) return;   // no photo: only when its text / logos reach this page
+      if(!slots[i] && !decoOnPage(p, i % 2) && !blankSet.has(i)) return;   // no photo: only when its text / logos reach this page (or it is a blank page on purpose)
       if(i % 2 === 1 && wide.has(p)) return;          // hidden while its spread shows one wide photo
       out.push(i);
     }));
@@ -7019,7 +7119,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const P = params(), p = i >> 1;
     if(booklet && backOff()) P.q = 1;   // Photoback 入稿用は常に画質 100%
     // 写真集の表紙・裏表紙に文字があるときは、文字ごと（その写真のページ部分を）切り出す
-    if(hasDeco(p)){
+    if(hasDeco(p) || !slots[i]){   // 文字のあるページ・わざと空白にしたページは、見開きを作って片側を切り出す
       await coverFontsReady(p);
       const cv = document.createElement('canvas');
       exporting = pageExport = true; let g; try{ g = compose(p, cv, 0); } finally { exporting = pageExport = false; }
@@ -7126,6 +7226,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const P0 = pos(tobiraLayout), P1 = pos(to), nb = to ? n + 2 : n - 2;
     const body = Array(nb).fill(null), cover = slots.slice(L0);
     P0.forEach((i, k) => { body[P1[k]] = slots[i] || null; });
+    { const bl = new Set(); P0.forEach((i, k) => { if(blankSet.has(i)) bl.add(P1[k]); }); blankSet.clear(); bl.forEach(i => blankSet.add(i)); }
     const coverWide = wide.has(PAIRS); wide.clear();
     slots.length = 0; slots.push(...body, ...cover);
     PAIRS = nb / 2; if(coverWide) wide.add(PAIRS);
@@ -7152,6 +7253,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const body = slots.slice(0, bodyLen());
     body.length = nb; for(let i=0;i<nb;i++) if(body[i] === undefined) body[i] = null;
     if(booklet){ body[0] = null; body[nb-1] = null; }   // the insides of the cover stay blank
+    [...blankSet].forEach(i => { if(i >= nb || (booklet && (i === 0 || i === nb - 1))) blankSet.delete(i); });
     slots.length = 0; slots.push(...body, ...cover.map(x => x || null));
     PAIRS = np;
     [...wide].forEach(q => { if(q >= np) wide.delete(q); });
@@ -7197,6 +7299,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // reshape the slot list between the two layouts; photos keep their order (in 写真集 mode everything moves one page to the right)
   function convertSlots(on){
+    { const bl = [...blankSet]; blankSet.clear(); bl.forEach(i => { const j = on ? i + 1 : i - 1; if(j >= 0) blankSet.add(j); }); }   // 写真集モードでは1ページ右へずれる
     if(on){ slots.unshift(null); slots.push(null, null, null); }               // inside front cover … inside back cover, then the cover
     else { const c = slots.splice(-2); c.forEach(it => it && it.url && URL.revokeObjectURL(it.url)); slots.pop(); slots.shift(); }
     wide.clear();
@@ -7649,7 +7752,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function buildProject(){
     return { app: 'PHOTO BOOK MAKER', v: 1, id: workId, savedAt: Date.now(), kind: workKind(), title: workTitle(), pages: pagesValue(),
-      settings: currentSettings(), tobiraLayout, ...(gpAlbumCur ? { gpAlbum: gpAlbumCur } : {}), slotsLen: slots.length, wide: [...wide], decos: JSON.parse(JSON.stringify(decos)),
+      settings: currentSettings(), tobiraLayout, ...(gpAlbumCur ? { gpAlbum: gpAlbumCur } : {}), slotsLen: slots.length, wide: [...wide], ...(blankSet.size ? { blank: [...blankSet].sort((a, b) => a - b) } : {}), decos: JSON.parse(JSON.stringify(decos)),
       slots: slots.map(it => { if(!it) return null; const o = { uid: uidOf(it), name: it.name || '', type: (it.file && it.file.type) || 'image/jpeg', bytes: it.bytes || 0 }; ADJ.forEach(k => { if(it[k] != null) o[k] = it[k]; }); return o; }) };
   }
   const usedMyFonts = () => [...new Set(Object.values(decos).flat().map(t => t && t.font).filter(f => f && myFonts.includes(f)))];
@@ -7732,7 +7835,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   async function restoreProject(P, getBlob){
     gpAlbumCur = typeof P.gpAlbum === 'string' ? P.gpAlbum : '';
     for(let i = 0; i < slots.length; i++){ release(i); slots[i] = null; }
-    sample = false; wide.clear(); lost = [];
+    sample = false; wide.clear(); lost = []; blankSet.clear();
     applySettings(Object.assign({}, P.settings || {}));
     syncTobiraLayout(false);
     if(P.pages) $('pages').value = String(P.pages);
@@ -7753,6 +7856,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }));
     items.forEach((it, i) => { if(!it) return; if(it.lost) lost[i] = it.lost; else slots[i] = it; });
     (P.wide || []).forEach(p => { if(p >= 0 && p * 2 < slots.length) wide.add(p); });
+    (P.blank || []).forEach(i => { if(i >= 0 && i < slots.length && !slots[i] && !lost[i]) blankSet.add(i); });
     decos = P.decos && typeof P.decos === 'object' ? P.decos : {}; saveDecos();
     workId = P.id || newId();
     afterPages(); syncOutputs(); updateGlobal(); renderAll(); saveSettings();
@@ -8408,18 +8512,60 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // ボタンの下の小さな文字：つながっていないときは、押す前に分かるように
   function shareSub(){ const b = $('shareBook'), sub = b && b.querySelector('.sub'); if(!sub) return;
     sub.textContent = (gValid() || GD.email) ? '本のようにめくって見られるリンク' : 'Google ドライブにつなぐと使えます'; }
+  // 共有の設定を選ぶ窓（パスワード・有効期限・保存しにくくする）
+  function shareAskOpt(){
+    return new Promise(done => {
+      let m = $('shareOpt');
+      if(!m){
+        m = document.createElement('div'); m.className = 'modal'; m.id = 'shareOpt'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
+        m.innerHTML = `<div class="sheet gpsheet"><h3>共有リンクを作る</h3>
+          <div class="shrow"><b>パスワード<small>空欄ならなし</small></b><div class="shin"><input type="password" id="shPw" autocomplete="new-password" placeholder="なし"><button type="button" class="pweye" id="shPwEye">表示</button></div></div>
+          <div class="shrow"><b>有効期限</b><div class="shin"><select id="shExp"><option value="0">なし</option><option value="7">1週間</option><option value="30">1か月</option><option value="90">3か月</option><option value="d">日付を指定</option></select><input type="date" id="shExpD" hidden></div></div>
+          <div class="shrow"><b>保存しにくくする<small>右クリック・長押しで保存できなくする</small></b><div class="shin"><button class="toggle" id="shNs" type="button" role="switch" aria-checked="true"><span class="knob"></span><span class="tl">ON</span></button></div></div>
+          <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">作る</button></div></div>`;
+        document.body.append(m);
+        $('shPwEye').onclick = () => { const i = $('shPw'), on = i.type === 'password'; i.type = on ? 'text' : 'password'; $('shPwEye').textContent = on ? '隠す' : '表示'; };
+        $('shExp').onchange = () => { const d = $('shExpD'); d.hidden = $('shExp').value !== 'd'; if(!d.hidden && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; } };
+        $('shNs').onclick = () => { const b = $('shNs'), on = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.querySelector('.tl').textContent = on ? 'ON' : 'OFF'; };
+      }
+      $('shPw').value = ''; $('shPw').type = 'password'; $('shPwEye').textContent = '表示';
+      const fin = r => { m.hidden = true; m.onkeydown = null; done(r); };
+      $('shNo').onclick = () => fin(null);
+      $('shGo').onclick = () => {
+        const v = $('shExp').value; let exp = 0;
+        if(v === 'd'){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d + 'T23:59:59').getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
+        else if(+v) exp = Date.now() + (+v) * 864e5;
+        fin({ pw: $('shPw').value, exp, ns: $('shNs').getAttribute('aria-checked') === 'true' });
+      };
+      m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
+      m.hidden = false; $('shPw').focus();
+    });
+  }
+  // パスワードから鍵を作る（見る側と同じ作り方）
+  async function shareDeriveKey(pw, salt, iter){
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+  const b64 = u8 => { let s = ''; u8.forEach(c => { s += String.fromCharCode(c); }); return btoa(s); };
+  async function shareEnc(key, data){ const iv = crypto.getRandomValues(new Uint8Array(12)); const c = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data)); return { iv: b64(iv), c }; }
+  const sharePublic = id => gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=id`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
   async function shareBook(){
     const list = allPairs().filter(pairReady);
     if(!list.length) return;
     if(!shareKey()){ askYesNo('共有リンクを作れません', '<p>共有リンクの準備（API キー）が、まだ設定されていません。</p>', () => {}, '閉じる', ''); return; }
     if(!(await gEnsure(true))) return;
+    const opt = await shareAskOpt(); if(!opt) return;
+    if(opt.pw && !(window.crypto && crypto.subtle)){ askYesNo('パスワードを使えません', '<p>このブラウザでは、パスワード付きの共有を作れません。</p>', () => {}, '閉じる', ''); return; }
     const title = (workTitle() || 'PHOTO BOOK').trim();
     let folder = '';
     try{
       gBusy('共有リンクを作っています', `見開きを準備しています 1 / ${list.length}`, 0);
       const sroot = await shareRoot();
-      folder = (await gCreate({ name: `${title.replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60)}_${stamp()}`, parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: { pbm: 'share' } })).id;
-      await gJson(`${GAPI}/drive/v3/files/${folder}/permissions?fields=id`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
+      let key = null, enc = null;
+      if(opt.pw){ const salt = crypto.getRandomValues(new Uint8Array(16)), iter = 210000; key = await shareDeriveKey(opt.pw, salt, iter); enc = { salt: b64(salt), iter }; }
+      const ap = { pbm: 'share' }; if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
+      folder = (await gCreate({ name: `${title.replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60)}_${stamp()}`, parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
+      await sharePublic(folder);
       await coverFontsReady();
       const pages = [];
       for(let i = 0; i < list.length; i++){
@@ -8430,29 +8576,100 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', SHARE_Q));
         if(!blob) throw new Error('render');
         gBusyImg(blob);
-        const f = await gUpload({ name: `${String(i + 1).padStart(2, '0')}.jpg`, parents: [folder] }, blob);
-        pages.push({ id: f.id, w: c.width, h: c.height, seam: +(((pairUI[p] || {}).seam) || .5).toFixed(4) });
+        const pg = { w: c.width, h: c.height, seam: +(((pairUI[p] || {}).seam) || .5).toFixed(4) };
+        let up = blob, nm = `${String(i + 1).padStart(2, '0')}.jpg`;
+        if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); nm = `${String(i + 1).padStart(2, '0')}.bin`; }
+        pg.id = (await gUpload({ name: nm, parents: [folder] }, up)).id;
+        pages.push(pg);
       }
       gBusy('', 'リンクを仕上げています…', .95);
-      const man = { app: 'pbm-share', v: 1, title, at: Date.now(), pages };   // 作った人が分かる情報（フォルダの場所など）は入れない
+      // 作った人が分かる情報（フォルダの場所など）は入れない。パスワード付きのときは、題名も暗号化する
+      const man = { app: 'pbm-share', v: 2, at: Date.now(), pages };
+      if(opt.exp) man.exp = opt.exp;
+      if(opt.ns) man.ns = 1;
+      if(key){ const t = await shareEnc(key, new TextEncoder().encode(JSON.stringify({ title }))); man.enc = Object.assign(enc, { tiv: t.iv, t: b64(t.c) }); }
+      else man.title = title;
       const mf = await gUpload({ name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } }, new Blob([JSON.stringify(man)], { type: 'application/json' }));
+      try{ await gPatch(folder, { appProperties: { m: mf.id } }); }catch(e){}
       // 見る側から本当に読めるか確かめる（読めなければ、1つずつ公開してもう一度）
       if(!(await shareCanRead(mf.id)) || !(await shareCanRead(pages[0].id))){
-        for(const id of [mf.id, ...pages.map(x => x.id)]) await gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=id`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
+        for(const id of [mf.id, ...pages.map(x => x.id)]) await sharePublic(id);
+        try{ await gPatch(folder, { appProperties: { pf: '1' } }); }catch(e){}
         await new Promise(r => setTimeout(r, 1500));
         if(!(await shareCanRead(mf.id))) throw new Error('verify');
       }
       gBusyOff();
-      const url = shareUrl(mf.id);
-      askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p><input id="shareLink" readonly value="${esc2(url)}">`,
-        async () => { try{ await navigator.clipboard.writeText(url); status('共有リンクをコピーしました。'); }catch(e){ const el = $('shareLink'); if(el){ el.select(); document.execCommand('copy'); } status('共有リンクをコピーしました。'); } },
-        'リンクをコピー', '閉じる');
-      setTimeout(() => { const el = $('shareLink'); if(el){ el.addEventListener('focus', () => el.select()); } }, 0);
+      shareDone(shareUrl(mf.id), opt);
     }catch(e){
       console.warn(e); gBusyOff();
       if(e && e.auth) return;
       askYesNo('共有リンクを作れませんでした', `<p>もう一度お試しください。</p><p style="font-size:12px;color:var(--muted)">${esc2(e && e.message || String(e))}</p>`, () => {}, '閉じる', '');
     }
+  }
+  const fmtDay = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
+  async function shareCopy(url){ try{ await navigator.clipboard.writeText(url); }catch(e){ const t = document.createElement('textarea'); t.value = url; document.body.append(t); t.select(); try{ document.execCommand('copy'); }catch(_){} t.remove(); } status('共有リンクをコピーしました。'); }
+  function shareDone(url, opt){
+    const notes = [];
+    if(opt && opt.pw) notes.push('パスワード付きです。パスワードは、リンクとは別に伝えてください。');
+    if(opt && opt.exp) notes.push(`${fmtDay(opt.exp)} まで見られます。`);
+    askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}<input id="shareLink" readonly value="${esc2(url)}">`,
+      () => shareCopy(url), 'リンクをコピー', '閉じる');
+    setTimeout(() => { const el = $('shareLink'); if(el) el.addEventListener('focus', () => el.select()); }, 0);
+  }
+  // ---------- 共有中のリンク（一覧・オン／オフ・コピー・削除） ----------
+  async function shareItems(){
+    const sroot = await shareRoot();
+    return gList(`'${sroot}' in parents and appProperties has { key='pbm' and value='share' } and trashed=false`, 'files(id,name,createdTime,appProperties,permissions(id,type))');
+  }
+  const shareOn = f => (f.permissions || []).some(x => x.type === 'anyone');
+  async function shareSet(f, on){
+    const ap = f.appProperties || {}, ids = [f.id];
+    if(ap.pf === '1'){ const kids = await gList(`'${f.id}' in parents and trashed=false`, 'files(id,permissions(id,type))'); kids.forEach(k => ids.push(k)); }
+    for(const it of ids){
+      const id = typeof it === 'string' ? it : it.id;
+      let perms = typeof it === 'string' ? null : it.permissions;
+      if(!perms){ try{ perms = (await gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=permissions(id,type)`)).permissions || []; }catch(e){ perms = []; } }
+      const pub = perms.filter(x => x.type === 'anyone');
+      if(on && !pub.length) await sharePublic(id);
+      if(!on) for(const x of pub) await gFetch(`${GAPI}/drive/v3/files/${id}/permissions/${x.id}`, { method: 'DELETE' });
+    }
+  }
+  // 期限の切れた共有を止める（ツールを開いて、ドライブにつながったとき）
+  let shareSwept = false;
+  async function shareSweep(){
+    if(shareSwept || !WEB || !gValid() || !shareKey()) return; shareSwept = true;
+    try{ for(const f of await shareItems()){ const exp = +((f.appProperties || {}).exp || 0); if(exp && exp < Date.now() && shareOn(f)) try{ await shareSet(f, false); }catch(e){} } }catch(e){ console.warn(e); }
+  }
+  async function shareManager(){
+    if(!(await gEnsure(true))) return;
+    let m = $('shareMgr');
+    if(!m){
+      m = document.createElement('div'); m.className = 'modal'; m.id = 'shareMgr'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
+      m.innerHTML = `<div class="sheet gpsheet"><h3>共有中のリンク</h3><div class="shlist" id="shList"></div><div class="actions"><button type="button" class="qbtn keep" id="shMgrClose">閉じる</button></div></div>`;
+      document.body.append(m);
+      $('shMgrClose').onclick = () => { m.hidden = true; };
+      m.addEventListener('keydown', e => { if(e.key === 'Escape') m.hidden = true; });
+    }
+    const box = $('shList'); box.innerHTML = '<p class="shnote">読み込んでいます…</p>'; m.hidden = false;
+    const draw = async () => {
+      let items; try{ items = await shareItems(); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
+      if(!items.length){ box.innerHTML = '<p class="shnote">まだ共有リンクはありません。</p>'; return; }
+      box.innerHTML = '';
+      items.sort((a, b) => (b.createdTime || '').localeCompare(a.createdTime || ''));
+      items.forEach(f => {
+        const ap = f.appProperties || {}, exp = +(ap.exp || 0), on = shareOn(f), past = exp && exp < Date.now();
+        const nm = (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');
+        const sub = [`${fmtDay(f.createdTime)} 作成`, exp ? (past ? '期限切れ' : `${fmtDay(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : '', on ? '公開中' : '停止中'].filter(Boolean).join('・');
+        const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
+        row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">コピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? 'ON' : 'OFF'}</span></button><button type="button" class="del">削除</button></div>`;
+        const cp = row.querySelector('.cp'); if(cp) cp.onclick = () => shareCopy(shareUrl(ap.m));
+        row.querySelector('.tg').onclick = async () => { const t = row.querySelector('.tg'); t.disabled = true; try{ await shareSet(f, !on); }catch(e){ console.warn(e); status('切り替えられませんでした。'); } draw(); };
+        row.querySelector('.del').onclick = () => askYesNo('この共有リンクを削除しますか？', `<p>「${esc2(nm)}」の共有用の写真をゴミ箱に入れます。<br>このリンクは見られなくなります。</p>`, async () => {
+          try{ await gPatch(f.id, { trashed: true }); }catch(e){ status('削除できませんでした。'); } shareManager(); }, '削除', 'キャンセル', () => shareManager());
+        box.append(row);
+      });
+    };
+    draw();
   }
 
   // BOOKをドライブに保存：BOOKごとのフォルダに book.json・サムネ・写真（元の名前のまま）。写真は1回だけ上げて、あとは中身の記録だけ
@@ -8595,7 +8812,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const esc2 = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function gSync(){
     if(!WEB) return;
-    try{ shareSub(); }catch(e){}
+    try{ shareSub(); if(gValid()) setTimeout(shareSweep, 4000); }catch(e){}
     styBkSync();
     const b = $('gConn'); b.hidden = false;
     b.innerHTML = `<img class="glogo" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" width="16" height="16">` + (gValid() ? '' : GD.email ? '<em>つなぐ</em>' : '<span>Google ドライブとつなぐ</span>');   // つないでいるときはロゴだけ（アカウントはマウスを乗せると出る）
@@ -8617,6 +8834,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   if(WEB){
     $('shareBook').addEventListener('click', () => shareBook());
+    $('shareMgrBtn').addEventListener('click', () => shareManager());
     $('workName').addEventListener('click', () => { if($('workName').classList.contains('wclick')) $('gConn').click(); });
     $('workName').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && $('workName').classList.contains('wclick')){ e.preventDefault(); $('gConn').click(); } });
     $('gConn').addEventListener('click', async () => {
