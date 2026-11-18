@@ -899,6 +899,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .strhead{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px}
 .glogo{width:16px;height:16px;object-fit:contain;flex:none;vertical-align:-3px}
 img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertical-align:-.2em}
+#pagesYes.copied{background:#2A8C7F !important;border-color:#2A8C7F !important;color:#fff !important}
+#sharePwCp.copied{color:#2A8C7F;border-color:#2A8C7F}
 #pagesYes img.glogo.gpl{width:1.1em;height:1.1em;padding:2px;margin-right:.4em;background:#fff;border-radius:50%;vertical-align:-.3em}
 .ghead{display:inline-flex;align-items:center;gap:6px}
 .glink{color:inherit;text-decoration:underline;text-decoration-color:rgba(0,0,0,.25);text-underline-offset:3px;display:inline-flex;align-items:center;gap:3px}
@@ -2885,7 +2887,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(retry){ var b = el('button', '', m); b.textContent = 'もう一度'; b.onclick = function(){ start(); }; }
   }
   function build(){
-    root = el('div'); root.id = 'shv'; document.body.appendChild(root);
+    root = el('div'); root.id = 'shv'; root.className = 'ns'; document.body.appendChild(root);
+    // 見る画面は、右クリック・長押しのメニューとドラッグを出さない
+    document.addEventListener('contextmenu', function(e){ e.preventDefault(); }); document.addEventListener('dragstart', function(e){ e.preventDefault(); });
     hd = el('div', 'hd', root); stage = el('div', 'st', root); ft = el('div', 'ft', root);
     prevB = el('button', 'nv p', root); prevB.innerHTML = '&#8249;'; prevB.setAttribute('aria-label', '前の見開き');
     nextB = el('button', 'nv n', root); nextB.innerHTML = '&#8250;'; nextB.setAttribute('aria-label', '次の見開き');
@@ -2914,7 +2918,6 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           msg('読み込めませんでした。<br>電波のよいところで、もう一度お試しください。', true); return;
         }
         if(man.exp && Date.now() > man.exp){ msg('この写真集の公開期間は、終わりました。', false); return; }
-        if(man.ns){ root.className = 'ns'; document.addEventListener('contextmenu', function(e){ e.preventDefault(); }); document.addEventListener('dragstart', function(e){ e.preventDefault(); }); }
         pages = man.pages.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.seam || .5, iv: p.iv || '' }; });
         if(man.enc) askPw(); else open1(man.title);
       };
@@ -2939,7 +2942,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     stage.innerHTML = ''; var m = el('div', 'ms', stage);
     m.innerHTML = '<div style="margin-bottom:12px">パスワードを入れてください</div>';
     var f = el('form', '', m), inp = el('input', '', f), bt = el('button', '', f), er = el('div', '', m);
-    inp.type = 'password'; inp.autocomplete = 'off'; inp.style.cssText = 'font:inherit;font-size:16px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.08);color:#fff;width:70%;max-width:240px;text-align:center';
+    // 「パスワードを保存しますか？」を出させない：ふつうの文字欄を ● で隠す（隠せないブラウザだけ password 欄）
+    var mask = !!(window.CSS && CSS.supports && CSS.supports('-webkit-text-security', 'disc')); inp.type = mask ? 'text' : 'password';
+    inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.setAttribute('data-lpignore', 'true'); inp.setAttribute('data-1p-ignore', ''); inp.style.cssText = 'font:inherit;font-size:16px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.08);color:#fff;width:70%;max-width:240px;text-align:center';
+    if(mask) inp.style.webkitTextSecurity = 'disc';
     bt.type = 'submit'; bt.textContent = 'ひらく'; er.style.cssText = 'margin-top:10px;font-size:13px;color:#F2A29E;min-height:1.4em';
     f.onsubmit = function(e){
       e.preventDefault(); if(!inp.value) return; bt.disabled = true; bt.textContent = '確かめています…'; er.textContent = '';
@@ -7391,7 +7397,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function gpLogo(html){ return String(html).split('Google フォト').join(GPL).split('Google ドライブ').join(GDL); }
   function gpTxt(el, t){ const v = String(t == null ? '' : t); if(v.includes('Google フォト') || v.includes('Google ドライブ')) el.innerHTML = gpLogo(esc2(v)); else el.textContent = v; }
   function askYesNo(title, html, onYes, yesLabel, noLabel, onNo){
-    gpTxt($('pagesYes'), yesLabel || 'YES'); gpTxt($('pagesNo'), noLabel || 'NO');
+    $('pagesYes').classList.remove('copied'); gpTxt($('pagesYes'), yesLabel || 'YES'); gpTxt($('pagesNo'), noLabel || 'NO');
     gpTxt($('pagesTitle'), title);
     $('pagesMsg').innerHTML = gpLogo(html);
     const notice = noLabel === '';   // お知らせだけ（ボタン1つ）
@@ -8644,7 +8650,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
   }
   const fmtDay = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
-  async function shareCopy(url){ try{ await navigator.clipboard.writeText(url); }catch(e){ const t = document.createElement('textarea'); t.value = url; document.body.append(t); t.select(); try{ document.execCommand('copy'); }catch(_){} t.remove(); } status(arguments[1] || '共有リンクをコピーしました。'); }
+  async function shareCopy(url, msg, quiet){ let ok = false; try{ await navigator.clipboard.writeText(url); ok = true; }catch(e){ const t = document.createElement('textarea'); t.value = url; document.body.append(t); t.select(); try{ ok = document.execCommand('copy'); }catch(_){} t.remove(); } if(ok || !quiet) status(ok ? (msg || '共有リンクをコピーしました。') : 'コピーできませんでした。リンクを選んでコピーしてください。'); return ok; }
   function shareDone(url, opt){
     const notes = [];
     if(opt && opt.pw) notes.push('パスワードは、リンクとは別に伝えてください。');
@@ -8652,9 +8658,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const pwBox = opt && opt.pw ? `<div class="shlbl">パスワード</div><div class="shpwrow"><input id="sharePw" readonly value="${esc2(opt.pw)}"><button type="button" id="sharePwCp">コピー</button></div>` : '';
     askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${pwBox ? '<div class="shlbl">リンク</div>' : ''}<input id="shareLink" readonly value="${esc2(url)}">${pwBox}`,
       () => shareCopy(url), 'リンクをコピー', '閉じる');
+    // Box と同じく：開いたらリンクをコピーしておき、ボタンは「コピー済み」に。押してもう一度コピーしても窓は閉じない
+    const yes = $('pagesYes'), copied = b => { b.textContent = '✓ コピー済み'; b.classList.add('copied'); };
+    yes.onclick = async () => { if(await shareCopy(url)) copied(yes); };
+    shareCopy(url, '共有リンクをコピーしました。', true).then(ok => { if(ok && !$('pagesModal').hidden && $('pagesYes') === yes) copied(yes); });
     setTimeout(() => {
       ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
-      const b = $('sharePwCp'); if(b) b.onclick = () => shareCopy(opt.pw, 'パスワードをコピーしました。');
+      const b = $('sharePwCp'); if(b) b.onclick = async () => { if(await shareCopy(opt.pw, 'パスワードをコピーしました。')) copied(b); };
     }, 0);
   }
   // ---------- 共有中のリンク（一覧・オン／オフ・コピー・削除） ----------
