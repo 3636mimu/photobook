@@ -741,12 +741,12 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .gpsheet,#shareMgr .gpsheet{max-width:480px;padding:26px 28px 22px}
 #shareMgr .gpsheet{max-width:560px}
 #shareOpt h3,#shareMgr h3{margin:0 0 14px;font-size:17px;font-weight:600}
-#shareOpt .shrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+#shareOpt .shrow{display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 #shareOpt .shrow:first-of-type{border-top:0}
-#shareOpt .shrow > b{font-size:14px;font-weight:600;flex:0 0 auto}
+#shareOpt .shrow > b{font-size:14px;font-weight:600;flex:0 0 6.5em}
 #shareOpt .shrow small{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px}
-#shareOpt .shin{display:flex;gap:6px;align-items:center;flex:1 1 auto;justify-content:flex-end;min-width:0}
-#shareOpt input[type=password],#shareOpt input[type=text],#shareOpt input[type=date],#shareOpt select{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#111;min-width:0}
+#shareOpt .shin{display:flex;gap:6px;align-items:center;flex:1 1 auto;justify-content:flex-start;min-width:0}
+#shareOpt input[type=password],#shareOpt input[type=text],#shareOpt input[type=date],#shareOpt input[type=datetime-local],#shareOpt select{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#111;min-width:0}
 #shareOpt #shPw{width:100%;max-width:220px}
 #shareOpt #shExp{flex:0 0 auto;width:auto}#shareOpt #shExpD{flex:0 1 200px;width:200px}
 #shareOpt .pweye{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:12px;cursor:pointer;color:var(--muted);white-space:nowrap}
@@ -760,7 +760,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareMgr .shmeta b{display:block;font-size:13.5px;font-weight:600;word-break:break-all;line-height:1.4}
 #shareMgr .shmeta small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
 #shareMgr .shbtns{display:flex;gap:6px;flex:0 0 auto;align-items:center}
-#shareMgr .shbtns button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+#shareMgr .shbtns button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap}
 #shareMgr .shbtns .del{color:#C24A45;border-color:#E9C3C1}
 #shareMgr .shnote{font-size:13px;color:var(--muted);text-align:center;padding:18px 0}
 .sharemgr{display:block;width:100%;margin-top:6px;background:none;border:0;color:var(--accent);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
@@ -792,9 +792,10 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #gpModal .actions{justify-content:center;gap:14px;margin-top:20px}
 #gpModal .qbtn{flex:0 1 128px}
 /* 編集を中断するときの3つのボタン：丸い塗りのボタン（続ける＝落ち着いたグレージュ、閉じる＝赤、保存＝アクセント色） */
-.qbtn{border:0 !important;border-radius:999px !important;padding:10px 8px !important;font:inherit;font-size:14px !important;font-weight:500 !important;letter-spacing:.02em;white-space:nowrap;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.16);transition:filter .15s,transform .1s}
+.qbtn{border:0 !important;border-radius:8px !important;padding:10px 8px !important;font:inherit;font-size:14px !important;font-weight:500 !important;letter-spacing:.02em;white-space:nowrap;cursor:pointer;box-shadow:none;transition:filter .15s,transform .1s}
 .qbtn:hover{filter:brightness(1.05)}.qbtn:active{transform:translateY(1px)}
-.qbtn.keep{background:#B9AF9F !important;color:#3F3A33 !important}
+.qbtn.keep{background:#fff !important;color:#5a554e !important;box-shadow:inset 0 0 0 1px var(--line) !important}
+.qbtn.keep:hover{background:#f4f2ee !important}
 .qbtn.drop{background:#E05A55 !important;color:#fff !important}
 .qbtn.save{background:#2A8C7F !important;color:#fff !important}
 /* どの窓も、戻る・進むのボタンは同じ大きさの丸いボタン（「共有リンクを作る」と同じ形） */
@@ -851,7 +852,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .savedinfo{margin:0 0 18px;font-size:13px;color:var(--muted);line-height:1.7;word-break:break-all}
 .savedauto{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;margin-bottom:20px}
 .savedauto input{accent-color:var(--accent);width:16px;height:16px;margin:0}
-#savedOk{display:block;margin:0 auto;width:180px;height:42px;border-radius:999px;font-size:15px}
+#savedOk{display:block;margin:0 auto;width:180px;height:42px;border-radius:8px;font-size:15px}
 .wauto{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 9px 0 7px;font-size:12px;font-weight:600;color:#6b5a4f;background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.06);border-radius:10px;cursor:pointer;white-space:nowrap}
 .wauto input{accent-color:var(--accent);margin:0}
 .wauto small{font-weight:500;color:#9a8a80;font-size:11px}
@@ -872,7 +873,6 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #gBusy .gbimg[hidden]{display:none}
 #gBusy .gbimg img{max-width:100%;max-height:150px;box-shadow:0 4px 14px rgba(0,0,0,.18);opacity:0;transform:scale(.985);transition:opacity .35s ease,transform .35s ease}
 #gBusy .gbimg img.in{opacity:1;transform:none}
-#gBusy .gbcancel{margin:14px auto 0;padding:7px 22px;font-size:13px}
 .wbtn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .wbtn:hover,.wbtn:focus-visible{color:var(--accent);border-color:var(--accent);background:#fff;outline:none}
 .slot.lost{outline:2px dashed #D9A21B;outline-offset:-4px;color:#B07D0A}
@@ -957,7 +957,7 @@ img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertica
 .sdopt .sdnow{font-style:normal;font-size:10.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-left:4px}
 .sdopt:focus-visible{outline:none;border-color:var(--accent)}
 .sdopt{position:relative;padding-right:92px}
-.sdopt .sdgo{position:absolute;right:12px;top:50%;transform:translateY(-50%);min-width:66px;padding:8px 14px;border-radius:999px;background:var(--accent);color:#fff;font-size:13.5px;font-weight:700;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:filter .15s}
+.sdopt .sdgo{position:absolute;right:12px;top:50%;transform:translateY(-50%);min-width:66px;padding:8px 14px;border-radius:8px;background:var(--accent);color:#fff;font-size:13.5px;font-weight:700;text-align:center;box-shadow:none;transition:filter .15s}
 .sdopt:hover .sdgo,.sdopt:focus-visible .sdgo{filter:brightness(1.08)}
 .sdopt:active .sdgo{filter:brightness(.92)}
 /* Google ドライブの見出し（最初の画面）：1行目 名前・フォルダを開く・アカウント／2行目 容量 */
