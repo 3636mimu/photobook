@@ -749,6 +749,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareMgr .shlist{display:flex;flex-direction:column;gap:8px;max-height:min(60vh,520px);overflow:auto}
 #shareMgr .shitem{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 #shareMgr .shitem.off{opacity:.6}
+#shareMgr .toggle.busy{cursor:progress}
 #shareMgr .shmeta{flex:1 1 auto;min-width:0}
 #shareMgr .shmeta b{display:block;font-size:13.5px;font-weight:600;word-break:break-all;line-height:1.4}
 #shareMgr .shmeta small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
@@ -8524,21 +8525,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // ボタンの下の小さな文字：つながっていないときは、押す前に分かるように
   function shareSub(){ const b = $('shareBook'), sub = b && b.querySelector('.sub'); if(!sub) return;
     sub.textContent = (gValid() || GD.email) ? '本のようにめくって見られるリンク' : 'Google ドライブにつなぐと使えます'; }
-  // 共有の設定を選ぶ窓（パスワード・有効期限・保存しにくくする）
+  // 共有の設定を選ぶ窓（パスワード・有効期限）
   function shareAskOpt(){
     return new Promise(done => {
       let m = $('shareOpt');
       if(!m){
         m = document.createElement('div'); m.className = 'modal'; m.id = 'shareOpt'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
         m.innerHTML = `<div class="sheet gpsheet"><h3>共有リンクを作る</h3>
-          <div class="shrow"><b>パスワード<small>空欄ならなし</small></b><div class="shin"><input type="password" id="shPw" autocomplete="new-password" placeholder="なし"><button type="button" class="pweye" id="shPwEye">表示</button></div></div>
+          <div class="shrow"><b>パスワード</b><div class="shin"><input type="password" id="shPw" autocomplete="new-password" placeholder="空欄ならなし"><button type="button" class="pweye" id="shPwEye">表示</button></div></div>
           <div class="shrow"><b>有効期限</b><div class="shin"><select id="shExp"><option value="0">なし</option><option value="7">1週間</option><option value="30">1か月</option><option value="90">3か月</option><option value="d">日付を指定</option></select><input type="date" id="shExpD" hidden></div></div>
-          <div class="shrow"><b>保存しにくくする<small>右クリック・長押しで保存できなくする</small></b><div class="shin"><button class="toggle" id="shNs" type="button" role="switch" aria-checked="true"><span class="knob"></span><span class="tl">ON</span></button></div></div>
           <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">作る</button></div></div>`;
         document.body.append(m);
         $('shPwEye').onclick = () => { const i = $('shPw'), on = i.type === 'password'; i.type = on ? 'text' : 'password'; $('shPwEye').textContent = on ? '隠す' : '表示'; };
         $('shExp').onchange = () => { const d = $('shExpD'); d.hidden = $('shExp').value !== 'd'; if(!d.hidden && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; } };
-        $('shNs').onclick = () => { const b = $('shNs'), on = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.querySelector('.tl').textContent = on ? 'ON' : 'OFF'; };
       }
       $('shPw').value = ''; $('shPw').type = 'password'; $('shPwEye').textContent = '表示';
       const fin = r => { m.hidden = true; m.onkeydown = null; done(r); };
@@ -8547,7 +8546,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const v = $('shExp').value; let exp = 0;
         if(v === 'd'){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d + 'T23:59:59').getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
         else if(+v) exp = Date.now() + (+v) * 864e5;
-        fin({ pw: $('shPw').value, exp, ns: $('shNs').getAttribute('aria-checked') === 'true' });
+        fin({ pw: $('shPw').value, exp });
       };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
       m.hidden = false; $('shPw').focus();
@@ -8637,14 +8636,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   async function shareSet(f, on){
     const ap = f.appProperties || {}, ids = [f.id];
     if(ap.pf === '1'){ const kids = await gList(`'${f.id}' in parents and trashed=false`, 'files(id,permissions(id,type))'); kids.forEach(k => ids.push(k)); }
-    for(const it of ids){
+    // 何枚もあるので、同時に6件ずつ切り替える（1件ずつだと遅い）
+    const one = async it => {
       const id = typeof it === 'string' ? it : it.id;
       let perms = typeof it === 'string' ? null : it.permissions;
       if(!perms){ try{ perms = (await gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=permissions(id,type)`)).permissions || []; }catch(e){ perms = []; } }
       const pub = perms.filter(x => x.type === 'anyone');
       if(on && !pub.length) await sharePublic(id);
       if(!on) for(const x of pub) await gFetch(`${GAPI}/drive/v3/files/${id}/permissions/${x.id}`, { method: 'DELETE' });
-    }
+    };
+    let k = 0, err = null;
+    await Promise.all(Array.from({ length: Math.min(6, ids.length) }, async () => { while(k < ids.length){ const it = ids[k++]; try{ await one(it); }catch(e){ err = err || e; } } }));
+    if(err) throw err;
+    f.permissions = on ? [{ id: 'anyoneWithLink', type: 'anyone' }] : [];
   }
   // 期限の切れた共有は、公開を止めてからゴミ箱へ（ツールを開いて、ドライブにつながったとき・共有中のリンクを開いたとき）
   const sharePast = f => { const exp = +((f.appProperties || {}).exp || 0); return !!exp && exp < Date.now(); };
@@ -8654,7 +8658,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(shareSwept || !WEB || !gValid() || !shareKey()) return; shareSwept = true;
     try{ for(const f of await shareItems()) if(sharePast(f)) await shareExpire(f); }catch(e){ console.warn(e); }
   }
-  async function shareManager(){
+  let shCache = null;
+  async function shareManager(cached){
     if(!(await gEnsure(true))) return;
     let m = $('shareMgr');
     if(!m){
@@ -8664,10 +8669,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       $('shMgrClose').onclick = () => { m.hidden = true; };
       m.addEventListener('keydown', e => { if(e.key === 'Escape') m.hidden = true; });
     }
-    const box = $('shList'); box.innerHTML = '<p class="shnote">読み込んでいます…</p>'; m.hidden = false;
+    const box = $('shList'); if(!(cached && shCache)) box.innerHTML = '<p class="shnote">読み込んでいます…</p>'; m.hidden = false;
     const draw = async () => {
-      let items; try{ items = await shareItems(); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
-      { const old = items.filter(sharePast); if(old.length){ await Promise.all(old.map(shareExpire)); items = items.filter(f => !sharePast(f)); } }
+      let items;
+      if(cached && shCache){ items = shCache.slice(); cached = false; }
+      else {
+        try{ items = await shareItems(); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
+        { const old = items.filter(sharePast); if(old.length){ await Promise.all(old.map(shareExpire)); items = items.filter(f => !sharePast(f)); } }
+        shCache = items.slice();
+      }
       if(!items.length){ box.innerHTML = '<p class="shnote">まだ共有リンクはありません。</p>'; return; }
       box.innerHTML = '';
       items.sort((a, b) => (b.createdTime || '').localeCompare(a.createdTime || ''));
@@ -8678,9 +8688,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
         row.innerHTML = `<div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub)}</small></div><div class="shbtns">${ap.m ? '<button type="button" class="cp">コピー</button>' : ''}<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? 'ON' : 'OFF'}</span></button><button type="button" class="del">削除</button></div>`;
         const cp = row.querySelector('.cp'); if(cp) cp.onclick = () => shareCopy(shareUrl(ap.m));
-        row.querySelector('.tg').onclick = async () => { const t = row.querySelector('.tg'); t.disabled = true; try{ await shareSet(f, !on); }catch(e){ console.warn(e); status('切り替えられませんでした。'); } draw(); };
-        row.querySelector('.del').onclick = () => askYesNo('この共有リンクを削除しますか？', `<p>「${esc2(nm)}」の共有用の写真をゴミ箱に入れます。<br>このリンクは見られなくなります。</p>`, async () => {
-          try{ await gPatch(f.id, { trashed: true }); }catch(e){ status('削除できませんでした。'); } shareManager(); }, '削除', 'キャンセル', () => shareManager());
+        // 押したらすぐ見た目を切り替え、ドライブ側はうしろで反映（失敗したら元に戻す）
+        const tg = row.querySelector('.tg'), small = row.querySelector('.shmeta small');
+        const look = v => { tg.setAttribute('aria-checked', v ? 'true' : 'false'); tg.querySelector('.tl').textContent = v ? 'ON' : 'OFF'; row.classList.toggle('off', !v); small.textContent = small.textContent.replace(/(公開中|停止中|切り替えています…)$/, v ? '公開中' : '停止中'); };
+        let busy = false;
+        tg.onclick = async () => {
+          if(busy) return; busy = true;
+          const want = !shareOn(f); look(want); tg.classList.add('busy');
+          try{ await shareSet(f, want); }catch(e){ console.warn(e); look(!want); status('切り替えられませんでした。'); }
+          tg.classList.remove('busy'); busy = false;
+        };
+        row.querySelector('.del').onclick = () => askYesNo('この共有リンクを削除しますか？', `<p>「${esc2(nm)}」のリンクを送った相手は、写真集を見られなくなります。</p><p><b>消えるもの</b><br>このリンクのために作った見開きの画像（Google ドライブの「PHOTO BOOK MAKER ＞ 共有」の中。ゴミ箱に入ります）</p><p><b>消えないもの</b><br>BOOKのデータ、元の写真、ほかの共有リンク</p><p style="color:var(--muted);font-size:12px">しばらく見せないだけなら、削除せずにスイッチをOFFにしてください。</p>`, async () => {
+          if(shCache) shCache = shCache.filter(x => x !== f);
+          shareManager(true);   // 一覧からはすぐ消し、ドライブ側はうしろで
+          try{ await gPatch(f.id, { trashed: true }); }catch(e){ status('削除できませんでした。'); shCache = null; if(!$('shareMgr').hidden) shareManager(); } }, '削除', 'キャンセル', () => shareManager(true));
         box.append(row);
       });
     };
