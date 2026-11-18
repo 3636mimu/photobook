@@ -356,9 +356,9 @@ button{font:inherit}
 .sharebtn{width:100%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.35}.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
 .shlbl{font-size:11.5px;color:var(--muted);margin:12px 0 -6px}
 .shpwrow{display:flex;gap:8px;align-items:center;margin-top:10px}
-#sharePw{flex:1;min-width:0;box-sizing:border-box;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;letter-spacing:.06em;background:#f6f5f2;color:#333}
-#sharePwCp{flex:none;font:inherit;font-size:12.5px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#333;cursor:pointer}
-#shareLink{width:100%;box-sizing:border-box;margin:10px 0 2px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;background:#f6f5f2;color:#333}
+.shpwrow .shbox,#sharePw{flex:1;min-width:0;box-sizing:border-box;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;letter-spacing:.06em;background:#f6f5f2;color:#333}
+#sharePwCp,.shpwrow .shcp{flex:none;min-width:7.2em;font:inherit;font-size:12.5px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#333;cursor:pointer}
+#shareLink{font-size:13px;letter-spacing:0}
 .hint{font-size:12px;color:var(--muted);margin:0}
 .linkbtn{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0;cursor:pointer;font:inherit}
 .status{font-size:12px;color:var(--muted);margin:0}
@@ -900,7 +900,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .glogo{width:16px;height:16px;object-fit:contain;flex:none;vertical-align:-3px}
 img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertical-align:-.2em}
 #pagesYes.copied{background:#2A8C7F !important;border-color:#2A8C7F !important;color:#fff !important}
-#sharePwCp.copied{color:#2A8C7F;border-color:#2A8C7F}
+.shpwrow .shcp.copied{background:#2A8C7F;border-color:#2A8C7F;color:#fff}
 #pagesYes img.glogo.gpl{width:1.1em;height:1.1em;padding:2px;margin-right:.4em;background:#fff;border-radius:50%;vertical-align:-.3em}
 .ghead{display:inline-flex;align-items:center;gap:6px}
 .glink{color:inherit;text-decoration:underline;text-decoration-color:rgba(0,0,0,.25);text-underline-offset:3px;display:inline-flex;align-items:center;gap:3px}
@@ -8600,9 +8600,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const opt = await shareAskOpt(); if(!opt) return;
     if(opt.pw && !(window.crypto && crypto.subtle)){ askYesNo('パスワードを使えません', '<p>このブラウザでは、パスワード付きの共有を作れません。</p>', () => {}, '閉じる', ''); return; }
     const title = (workTitle() || 'PHOTO BOOK').trim();
-    let folder = '';
+    let folder = '', stop = false;
+    const chk = () => { if(stop){ const e = new Error('cancel'); e.cancel = true; throw e; } };
     try{
       gBusy('写真集の共有リンクを作っています', `見開きを準備しています 1 / ${list.length}`, 0);
+      // 中止：押したらその場で窓を閉じ、作りかけはうしろでゴミ箱へ
+      { const cb = $('gBusyCancel'); cb.hidden = false; cb.onclick = () => { stop = true; gBusyOff(); status('共有リンクの作成を中止しました。'); }; }
       const sroot = await shareRoot();
       let key = null, enc = null;
       if(opt.pw){ const salt = crypto.getRandomValues(new Uint8Array(16)), iter = 210000; key = await shareDeriveKey(opt.pw, salt, iter); enc = { salt: b64(salt), iter }; }
@@ -8612,7 +8615,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       await coverFontsReady();
       const pages = [];
       for(let i = 0; i < list.length; i++){
-        const p = list[i];
+        const p = list[i]; chk();
         gBusy('', `見開きを準備しています ${i + 1} / ${list.length}`, i / list.length * .9);
         const c = document.createElement('canvas');
         exporting = true; try{ compose(p, c, SHARE_LONG); } finally { exporting = false; }
@@ -8622,9 +8625,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const pg = { w: c.width, h: c.height, seam: +(((pairUI[p] || {}).seam) || .5).toFixed(4) };
         let up = blob, nm = `${String(i + 1).padStart(2, '0')}.jpg`;
         if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); nm = `${String(i + 1).padStart(2, '0')}.bin`; }
-        pg.id = (await gUpload({ name: nm, parents: [folder] }, up)).id;
+        chk(); pg.id = (await gUpload({ name: nm, parents: [folder] }, up)).id;
         pages.push(pg);
       }
+      chk(); $('gBusyCancel').hidden = true;   // ここから先は仕上げだけなので、中止は出さない
       gBusy('', 'リンクを仕上げています…', .95);
       // 作った人が分かる情報（フォルダの場所など）は入れない。パスワード付きのときは、題名も暗号化する
       const man = { app: 'pbm-share', v: 2, at: Date.now(), pages };
@@ -8652,7 +8656,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }catch(e){
       console.warn(e); gBusyOff();
       if(folder) try{ await gPatch(folder, { trashed: true }); }catch(_){}   // 作りかけは残さない
-      if(e && e.auth) return;
+      if(stop || (e && e.auth)) return;
       const why = e && e.message === 'verify' ? 'Google ドライブ側で公開の反映が遅れていて、見る人が開けるか確かめられませんでした。少し時間をおいて、もう一度作ってください。' : 'もう一度お試しください。';
       askYesNo('共有リンクを作れませんでした', `<p>${why}</p>${e && e.message === 'verify' ? '' : `<p style="font-size:12px;color:var(--muted)">${esc2(e && e.message || String(e))}</p>`}`, () => {}, '閉じる', '');
     }
@@ -8663,17 +8667,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const notes = [];
     if(opt && opt.pw) notes.push('パスワードは、リンクとは別に伝えてください。');
     if(opt && opt.exp) notes.push(`${fmtDay(opt.exp)} まで見られます。`);
-    const pwBox = opt && opt.pw ? `<div class="shlbl">パスワード</div><div class="shpwrow"><input id="sharePw" readonly value="${esc2(opt.pw)}"><button type="button" id="sharePwCp">コピー</button></div>` : '';
-    askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${pwBox ? '<div class="shlbl">リンク</div>' : ''}<input id="shareLink" readonly value="${esc2(url)}">${pwBox}`,
-      () => shareCopy(url), 'リンクをコピー', '閉じる');
-    // Box と同じく：開いたらリンクをコピーしておき、ボタンは「コピー済み」に。押してもう一度コピーしても窓は閉じない
-    const yes = $('pagesYes'), copied = b => { b.textContent = '✓ コピー済み'; b.classList.add('copied'); };
-    yes.onclick = async () => { if(await shareCopy(url)) copied(yes); };
-    shareCopy(url, '共有リンクをコピーしました。', true).then(ok => { if(ok && !$('pagesModal').hidden && $('pagesYes') === yes) copied(yes); });
-    setTimeout(() => {
-      ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
-      const b = $('sharePwCp'); if(b) b.onclick = async () => { if(await shareCopy(opt.pw, 'パスワードをコピーしました。')) copied(b); };
-    }, 0);
+    // リンクもパスワードも、枠の横に［コピー］。リンクは開いた時点でコピー済み（Box と同じ）
+    const row = (lbl, id, v) => `<div class="shlbl">${lbl}</div><div class="shpwrow"><input id="${id}" class="shbox" readonly value="${esc2(v)}"><button type="button" class="shcp copied" id="${id}Cp">✓ コピー済み</button></div>`;
+    askYesNo('共有リンクができました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('リンク', 'shareLink', url)}${opt && opt.pw ? row('パスワード', 'sharePw', opt.pw) : ''}`,
+      () => {}, '閉じる', '');
+    const lb = $('shareLinkCp'), pb = $('sharePwCp');
+    const mark = b => { [lb, pb].forEach(x => { if(!x) return; const on = x === b; x.classList.toggle('copied', on); x.textContent = on ? '✓ コピー済み' : 'コピー'; }); };
+    mark(lb);   // 最初からコピー済み（できなかったときだけ戻す）
+    shareCopy(url, '共有リンクをコピーしました。', true).then(ok => { if(!ok && $('shareLinkCp') === lb) mark(null); });
+    lb.onclick = async () => { if(await shareCopy(url)) mark(lb); };
+    if(pb) pb.onclick = async () => { if(await shareCopy(opt.pw, 'パスワードをコピーしました。')) mark(pb); };
+    ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
   }
   // ---------- 共有中のリンク（一覧・オン／オフ・コピー・削除） ----------
   async function shareItems(){
