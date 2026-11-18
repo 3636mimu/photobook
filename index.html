@@ -8670,7 +8670,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function shareFolderName(name){
     const clean = x => (x || '').replace(/[\\/:*?"<>|]+/g, '_').trim();
     const book = clean((bookFile || '').replace(/\.pbmk?$/i, ''));
-    return ([clean(name).slice(0, 80), book.slice(0, 80)].filter(Boolean).join('_') || 'PHOTO BOOK') + '_' + stamp();   // 同じ名前のフォルダと重ならないよう、末尾に日時
+    const nm = clean(name).slice(0, 80), bk = book.slice(0, 80);
+    // 名前にすでに BOOK名 が入っていれば、重ねて付けない。同じ名前のフォルダと重ならないよう、末尾に日時
+    return ([nm, bk && !nm.includes(bk) ? bk : ''].filter(Boolean).join('_') || 'PHOTO BOOK') + '_' + stamp();
   }
   // appProperties は「キー＋値」で124バイトまで：収まるように切る
   function fitBytes(t, max){ const enc = new TextEncoder(); let s = String(t || ''); while(s && enc.encode(s).length > max) s = s.slice(0, -1); return s; }
@@ -8681,7 +8683,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(workId && ap.book === String(workId)) return true;
     const book = (bookFile || '').replace(/\.pbmk?$/i, '').replace(/[\\/:*?"<>|]+/g, '_').trim().slice(0, 80);
     const nm = (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');
-    return !!book && nm.endsWith('_' + book);
+    return !!book && (nm.endsWith('_' + book) || nm.endsWith(' ' + book) || nm === book);
   }
   async function shareBook(){
     const list = allPairs().filter(pairReady);
