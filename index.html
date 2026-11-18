@@ -802,7 +802,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #pagesModal:not(.qdlg) .actions{justify-content:center;gap:12px;margin-top:20px}
 #pagesModal:not(.qdlg) .qbtn{flex:0 0 130px;padding:10px 12px !important}
 #saveNo,#driveClose,#bookDelCancel{flex:0 0 130px;padding:10px 12px !important}
-#gBusy .gbcancel.qbtn{display:block;width:130px;margin:18px auto 0;padding:10px 12px !important}
+#gBusy .gbcancel.qbtn{display:block;width:96px;margin:16px auto 0;padding:6px 10px !important;font-size:13px !important}
 /* その確認の窓：真ん中ぞろえで、まわりにゆとり */
 #pagesModal.qdlg .sheet{max-width:500px !important;padding:28px 34px 26px;text-align:center}
 #pagesModal.qdlg h3{margin:0;font-size:15px;font-weight:500}
@@ -8463,7 +8463,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!gValid()){ const e = new Error('auth'); e.auth = true; throw e; }
     const r = await fetch(url, Object.assign({}, opt, { headers: Object.assign({ Authorization: 'Bearer ' + GD.tok }, opt.headers || {}) }));
     if(r.status === 401){ GD.tok = ''; gSync(); const e = new Error('auth'); e.auth = true; throw e; }
-    if(!r.ok){ const e = new Error('drive ' + r.status); e.status = r.status; throw e; }
+    if(!r.ok){ const e = new Error('drive ' + r.status); e.status = r.status; try{ const j = await r.clone().json(); e.reason = ((j.error && j.error.errors && j.error.errors[0]) || {}).reason || ''; if(e.reason) e.message += ' ' + e.reason; }catch(_){} throw e; }
     return r;
   }
   const gJson = async (url, opt) => (await gFetch(url, opt)).json();
@@ -8633,7 +8633,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   const b64 = u8 => { let s = ''; u8.forEach(c => { s += String.fromCharCode(c); }); return btoa(s); };
   async function shareEnc(key, data){ const iv = crypto.getRandomValues(new Uint8Array(12)); const c = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data)); return { iv: b64(iv), c }; }
-  async function sharePubRetry(id){ for(let k = 0; ; k++){ try{ return await sharePublic(id); }catch(e){ if((e && e.auth) || k >= 4) throw e; await new Promise(r => setTimeout(r, 1000 * (k + 1))); } } }
+  const shareLimited = e => /sharingRateLimitExceeded|userRateLimitExceeded|rateLimitExceeded/.test((e && (e.reason || e.message)) || '') || (e && e.status === 429);
+  async function sharePubRetry(id){ for(let k = 0; ; k++){ try{ return await sharePublic(id); }catch(e){ if((e && e.auth) || shareLimited(e) || k >= 2) throw e; await new Promise(r => setTimeout(r, 2000 * (k + 1))); } } }
   const sharePublic = id => gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=id`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
   async function shareBook(){
     const list = allPairs().filter(pairReady);
@@ -8675,12 +8676,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       // 2) アップロードして公開 → 見る人と同じ条件で開けるか確かめる。
       //    しばらく待っても開けなければ、自動で作り直す（最大3回）。設定の誤りなど、作り直しても直らないときだけ止める
       const fatal = /keyInvalid|ipRefererBlocked|API_KEY|accessNotConfigured|PERMISSION_DENIED_BY_POLICY|dailyLimitExceeded/i;
-      const TRIES = 3, WAIT = 40000;
+      const TRIES = 2, WAIT = 45000;   // 作り直しは1回まで（公開の操作を増やさない）
       let mfId = '', ok = false, lastWhy = '';
       for(let round = 1; round <= TRIES && !ok; round++){
         chk();
-        if(folder){ trash(folder); folder = ''; }
-        const ap = { pbm: 'share', pf: '1' }; if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
+        if(folder){ trash(folder); folder = ''; await sleep(5000); }
+        const ap = { pbm: 'share' }; if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';
         folder = (await gCreate({ name: `${title.replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60)}_${stamp()}`, parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
         await sharePubRetry(folder);
         const pages = [];
@@ -8688,8 +8689,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           chk();
           gBusy('', round === 1 ? `アップロードしています ${i + 1} / ${made.length}` : `もう一度作っています ${i + 1} / ${made.length}`, .45 + i / made.length * .45);
           const { pg, up, nm } = made[i];
-          const id = (await gUpload({ name: nm, parents: [folder] }, up)).id;
-          await sharePubRetry(id);   // フォルダの公開を待たず、1枚ずつ確実に公開しておく
+          const id = (await gUpload({ name: nm, parents: [folder] }, up)).id;   // 公開はフォルダだけ（中の写真は、フォルダの公開を引き継ぐ）
           pages.push(Object.assign({}, pg, { id }));
         }
         chk();
@@ -8698,7 +8698,6 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(opt.exp) man.exp = opt.exp;
         if(tblob) man.enc = Object.assign({}, enc, tblob); else man.title = title;
         mfId = (await gUpload({ name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } }, new Blob([JSON.stringify(man)], { type: 'application/json' }))).id;
-        await sharePubRetry(mfId);
         try{ await gPatch(folder, { appProperties: { m: mfId } }); }catch(e){}
         // 確かめる
         const targets = [mfId, pages[0].id, pages[pages.length - 1].id], t0 = Date.now();
@@ -8723,7 +8722,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       console.warn(e); gBusyOff();
       if(folder) trash(folder);   // 作りかけは残さない
       if(stop || (e && e.auth)) return;
-      const why = e && e.message === 'config' ? '共有リンクの設定に問題があり、見る人が開けない状態です。' : 'もう一度お試しください。';
+      const why = shareLimited(e) ? 'Google ドライブの共有の回数制限にかかっています。しばらく時間をおいてから、お試しください。' : e && e.message === 'config' ? '共有リンクの設定に問題があり、見る人が開けない状態です。' : 'もう一度お試しください。';
       askYesNo('共有リンクを作れませんでした', `<p>${why}</p><p style="font-size:12px;color:var(--muted)">${esc2(e && (e.why || e.message) || String(e))}</p>`, () => {}, '閉じる', '');
     }
   }
