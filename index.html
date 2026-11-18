@@ -6656,7 +6656,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const q = 1;   // 写真集書き出しは常に画質 100%
     const put = async (p, leftNo, rightNo) => {
       // a cover with only text / logos (no photo) is still printed
-      if(!hasPhoto(p) && !hasDeco(p)) return;
+      if(!hasPhoto(p) && !hasDeco(p) && !hasBlank(p)) return;   // 空白に指定したページも書き出す
       const cv = document.createElement('canvas');
       exporting = pageExport = true; let r; try{ r = compose(p, cv, 0); } finally { exporting = pageExport = false; }
       const half = async (x, w) => {
@@ -6757,7 +6757,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     status(`${done}組を書き出しました。` + (!downloads && !inArtifact ? 'ダウンロードフォルダを確認してください。' : ''));
   }
   function buildSheet(){
-    const list = allPairs().filter(p => !sample && hasPhoto(p));
+    const list = allPairs().filter(pairReady);   // 空白に指定したページ・文字だけのページも作品の一部なので含める
     if(!list.length) return null;
     const cols = Math.min(+$('sheetCols').value, list.length), rows = Math.ceil(list.length / cols);
     const W = 4500, M = 135, G = 75, MY = 30, GY = 15, LBL = 69;
