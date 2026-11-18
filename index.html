@@ -7334,10 +7334,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const tourCard = () => [...document.querySelectorAll('.spread:not([hidden]):not(.pgoff)')].find(c => { const l = c.querySelector('.lay'), sp = c.querySelector('.spine'); return c.offsetParent && l && !l.hidden && sp && !sp.hidden; }) || document.querySelector('.spread:not([hidden]):not(.pgoff)');
   // いくつかのボタンをまとめて照らす
   const tourGroup = list => { const els = list.filter(e => e && e.offsetParent); if(!els.length) return null;
-    return { scrollIntoView: o => els[0].scrollIntoView(o), getBoundingClientRect: () => { const rs = els.map(e => e.getBoundingClientRect()); const l = Math.min(...rs.map(r => r.left)), t = Math.min(...rs.map(r => r.top)), r = Math.max(...rs.map(r => r.right)), b = Math.max(...rs.map(r => r.bottom)); return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t }; } }; };
+    return { first: els[0], scrollIntoView: o => els[0].scrollIntoView(o), getBoundingClientRect: () => { const rs = els.map(e => e.getBoundingClientRect()); const l = Math.min(...rs.map(r => r.left)), t = Math.min(...rs.map(r => r.top)), r = Math.max(...rs.map(r => r.right)), b = Math.max(...rs.map(r => r.bottom)); return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t }; } }; };
   const inCard = sel => { const c = tourCard(); const e = c && c.querySelector(sel); return e && e.offsetParent ? e : null; };
   const TOUR = [
     { el: () => { const b = $('setBtn'); return b && !b.hidden && b.offsetParent ? b : $('modeLine'); }, t: '作るものの設定', x: 'サイズ・ページ数・解像度・保存形式は、ここでいつでも変えられます。' },
+    { el: () => { const t = document.querySelector('.sidetab'); return document.body.classList.contains('sidedrawer') && t && !t.hidden && t.offsetParent ? t : null; }, t: 'メニュー', x: '写真を選ぶ・書き出す・表示の切り替えなどは、この「メニュー」の中にあります。\n押すと右から引き出せます。' },
     { el: () => $('pickMany'), t: '写真を入れる', x: 'ここから写真を選びます。\n見開きに直接ドラッグ＆ドロップしても入れられます。' },
     { el: () => inCard('.stage'), t: '写真を整える・並べ替える', x: COARSE ? '写真をダブルタップすると、拡大・回転・削除ができます。\n長押ししてから動かすと、別のページへ移動できます。' : '写真をクリックすると、拡大・回転・削除ができます。\nドラッグすると別のページへ移動できます。' },
     { el: () => inCard('.spine'), spine: true, t: '見開きごと並べ替える', x: 'カードの上に出る「≡」をつかんでドラッグすると、見開きごと順番を入れ替えられます。\nマウスを乗せると表示されます。' },
@@ -7351,12 +7352,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     { el: () => document.querySelector('#settings > summary'), t: '詳細設定', x: 'ノドの影の幅・濃さ、中央の線、余白の色など、細かい見た目を整えられます。\n設定を初期値に戻したり、この案内をもう一度見たりもできます。' },
     { el: () => document.querySelector('.howto summary'), t: '困ったときは', x: '「使い方」で手順をいつでも見返せます。\nこの案内も、そこからもう一度見られます。' }
   ];
-  let tourI = 0;
+  let tourI = 0, tourSide = false;
   function tourShow(){
     const step = TOUR[tourI], el = step.el();
     document.querySelectorAll('.spine.tourme').forEach(e => e.classList.remove('tourme'));
     document.body.classList.toggle('tourspine', !!(step.spine && el)); if(step.spine && el) el.classList.add('tourme');
     if(!el){ tourI++; if(tourI < TOUR.length) tourShow(); else tourEnd(); return; }
+    // 右のメニューが引き出し式（たたまれている）のとき：中のボタンを案内する間だけ引き出す
+    const node = el.first || el, aside = document.querySelector('.grid > aside');
+    const wantSide = !!(document.body.classList.contains('sidedrawer') && aside && node.closest && aside.contains(node));
+    if(wantSide !== document.body.classList.contains('sideopen')){
+      document.body.classList.toggle('sideopen', wantSide); tourSide = wantSide || tourSide;
+      setTimeout(tourShow, 280); return;   // 引き出し・しまう動きが終わってから位置を合わせる
+    }
     el.scrollIntoView({ block: 'nearest', behavior: 'instant' in document.documentElement.style ? 'instant' : 'auto' });
     const r = el.getBoundingClientRect(), pad = 6, H = $('tourHole'), P = $('tourPop');
     Object.assign(H.style, { left: (r.left - pad) + 'px', top: (r.top - pad) + 'px', width: (r.width + pad * 2) + 'px', height: (r.height + pad * 2) + 'px' });
@@ -7368,7 +7376,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     P.classList.toggle('up', !below); P.style.setProperty('--ax', Math.max(16, Math.min(pw - 30, r.left + r.width / 2 - left - 7)) + 'px');
   }
   function tourStart(){ tourI = 0; $('tour').hidden = false; requestAnimationFrame(tourShow); }
-  function tourEnd(){ $('tour').hidden = true; document.body.classList.remove('tourspine'); try{ localStorage.setItem(TOUR_KEY, '1'); }catch(e){} }
+  function tourEnd(){ $('tour').hidden = true; document.body.classList.remove('tourspine'); if(tourSide){ document.body.classList.remove('sideopen'); tourSide = false; } try{ localStorage.setItem(TOUR_KEY, '1'); }catch(e){} }
   $('tourNext').addEventListener('click', () => { if(tourI >= TOUR.length - 1) tourEnd(); else { tourI++; tourShow(); } });
   $('tourPrev').addEventListener('click', () => { if(tourI > 0){ tourI--; tourShow(); } });
   $('tourSkip').addEventListener('click', tourEnd);
