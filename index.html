@@ -8628,7 +8628,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         m.innerHTML = `<div class="sheet gpsheet"><h3>写真集の共有リンクを作成</h3>
           <div class="shrow"><b>パスワード</b><div class="shin"><input type="text" id="shPw" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore placeholder="空欄ならなし"></div></div>
           <div class="shrow"><b>有効期限</b><div class="shin"><select id="shExp"><option value="0">なし</option><option value="7">1週間</option><option value="30">1か月</option><option value="90">3か月</option><option value="d">日時を指定</option></select><input type="datetime-local" id="shExpD" step="60" hidden></div></div>
-          <div class="shrow"><b>最後に一覧</b><div class="shin"><button class="toggle" id="shSheet" type="button" role="switch" aria-checked="false"><span class="knob"></span><span class="tl">OFF</span></button></div></div>
+          <div class="shrow"><b>一覧を含める</b><div class="shin"><button class="toggle" id="shSheet" type="button" role="switch" aria-checked="false"><span class="knob"></span><span class="tl">OFF</span></button></div></div>
           <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">作る</button></div></div>`;
         document.body.append(m);
         // パスワードは隠さずに見せる（ふつうの文字欄なので「パスワードを保存しますか？」も出ない）
