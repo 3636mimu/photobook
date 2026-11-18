@@ -8556,14 +8556,26 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // 見る側と同じ読み方（ログインなし・API キー）で、本当に読めるか確かめる
   async function shareCanRead(id){ return (await shareProbe(id)).ok; }
-  // 見る人と同じ条件（ログインなし・APIキーだけ）で読めるか。読めないときは理由も返す
-  async function shareProbe(id){
-    try{
-      const r = await fetch(`${GAPI}/drive/v3/files/${encodeURIComponent(id)}?alt=media&key=${encodeURIComponent(shareKey())}`, { cache: 'no-store' });
-      if(r.ok) return { ok: true };
-      let why = ''; try{ const j = await r.json(); why = ((j.error && j.error.errors && j.error.errors[0]) || {}).reason || (j.error && j.error.status) || ''; }catch(e){}
-      return { ok: false, st: r.status, why };
-    }catch(e){ return { ok: false, st: 0, why: 'network' }; }
+  // 見る人の画面とまったく同じ読み方（ログインなし・APIキーだけ）で読めるか。読めないときは理由も返す
+  //  json：設定ファイル（XHR） ／ img：写真（<img>。だめなら見る画面と同じく別の取り出し口も） ／ bin：パスワード付きの写真（XHR）
+  function shareProbe(id, kind){
+    const api = `${GAPI}/drive/v3/files/${encodeURIComponent(id)}?alt=media&key=${encodeURIComponent(shareKey())}`;
+    if(kind === 'img'){
+      const list = [api + '&t=' + Date.now(), `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w400&t=${Date.now()}`, `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w400`];
+      return new Promise(res => { let i = 0; const next = () => { if(i >= list.length) return res({ ok: false, st: 0, why: 'img' });
+        const im = new Image(); let done = false; const t = setTimeout(() => { if(!done){ done = true; im.src = ''; next(); } }, 15000);
+        im.onload = () => { if(done) return; done = true; clearTimeout(t); res({ ok: true }); };
+        im.onerror = () => { if(done) return; done = true; clearTimeout(t); next(); };
+        im.src = list[i++]; }; next(); });
+    }
+    return new Promise(res => {
+      const x = new XMLHttpRequest(); x.open('GET', api + '&t=' + Date.now()); x.timeout = 20000; x.responseType = kind === 'bin' ? 'arraybuffer' : 'text';
+      x.onload = () => { if(x.status === 200) return res({ ok: true });
+        let why = ''; try{ const t = kind === 'bin' ? new TextDecoder().decode(x.response) : x.responseText; const j = JSON.parse(t); why = ((j.error && j.error.errors && j.error.errors[0]) || {}).reason || (j.error && j.error.status) || ''; }catch(e){}
+        res({ ok: false, st: x.status, why }); };
+      x.onerror = () => res({ ok: false, st: 0, why: 'network' }); x.ontimeout = () => res({ ok: false, st: 0, why: 'timeout' });
+      x.send();
+    });
   }
   // 共有のパスワードの控え：公開していない「共有」フォルダの中の1つのファイルにまとめて置く（見る人からは読めない）。
   // 画面には出さず、「共有中のリンク」の［リンクをコピー］で、リンクと一緒にコピーするためだけに使う
@@ -8700,10 +8712,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         mfId = (await gUpload({ name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } }, new Blob([JSON.stringify(man)], { type: 'application/json' }))).id;
         try{ await gPatch(folder, { appProperties: { m: mfId } }); }catch(e){}
         // 確かめる
-        const targets = [mfId, pages[0].id, pages[pages.length - 1].id], t0 = Date.now();
+        const pk = key ? 'bin' : 'img', targets = [[mfId, 'json'], [pages[0].id, pk], [pages[pages.length - 1].id, pk]], t0 = Date.now();
         for(let n = 1; ; n++){
           chk();
-          const rs = []; for(const id of targets){ const r = await shareProbe(id); rs.push(r); if(!r.ok) break; }
+          const rs = []; for(const [id, kd] of targets){ const r = await shareProbe(id, kd); rs.push(r); if(!r.ok) break; }
           if(rs.length === targets.length && rs.every(r => r.ok)){ ok = true; break; }
           const bad = rs.find(r => !r.ok) || {};
           lastWhy = `${bad.st || ''} ${bad.why || ''}`.trim(); console.warn('share probe', round, n, lastWhy);
@@ -8752,25 +8764,25 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   const shareOn = f => (f.permissions || []).some(x => x.type === 'anyone');
   async function shareSet(f, on){
-    const ap = f.appProperties || {}, ids = [f.id];
-    if(ap.pf === '1'){ const kids = await gList(`'${f.id}' in parents and trashed=false`, 'files(id,permissions(id,type))'); kids.forEach(k => ids.push(k)); }
-    // 何枚もあるので、同時に6件ずつ切り替える（1件ずつだと遅い）
-    const one = async it => {
-      const id = typeof it === 'string' ? it : it.id;
-      let perms = typeof it === 'string' ? null : it.permissions;
-      if(!perms){ try{ perms = (await gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=permissions(id,type)`)).permissions || []; }catch(e){ perms = []; } }
-      const pub = perms.filter(x => x.type === 'anyone');
-      if(on && !pub.length) await sharePublic(id);
-      if(!on) for(const x of pub) await gFetch(`${GAPI}/drive/v3/files/${id}/permissions/${x.id}`, { method: 'DELETE' });
-    };
-    let k = 0, err = null;
-    await Promise.all(Array.from({ length: Math.min(6, ids.length) }, async () => { while(k < ids.length){ const it = ids[k++]; try{ await one(it); }catch(e){ err = err || e; } } }));
-    if(err) throw err;
+    const ap = f.appProperties || {};
+    const pubOf = async id => { try{ return ((await gJson(`${GAPI}/drive/v3/files/${id}/permissions?fields=permissions(id,type)`)).permissions || []).filter(x => x.type === 'anyone'); }catch(e){ return []; } };
+    // 公開・停止はフォルダ（箱）だけを切り替える。中の写真は、フォルダの設定を引き継ぐ
+    if(on){ if(!(await pubOf(f.id)).length) await sharePublic(f.id); }
+    else for(const x of await pubOf(f.id)) await gFetch(`${GAPI}/drive/v3/files/${f.id}/permissions/${x.id}`, { method: 'DELETE' });
+    // 以前の版で写真1枚ずつにも公開を付けたもの：停止のときだけ、フォルダを止めたあとに写真側に残っている公開を消す
+    //（フォルダから引き継いだ分はフォルダを止めると一緒に消えるので、先に止めてから、まだ残っているものだけを消す）
+    if(!on && ap.pf === '1'){
+      await new Promise(r => setTimeout(r, 1500));
+      const kids = await gList(`'${f.id}' in parents and trashed=false`, 'files(id)');
+      let k = 0;
+      await Promise.all(Array.from({ length: Math.min(4, kids.length) }, async () => { while(k < kids.length){ const id = kids[k++].id;
+        for(const x of await pubOf(id)) try{ await gFetch(`${GAPI}/drive/v3/files/${id}/permissions/${x.id}`, { method: 'DELETE' }); }catch(e){} } }));
+    }
     f.permissions = on ? [{ id: 'anyoneWithLink', type: 'anyone' }] : [];
   }
   // 期限の切れた共有は、公開を止めてからゴミ箱へ（ツールを開いて、ドライブにつながったとき・共有中のリンクを開いたとき）
   const sharePast = f => { const exp = +((f.appProperties || {}).exp || 0); return !!exp && exp < Date.now(); };
-  async function shareExpire(f){ try{ if(shareOn(f)) await shareSet(f, false); }catch(e){} try{ await gPatch(f.id, { trashed: true }); }catch(e){ console.warn(e); } }
+  async function shareExpire(f){ try{ await gPatch(f.id, { trashed: true }); }catch(e){ console.warn(e); try{ if(shareOn(f)) await shareSet(f, false); }catch(_){} } }   // ゴミ箱に入れれば、だれも開けなくなる
   let shareSwept = false;
   async function shareSweep(){
     if(shareSwept || !WEB || !gValid() || !shareKey()) return; shareSwept = true;
