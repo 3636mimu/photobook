@@ -401,6 +401,8 @@ button{font:inherit}
 .vclose[aria-pressed="true"]{background:#8FB0DE;color:#101318;border-color:#8FB0DE}
 .vgrid{overflow:auto;min-height:0;padding:12px 20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(390px,100%),1fr));gap:8px 22px;align-content:start}
 .vitem{background:none;border:0;padding:0;color:#C9C8C3;cursor:pointer;display:flex;flex-direction:column;gap:3px;line-height:1.3;align-items:center;font-family:var(--mono);font-size:12px}
+.vitem .vpno{position:relative;display:block;width:100%;height:1.3em}
+.vitem .vpno i{position:absolute;top:0;transform:translateX(-50%);font-style:normal;white-space:nowrap}
 .vitem canvas{display:block;width:100%;height:auto;box-shadow:0 8px 22px rgba(0,0,0,.55);transition:transform .15s}
 .vitem:hover canvas,.vitem:focus-visible canvas{transform:translateY(-3px)}
 .vitem:focus-visible{outline:2px solid #8FB0DE;outline-offset:6px}
@@ -751,9 +753,17 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .shrow small{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px}
 #shareOpt .shin{display:flex;gap:6px;align-items:center;flex:1 1 auto;justify-content:flex-start;min-width:0}
 #shareOpt input[type=password],#shareOpt input[type=text],#shareOpt input[type=date],#shareOpt input[type=datetime-local],#shareOpt select{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#111;min-width:0}
-#shareOpt #shPw{width:100%;max-width:220px}
+#shareOpt #shPw{width:100%}
 #shareOpt #shName{width:100%}
-#shareOpt #shExp{flex:0 0 auto;width:auto}#shareOpt #shExpD{flex:0 1 200px;width:200px}
+#shareOpt .shprot{display:block}
+#shareOpt .shprot > b{display:block;margin-bottom:10px}
+#shareOpt .shgrid{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center}
+#shareOpt .shgrid input[type=text],#shareOpt .shgrid input[type=datetime-local]{width:100%;max-width:none;box-sizing:border-box}
+#shareOpt .shgrid input:disabled{background:#f6f5f2;color:#b3aea6;border-color:#ece9e3}
+#shareOpt .shck{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;white-space:nowrap}
+#shareOpt .shck input{appearance:none;-webkit-appearance:none;width:19px;height:19px;margin:0;border:1.5px solid #cfcac2;border-radius:50%;background:#fff;cursor:pointer;flex:0 0 auto;transition:background .15s,border-color .15s}
+#shareOpt .shck input:checked{background:#2A8C7F url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat;border-color:#2A8C7F}
+#shareOpt .shck input:focus-visible{outline:2px solid #8FB0DE;outline-offset:2px}
 #shareOpt .pweye{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:12px;cursor:pointer;color:var(--muted);white-space:nowrap}
 #shareOpt .actions,#shareMgr .actions{justify-content:center;margin-top:18px}
 #shareOpt .actions .qbtn,#shareMgr .actions .qbtn{flex:0 0 112px}
@@ -3013,6 +3023,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const isLocked = i => booklet && (i === 0 || i === bodyLen() - 1 || isTobira(i) || isWhiteP(i) || (i === slots.length - 2 && backOff()));   // the blank insides of the cover (and the back cover for Photoback)
   const allPairs = () => { const a = [...Array(PAIRS).keys()]; return booklet ? [PAIRS, ...a] : a; };
   const bodyLen = () => booklet ? slots.length - 2 : slots.length;
+  // 一覧のページ番号：ページごと（見開きの左右それぞれ）。表紙の裏・裏表紙の裏は番号なし
+  const pageNo = i => {
+    if(!booklet) return String(i + 1);
+    if(i === slots.length - 1) return '表紙';
+    if(i === slots.length - 2) return '裏表紙';
+    if(i === 0 || i === bodyLen() - 1) return '';
+    if(tobiraLayout && isTobira(i)) return i === 1 ? '扉' : '奥付';
+    return String(i);
+  };
+  const pageSeam = p => (pairUI[p] && pairUI[p].seam) || .5;
   const pairLabel = p => isCover(p) ? '裏表紙・表紙' : !booklet ? `${p*2+1}-${p*2+2}` : p === 0 ? (tobiraLayout ? '扉' : '1') : p === PAIRS - 1 ? (tobiraLayout ? '奥付' : String(p*2)) : `${p*2}-${p*2+1}`;
   // 見開きの下の、左ページ・右ページそれぞれの番号（表紙の裏など、番号のない側は空）
   const sideLabels = p => isCover(p) ? ['裏表紙', '表紙'] : !booklet ? [String(p*2+1), String(p*2+2)] : p === 0 ? ['', tobiraLayout ? '扉' : '1'] : p === PAIRS - 1 ? [tobiraLayout ? '奥付' : String(p*2), ''] : [String(p*2), String(p*2+1)];
@@ -4446,8 +4466,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       b.setAttribute('aria-label', `見開き ${p+1} を大きく表示`);
       const c = document.createElement('canvas');
       compose(p, c, res);
-      const lbl = document.createElement('span');
-      lbl.textContent = pairLabel(p);
+      // ページ番号は、それぞれのページの真ん中に
+      const lbl = document.createElement('span'); lbl.className = 'vpno';
+      const sm = pageSeam(p);
+      [[p*2, sm / 2], [p*2 + 1, sm + (1 - sm) / 2]].forEach(([i, x]) => { const t = pageNo(i); if(!t) return; const e = document.createElement('i'); e.textContent = t; e.style.left = (x * 100) + '%'; lbl.appendChild(e); });
       b.append(c, lbl);
       b.addEventListener('click', () => { setGrid(false); showSpread(k, true); });
       box.appendChild(b);
@@ -6781,7 +6803,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       g.drawImage(tmp, dx, dy, dw, dh);
       g.fillStyle = dark ? '#C9C8C3' : '#3A3B3F';
       g.font = '500 45px "IBM Plex Mono", ui-monospace, monospace'; g.textAlign = 'center'; g.textBaseline = 'top';
-      g.fillText(pairLabel(p), x + cellW/2, y + cellH + 12);
+      // ページ番号は、それぞれのページの真ん中に
+      const sm = pageSeam(p);
+      [[p*2, sm / 2], [p*2 + 1, sm + (1 - sm) / 2]].forEach(([i, f]) => { const t = pageNo(i); if(t) g.fillText(t, dx + dw * f, y + cellH + 12); });
     });
     return out;
   }
@@ -8632,8 +8656,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         m = document.createElement('div'); m.className = 'modal'; m.id = 'shareOpt'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
         m.innerHTML = `<div class="sheet gpsheet"><h3>写真集の共有リンクを作成</h3>
           <div class="shrow"><b>名前</b><div class="shin"><input type="text" id="shName" maxlength="60" autocomplete="off" spellcheck="false" placeholder="PHOTO BOOK"></div></div>
-          <div class="shrow"><b>パスワード</b><div class="shin"><input type="text" id="shPw" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore placeholder="空欄ならなし"></div></div>
-          <div class="shrow"><b>有効期限</b><div class="shin"><select id="shExp"><option value="0">なし</option><option value="7">1週間</option><option value="30">1か月</option><option value="90">3か月</option><option value="d">日時を指定</option></select><input type="datetime-local" id="shExpD" step="60" hidden></div></div>
+          <div class="shrow shprot"><b>リンク保護</b>
+            <div class="shgrid">
+              <label class="shck"><input type="checkbox" id="shPwOn"><span>パスワードが必要</span></label><input type="text" id="shPw" disabled autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore>
+              <label class="shck"><input type="checkbox" id="shExpOn"><span>有効期限</span></label><input type="datetime-local" id="shExpD" step="60" disabled>
+            </div></div>
           <div class="shrow"><b>一覧を含める</b><div class="shin"><button class="toggle" id="shSheet" type="button" role="switch" aria-checked="false"><span class="knob"></span><span class="tl">OFF</span></button></div></div>
           <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">保存</button></div></div>`;
         document.body.append(m);
@@ -8641,16 +8668,21 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         pwAsciiOnly($('shPw'));
         // 最後のページに、全部の見開きを並べた一覧を入れるか
         $('shSheet').onclick = () => { const b = $('shSheet'), on = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.querySelector('.tl').textContent = on ? 'ON' : 'OFF'; };
-        $('shExp').onchange = () => { const d = $('shExpD'); d.hidden = $('shExp').value !== 'd'; if(!d.hidden && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}T23:59`; } };
+        // リンク保護：チェックを入れた項目だけ、右の欄に入力できる
+        $('shPwOn').onchange = () => { const on = $('shPwOn').checked, i = $('shPw'); i.disabled = !on; if(on) i.focus(); else i.value = ''; };
+        $('shExpOn').onchange = () => { const on = $('shExpOn').checked, d = $('shExpD'); d.disabled = !on;
+          if(on && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}T23:59`; }
+          if(on) d.focus(); };
       }
-      $('shPw').value = ''; $('shName').value = [workTitle(), (bookFile || '').replace(/\.pbmk?$/i, '')].map(x => (x || '').trim()).filter(Boolean).join(' ');   // 名前の初期値：表紙などの文字＋BOOK名（自由に変えられる）
+      $('shPw').value = ''; $('shPw').disabled = true; $('shPwOn').checked = false; $('shExpOn').checked = false; $('shExpD').value = ''; $('shExpD').disabled = true;
+      $('shName').value = [workTitle(), (bookFile || '').replace(/\.pbmk?$/i, '')].map(x => (x || '').trim()).filter(Boolean).join(' ');   // 名前の初期値：表紙などの文字＋BOOK名（自由に変えられる）
       const fin = r => { $('shPw').value = ''; m.hidden = true; m.onkeydown = null; done(r); };
       $('shNo').onclick = () => fin(null);
       $('shGo').onclick = () => {
-        const v = $('shExp').value; let exp = 0;
-        if(v === 'd'){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d.length <= 10 ? d + 'T23:59:59' : d).getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
-        else if(+v){ const t = new Date(Date.now() + (+v) * 864e5); t.setHours(23, 59, 59, 0); exp = t.getTime(); }   // その日の 23:59 まで
-        fin({ pw: $('shPw').value, exp, sheet: $('shSheet').getAttribute('aria-checked') === 'true', name: $('shName').value.trim() });
+        let exp = 0, pw = '';
+        if($('shPwOn').checked){ pw = $('shPw').value; if(!pw){ $('shPw').focus(); return; } }
+        if($('shExpOn').checked){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d.length <= 10 ? d + 'T23:59:59' : d).getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
+        fin({ pw, exp, sheet: $('shSheet').getAttribute('aria-checked') === 'true', name: $('shName').value.trim() });
       };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
       m.hidden = false; $('shName').focus(); $('shName').select();
