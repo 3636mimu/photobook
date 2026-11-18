@@ -752,6 +752,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .shin{display:flex;gap:6px;align-items:center;flex:1 1 auto;justify-content:flex-start;min-width:0}
 #shareOpt input[type=password],#shareOpt input[type=text],#shareOpt input[type=date],#shareOpt input[type=datetime-local],#shareOpt select{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#111;min-width:0}
 #shareOpt #shPw{width:100%;max-width:220px}
+#shareOpt #shName{width:100%}
 #shareOpt #shExp{flex:0 0 auto;width:auto}#shareOpt #shExpD{flex:0 1 200px;width:200px}
 #shareOpt .pweye{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:12px;cursor:pointer;color:var(--muted);white-space:nowrap}
 #shareOpt .actions,#shareMgr .actions{justify-content:center;margin-top:18px}
@@ -8629,6 +8630,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!m){
         m = document.createElement('div'); m.className = 'modal'; m.id = 'shareOpt'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
         m.innerHTML = `<div class="sheet gpsheet"><h3>写真集の共有リンクを作成</h3>
+          <div class="shrow"><b>名前</b><div class="shin"><input type="text" id="shName" maxlength="60" autocomplete="off" spellcheck="false" placeholder="PHOTO BOOK"></div></div>
           <div class="shrow"><b>パスワード</b><div class="shin"><input type="text" id="shPw" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore placeholder="空欄ならなし"></div></div>
           <div class="shrow"><b>有効期限</b><div class="shin"><select id="shExp"><option value="0">なし</option><option value="7">1週間</option><option value="30">1か月</option><option value="90">3か月</option><option value="d">日時を指定</option></select><input type="datetime-local" id="shExpD" step="60" hidden></div></div>
           <div class="shrow"><b>一覧を含める</b><div class="shin"><button class="toggle" id="shSheet" type="button" role="switch" aria-checked="false"><span class="knob"></span><span class="tl">OFF</span></button></div></div>
@@ -8640,17 +8642,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         $('shSheet').onclick = () => { const b = $('shSheet'), on = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.querySelector('.tl').textContent = on ? 'ON' : 'OFF'; };
         $('shExp').onchange = () => { const d = $('shExpD'); d.hidden = $('shExp').value !== 'd'; if(!d.hidden && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}T23:59`; } };
       }
-      $('shPw').value = '';
+      $('shPw').value = ''; $('shName').value = (workTitle() || '').trim();   // 名前は BOOK の名前から（自由に変えられる）
       const fin = r => { $('shPw').value = ''; m.hidden = true; m.onkeydown = null; done(r); };
       $('shNo').onclick = () => fin(null);
       $('shGo').onclick = () => {
         const v = $('shExp').value; let exp = 0;
         if(v === 'd'){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d.length <= 10 ? d + 'T23:59:59' : d).getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
         else if(+v){ const t = new Date(Date.now() + (+v) * 864e5); t.setHours(23, 59, 59, 0); exp = t.getTime(); }   // その日の 23:59 まで
-        fin({ pw: $('shPw').value, exp, sheet: $('shSheet').getAttribute('aria-checked') === 'true' });
+        fin({ pw: $('shPw').value, exp, sheet: $('shSheet').getAttribute('aria-checked') === 'true', name: $('shName').value.trim() });
       };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
-      m.hidden = false; $('shPw').focus();
+      m.hidden = false; $('shName').focus(); $('shName').select();
     });
   }
   // パスワードから鍵を作る（見る側と同じ作り方）
@@ -8670,7 +8672,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!(await gEnsure(true))) return;
     const opt = await shareAskOpt(); if(!opt) return;
     if(opt.pw && !(window.crypto && crypto.subtle)){ askYesNo('パスワードを使えません', '<p>このブラウザでは、パスワード付きの共有を作れません。</p>', () => {}, '閉じる', ''); return; }
-    const title = (workTitle() || 'PHOTO BOOK').trim();
+    const title = (opt.name || workTitle() || 'PHOTO BOOK').trim();
     let folder = '', stop = false;
     const chk = () => { if(stop){ const e = new Error('cancel'); e.cancel = true; throw e; } };
     const sleep = ms => new Promise(r => setTimeout(r, ms));
