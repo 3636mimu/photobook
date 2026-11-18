@@ -3013,7 +3013,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const isLocked = i => booklet && (i === 0 || i === bodyLen() - 1 || isTobira(i) || isWhiteP(i) || (i === slots.length - 2 && backOff()));   // the blank insides of the cover (and the back cover for Photoback)
   const allPairs = () => { const a = [...Array(PAIRS).keys()]; return booklet ? [PAIRS, ...a] : a; };
   const bodyLen = () => booklet ? slots.length - 2 : slots.length;
-  const pairLabel = p => isCover(p) ? '表紙・裏表紙' : !booklet ? `${p*2+1}-${p*2+2}` : p === 0 ? (tobiraLayout ? '扉' : '1') : p === PAIRS - 1 ? (tobiraLayout ? '奥付' : String(p*2)) : `${p*2}-${p*2+1}`;
+  const pairLabel = p => isCover(p) ? '裏表紙・表紙' : !booklet ? `${p*2+1}-${p*2+2}` : p === 0 ? (tobiraLayout ? '扉' : '1') : p === PAIRS - 1 ? (tobiraLayout ? '奥付' : String(p*2)) : `${p*2}-${p*2+1}`;
   // 見開きの下の、左ページ・右ページそれぞれの番号（表紙の裏など、番号のない側は空）
   const sideLabels = p => isCover(p) ? ['裏表紙', '表紙'] : !booklet ? [String(p*2+1), String(p*2+2)] : p === 0 ? ['', tobiraLayout ? '扉' : '1'] : p === PAIRS - 1 ? [tobiraLayout ? '奥付' : String(p*2), ''] : [String(p*2), String(p*2+1)];
   const slotLabel = i => !booklet ? `${i+1}枚目` : i >= bodyLen() ? (i === slots.length - 1 ? '表紙' : '裏表紙') : i === 0 ? '表紙の裏' : i === bodyLen() - 1 ? '裏表紙の裏' : isTobira(i) ? (i === 1 ? '扉' : '奥付') : isWhiteP(i) ? '白紙（印刷なし）' : `${i}ページ`;
@@ -4015,7 +4015,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(A){
       drawCropped(g,A,rA,0,0,cw,ch);
       if(gridOut()){ drawGuide(g,0,0,sa,ch,'#ff0000',gridWidth(target)); drawGuide(g,sa+sg,0,sb,ch,'#ff0000',gridWidth(target)); }
-    } else placeholder(g,0,cw,ch,isCover(p) ? '表紙・裏表紙（見開き）' : `${p*2+1}-${p*2+2}枚目`,exporting && hasDeco(p),onCard);
+    } else placeholder(g,0,cw,ch,isCover(p) ? '裏表紙・表紙（見開き）' : `${p*2+1}-${p*2+2}枚目`,exporting && hasDeco(p),onCard);
     if(sg > 0){ g.fillStyle = '#000'; g.fillRect(sa,0,sg,ch); }
     const cx = sa + sg/2, half = (cw*P.shW/100)/2;
     if(onCard) pairUI[p].seam = cx / cw;
