@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-43AZ/VONzXkKDm0M4gv/EZbCkajL79Tm+6bFYWxDG+Q=' 'sha256-4G34MDgei+7gmafJJN0SzfEIMaDdTqjGVqP6gLk50Tc=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://*.googleusercontent.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-QFJYlvbTRgP9gE/tXdZ2dd0zUZgdYqUshir4rnyY50A=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM=' 'sha256-uIKXC9pENM6LG7k9fm/D4J6U8bgxXAl4yt6K6eKJx14='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://*.googleusercontent.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -2887,6 +2887,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     '@media (pointer:coarse){#shv .nv{background:rgba(255,255,255,.08)}}',
     '#shv .nv.dl[hidden]{display:none}#shv .nv.dl.busy svg{opacity:.25}#shv .nv.dl.busy::after{content:"";position:absolute;width:22px;height:22px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;-webkit-animation:shvr 1s linear infinite;animation:shvr 1s linear infinite}',
     '#shv .dlt{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:12px;padding:10px 12px 10px 18px;border-radius:999px;background:rgba(32,33,36,.94);box-shadow:0 6px 24px rgba(0,0,0,.4);font-size:13px;white-space:nowrap}',
+    '#shv .dlm{position:absolute;z-index:9;display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:12px;background:rgba(32,33,36,.96);box-shadow:0 6px 24px rgba(0,0,0,.45)}',
+    '#shv .dlm button{font:inherit;font-size:13px;text-align:left;white-space:nowrap;border:0;border-radius:8px;padding:9px 14px;background:none;color:#fff;cursor:pointer}#shv .dlm button:hover{background:rgba(255,255,255,.1)}',
     '#shv .dlt button{font:inherit;font-size:13px;border:0;border-radius:999px;padding:8px 16px;background:#2A8C7F;color:#fff;cursor:pointer}#shv .dlt button.x{background:rgba(255,255,255,.12)}',
     '#shv.ns,#shv.ns *{-webkit-touch-callout:none}'
   ].join('\n');
@@ -3022,7 +3024,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     prevB = el('button', 'nv p', root); prevB.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 5l-7 7 7 7"/></svg>'; prevB.setAttribute('aria-label', '前の見開き');
     dlB = el('button', 'nv dl', root); dlB.hidden = true; dlB.title = '写真をダウンロード（JPG）'; dlB.setAttribute('aria-label', '写真をダウンロード');
     dlB.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>';
-    dlB.onclick = function(e){ e.stopPropagation(); dlStart(); };
+    dlB.onclick = function(e){ e.stopPropagation(); dlMenu(); };
     nextB = el('button', 'nv n', root); nextB.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5l7 7-7 7"/></svg>'; nextB.setAttribute('aria-label', '次の見開き');
     prevB.onclick = function(e){ e.stopPropagation(); go(-1); }; nextB.onclick = function(e){ e.stopPropagation(); go(1); };
     document.addEventListener('keydown', function(e){ if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); } else if(e.key === 'ArrowLeft') go(-1); });
@@ -3045,7 +3047,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       x.onload = function(){
         if(x.status === 200){ try{ man = JSON.parse(viaDesc ? (JSON.parse(x.responseText).description || '') : x.responseText); }catch(e){ man = null; } }
         if(viaDesc && x.status === 200 && !(man && man.app === 'pbm-share')){ viaDesc = false; man = null; return get(); }
-        if(man && man.p && !man.pages) man.pages = man.p.map(function(a){ return { id: a[0], w: a[1], h: a[2], seam: a[3], flat: !!a[4] }; });
+        if(man && man.p && !man.pages) man.pages = man.p.map(pageOf);
         if(!man || ((!man.pages || !man.pages.length) && !(man.enc && man.enc.c))){
           // 作られた直後は、公開が行き渡るまで少し読めないことがあるので、しばらく待ってから判断する
           if((x.status === 404 || x.status === 403) && !/rate|limit|quota/i.test(x.responseText || '')){ if(++tries < 3) return setTimeout(get, 5000 * tries); msg('この写真集は、見られなくなっています。<br>（共有が止められたか、削除されたようです）', false); return; }
@@ -3077,6 +3079,30 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cs, true); e.setUint32(16, off, true);
     return new Blob(parts.concat(cen, [e.buffer]), { type: 'application/zip' });
   }
+  // ダウンロードは1ページ1枚：見開きを左右に切り分ける。1枚の写真で見開き全体のときだけ見開きのまま。写真のないページと一覧は入れない
+  function dlItems(ks){ var out = []; ks.forEach(function(k){ var P = pages[k]; if(!P || P.flat) return;
+    // ダウンロード用の1ページ画像があれば、それをそのまま（劣化なし）。なければ見開きを切り分ける（前の形の共有）
+    if(P.d){ P.d.forEach(function(id, sd){ if(id) out.push({ k: k, side: P.d.length === 1 ? -1 : sd, id: id }); }); return; }
+    if(P.wd){ if((P.e & 3) !== 3) out.push({ k: k, side: -1 }); return; } [0, 1].forEach(function(sd){ if(!(P.e & (1 << sd))) out.push({ k: k, side: sd }); }); }); return out; }
+  // ダウンロード用の画像は、元のファイルのまま受け取る（Google の画像配信は作り直されることがあるので、だめなときだけ）
+  function dlBytesId(id){
+    var list = [API + encodeURIComponent(id) + '?alt=media&key=' + encodeURIComponent(KEY), 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=s4000'], i = 0;
+    return (function next(){
+      if(i >= list.length) return Promise.reject(new Error('dl'));
+      return fetch(list[i++]).then(function(r){ if(!r.ok || !/^image\/|octet-stream/.test(r.headers.get('content-type') || 'image/')) throw 0; return r.arrayBuffer(); }).then(function(b){ return new Uint8Array(b); }, function(){ return next(); });
+    })();
+  }
+  function dlCrop(d, P, side){
+    if(side < 0) return Promise.resolve(d);
+    return new Promise(function(res, rej){
+      var u = URL.createObjectURL(new Blob([d], { type: 'image/jpeg' })), im = new Image();
+      im.onload = function(){ URL.revokeObjectURL(u);
+        var W = im.naturalWidth, H = im.naturalHeight, sx = Math.round(W * (P.seam || .5)), x0 = side ? sx : 0, w = side ? W - sx : sx, c = document.createElement('canvas');
+        c.width = Math.max(1, w); c.height = H; c.getContext('2d').drawImage(im, x0, 0, w, H, 0, 0, w, H);
+        c.toBlob(function(b){ if(!b) return rej(); b.arrayBuffer().then(function(a){ res(new Uint8Array(a)); }, rej); }, 'image/jpeg', .95); };
+      im.onerror = function(){ URL.revokeObjectURL(u); rej(); }; im.src = u;
+    });
+  }
   function dlName(i){ var b = TITLE.replace(/[\\/:*?"<>|]/g, '_').trim().slice(0, 60) || 'PHOTO BOOK'; return b + '_' + (i < 9 ? '0' : '') + (i + 1) + '.jpg'; }
   // 見開き k の JPG：表示に使った画像（パスワード付きの前の形は、元に戻した画像）→ Google の画像配信 → ダウンロード、の順に
   function dlBytes(k){
@@ -3096,30 +3122,51 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(btn){ var b = el('button', '', t); b.type = 'button'; b.textContent = btn; b.onclick = function(e){ e.stopPropagation(); act(); }; }
     var x = el('button', 'x', t); x.type = 'button'; x.textContent = '閉じる'; x.onclick = function(e){ e.stopPropagation(); dlToast(''); };
   }
-  function dlStart(){
+  // ボタンを押したら「この見開き」か「すべて」を選ぶ
+  function dlMenu(){
+    var o = root.querySelector('.dlm'); if(o){ o.parentNode.removeChild(o); return; }
+    if(dlBusy) return;
+    var m = el('div', 'dlm', root), close = function(){ if(m.parentNode) m.parentNode.removeChild(m); document.removeEventListener('pointerdown', out, true); },
+        out = function(e){ if(!m.contains(e.target) && e.target !== dlB && !dlB.contains(e.target)) close(); };
+    var one = dlItems([pos]), all = dlItems(pages.map(function(_, i){ return i; }));
+    [[one.length ? 'この見開き（' + one.length + '枚）' : '', one], ['すべて（' + all.length + '枚）', all]].forEach(function(a){
+      if(!a[0] || !a[1].length) return;
+      var b = el('button', '', m); b.type = 'button'; b.textContent = a[0]; b.onclick = function(e){ e.stopPropagation(); close(); dlStart(a[1]); };
+    });
+    if(!m.firstChild){ close(); dlToast('ダウンロードできる写真がありません。'); return; }
+    var r = dlB.getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight;
+    var x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width - w)), y = r.bottom + 8 + h > innerHeight - 8 ? r.top - 8 - h : r.bottom + 8;
+    m.style.left = x + 'px'; m.style.top = y + 'px';
+    setTimeout(function(){ document.addEventListener('pointerdown', out, true); }, 0);
+  }
+  function dlStart(items){
     if(dlBusy) return; dlBusy = true; dlB.classList.add('busy'); dlToast('');
-    var out = new Array(pages.length), k = 0;
+    var out = new Array(items.length), k = 0, cache = {};
     (function next(){
-      if(k >= pages.length) return done();
-      var i = k++; dlBytes(i).then(function(d){ out[i] = d; next(); }, function(){ dlBusy = false; dlB.classList.remove('busy'); dlToast('ダウンロードできませんでした。少し時間をおいて、もう一度お試しください。'); });
+      if(k >= items.length) return done();
+      var j = k++, it = items[j], P = pages[it.k];
+      (it.id ? dlBytesId(it.id) : (cache[it.k] || (cache[it.k] = dlBytes(it.k))).then(function(d){ return dlCrop(d, P, it.side); })).then(function(d){ out[j] = d; next(); }, function(){ dlBusy = false; dlB.classList.remove('busy'); dlToast('ダウンロードできませんでした。少し時間をおいて、もう一度お試しください。'); });
     })();
     function done(){
       dlBusy = false; dlB.classList.remove('busy');
-      var files = out.map(function(d, i){ return { name: dlName(i), data: d }; });
+      // ファイル名の番号は、写真集の中での通し番号（この見開きだけでも、すべてと同じ番号になる）
+      var allIt = dlItems(pages.map(function(_, i){ return i; })), num = function(it){ for(var n = 0; n < allIt.length; n++) if(allIt[n].k === it.k && allIt[n].side === it.side && allIt[n].id === it.id) return n; return 0; };
+      var files = out.map(function(d, j){ return { name: dlName(num(items[j])), data: d }; });
       // スマホ・タブレット：共有の画面から「画像を保存」で、写真アプリにそのまま入る（ボタンを押してから出す決まりなので、もう一度押してもらう）
       var touch = window.matchMedia && matchMedia('(pointer:coarse)').matches, ff = null;
       try{ ff = files.map(function(f){ return new File([f.data], f.name, { type: 'image/jpeg' }); }); }catch(e){ ff = null; }
       if(touch && ff && navigator.canShare && navigator.canShare({ files: ff })){
-        dlToast(files.length + '枚の写真を用意しました', '写真に保存', function(){ navigator.share({ files: ff }).then(function(){ dlToast(''); }, function(){}); });
+        dlToast(files.length === 1 ? '写真を用意しました' : files.length + '枚の写真を用意しました', '写真に保存', function(){ navigator.share({ files: ff }).then(function(){ dlToast(''); }, function(){}); });
         return;
       }
-      // パソコン：ZIP にまとめて保存
-      var a = document.createElement('a'), u = URL.createObjectURL(zipOf(files));
-      a.href = u; a.download = TITLE.replace(/[\\/:*?"<>|]/g, '_').trim().slice(0, 60) + '.zip'; document.body.appendChild(a); a.click(); a.parentNode.removeChild(a);
+      // パソコン：1枚ならそのまま JPG、すべてなら ZIP にまとめて保存
+      var one = files.length === 1, a = document.createElement('a'), u = URL.createObjectURL(one ? new Blob([files[0].data], { type: 'image/jpeg' }) : zipOf(files));
+      a.href = u; a.download = one ? files[0].name : TITLE.replace(/[\\/:*?"<>|]/g, '_').trim().slice(0, 60) + '.zip'; document.body.appendChild(a); a.click(); a.parentNode.removeChild(a);
       setTimeout(function(){ URL.revokeObjectURL(u); }, 60000);
     }
   }
-  function setPages(list){ pages = list.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.flat ? 1 : (p.seam || .5), flat: !!p.flat, iv: p.iv || '' }; }); }
+  function pageOf(a){ return { id: a[0], w: a[1], h: a[2], seam: a[3], flat: !!a[4], wd: a[5], e: a[6], d: a[7] || null }; }
+  function setPages(list){ pages = list.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.flat ? 1 : (p.seam || .5), flat: !!p.flat, iv: p.iv || '', wd: !!p.wd, e: p.e == null ? 0 : p.e, d: p.d && p.d.length ? p.d : null }; }); }
   function open1(title){
         document.title = (title || 'PHOTO BOOK') + ' | PHOTO BOOK'; TITLE = title || 'PHOTO BOOK';
         if(man && man.dl && window.fetch && window.Promise) dlB.hidden = false;   // 作った人がダウンロードを許可した共有だけ
@@ -3164,7 +3211,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         return crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8(E.c ? E.iv : E.tiv) }, k, u8(E.c || E.t)).then(function(buf){
           CK = k; var o = {}; try{ o = JSON.parse(new TextDecoder().decode(buf)) || {}; }catch(_){}
           // 新しい形：写真の並びも暗号化の中（パスワードがないと、どの写真がどこにあるか分からない）
-          if(o.p) setPages(o.p.map(function(a){ return { id: a[0], w: a[1], h: a[2], seam: a[3], flat: !!a[4] }; })); else if(o.pages) setPages(o.pages);
+          if(o.p) setPages(o.p.map(pageOf)); else if(o.pages) setPages(o.pages);
           if(!pages.length){ msg('この写真集は、見られなくなっています。', false); return; }
           open1(o.title);
         });
@@ -8968,7 +9015,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   //  full：share.json の中身（作った人が差し替えに使う。目印 k も入れる）／ desc：share.json の説明欄（見る人はここを読む。ダウンロードを使わない）
   async function shareManBuild(title, pages, exp, key, encBase, dl){
     const head = { app: 'pbm-share', v: 3, at: Date.now() }; if(exp) head.exp = exp; if(dl) head.dl = 1;   // dl：見る人がJPGでダウンロードできる
-    const vp = pages.map(p => [p.id, p.w, p.h, +(+(p.seam || .5)).toFixed(4), p.flat ? 1 : 0]);
+    const vp = pages.map(p => [p.id, p.w, p.h, +(+(p.seam || .5)).toFixed(4), p.flat ? 1 : 0, p.wd ? 1 : 0, p.e || 0, p.d || 0]);
     const pack = async obj => { if(!key) return obj; const e = await shareEnc(key, new TextEncoder().encode(JSON.stringify(obj))); return { enc: Object.assign({}, encBase, { iv: e.iv, c: b64(e.c) }) }; };
     const full = Object.assign({}, head, await pack({ title, pages })), view = Object.assign({}, head, await pack({ title, p: vp }));
     return { full: new Blob([JSON.stringify(full)], { type: 'application/json' }), desc: JSON.stringify(view) };
@@ -9005,12 +9052,38 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   const unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
   // 見開き1つを共有用の画像に（パスワード付きなら暗号化）
+  // ダウンロード用の印：wd＝1枚の写真で見開き全体（単一ページレイアウト）／ e＝写真のない側（1：左、2：右）
+  //  写真がなくても、文字などの装飾がある側は入れる（写真も装飾もない側だけ外す）
+  const shDecoSide = p => { let m = 0; const sm = pageSeam(p); decoOf(p).forEach(t => { if(t && !t.off && (t.kind === 'img' ? !!t.img : !!(t.text && t.text.trim()))) m |= (t.x < sm ? 1 : 2); }); return m; };
+  const shPageFlags = p => { const d = shDecoSide(p); return wide.has(p) ? { wd: 1, e: (slots[p * 2] || d) ? 0 : 3 } : { wd: 0, e: ((slots[p * 2] ? 0 : 1) | (slots[p * 2 + 1] ? 0 : 2)) & ~d }; };
+  // ダウンロード用の1ページ画像（許可した共有だけ）：元の写真から直接描いて、1回だけ JPG にする（切り分けによる劣化なし）
+  //  ふつうの見開き＝左右1ページずつ／単一ページレイアウト＝見開きのまま。写真も装飾もない側は作らない
+  const DL_LONG = 3600;
+  async function shareRenderDl(p){
+    const f = shPageFlags(p); if((f.e & 3) === 3) return null;
+    const c = document.createElement('canvas');
+    exporting = true; try{ compose(p, c); } finally { exporting = false; }
+    const cut = (x0, w) => { const k = Math.min(1, DL_LONG / Math.max(w, c.height)), o = document.createElement('canvas'); o.width = Math.max(1, Math.round(w * k)); o.height = Math.max(1, Math.round(c.height * k));
+      const g = o.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(c, x0, 0, w, c.height, 0, 0, o.width, o.height); return new Promise(r => o.toBlob(r, 'image/jpeg', .92)); };
+    if(f.wd) return { w: await cut(0, c.width) };
+    const sx = Math.round(c.width * pageSeam(p)), out = {};
+    if(!(f.e & 1)) out.l = await cut(0, sx);
+    if(!(f.e & 2)) out.r = await cut(sx, c.width - sx);
+    return out;
+  }
+  // 上げて、見開きの d（[左, 右] または [見開き]）を返す
+  async function shareUpDl(r, folder, n){
+    if(!r) return [];
+    const up = async (b, nm) => b ? (await gUploadSmall({ name: nm, parents: [folder] }, b)).id : '';
+    if(r.w) return [await up(r.w, `dl_${n}.jpg`)];
+    return [await up(r.l, `dl_${n}_L.jpg`), await up(r.r, `dl_${n}_R.jpg`)];
+  }
   async function shareRenderPair(p, key, k){
     const c = document.createElement('canvas');
     exporting = true; try{ compose(p, c, SHARE_LONG); } finally { exporting = false; }
     const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', SHARE_Q));
     if(!blob) throw new Error('render');
-    const pg = { w: c.width, h: c.height, seam: +(((pairUI[p] || {}).seam) || .5).toFixed(4), k };
+    const pg = Object.assign({ w: c.width, h: c.height, seam: +(((pairUI[p] || {}).seam) || .5).toFixed(4), k }, shPageFlags(p));
     let up = blob;
     if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); }
     return { pg, up, blob };
@@ -9061,12 +9134,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const used = new Set(), pages = new Array(list.length), todo = [];
       sigs.forEach((k, i) => { const o = byK.get(k); if(o && !used.has(o.id)){ used.add(o.id); pages[i] = o; } else todo.push(i); });
       // 変わった見開きは、新しいファイルとして上げ、古いものはゴミ箱へ（同じファイルを書き換えると、Google の配信の控えに古い写真が残るため）
-      const spare = [...old.filter(x => !used.has(x.id)).map(x => x.id), ...legacy];
+      const spare = [...old.filter(x => !used.has(x.id)).flatMap(x => [x.id, ...(x.d || [])].filter(Boolean)), ...legacy];
       let changed = !v3 || todo.length > 0 || old.length !== list.length || old.some((x, i) => !pages[i] || pages[i].id !== x.id);
+      pages.forEach((x, i) => { if(x) Object.assign(x, shPageFlags(list[i])); });   // 使い回す見開きも、ダウンロード用の印は今の状態に
       for(const i of todo){
         const r = await shareRenderPair(list[i], null, sigs[i]);
         const id = (await gUploadSmall({ name: `${String(i + 1).padStart(2, '0')}.jpg`, parents: [f.id] }, r.up)).id;
         pages[i] = Object.assign(r.pg, { id });
+      }
+      // ダウンロードを許可した共有：変わった見開き（と、まだ持っていない見開き）の1ページ画像も作り直す
+      if(man.dl || ap.dl === '1'){
+        for(let i = 0; i < pages.length; i++){
+          if(!todo.includes(i) && pages[i].d && pages[i].d.length) continue;
+          const r = await shareRenderDl(list[i]); pages[i].d = r ? await shareUpDl(r, f.id, String(i + 1).padStart(2, '0')) : []; changed = true;
+        }
       }
       // 一覧を含める共有なら、一覧も（見開きか設定が変わったときだけ）作り直す
       let sheet = null;
@@ -9148,6 +9229,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           pages[i] = Object.assign({}, pg, { id });
           upDone++; if(!stop) gBusy('', `アップロードしています ${upDone} / ${made.length}`, .45 + upDone / made.length * .45);
         });
+        chk();
+        // ダウンロードを許可したときは、1ページずつの画像も作って上げる（見開きは見開きの順）
+        if(opt.dl){
+          let dn = 0;
+          for(let i = 0; i < list.length; i++){
+            chk(); gBusy('', `ダウンロード用の写真を準備しています ${i + 1} / ${list.length}`, .9 + i / list.length * .05);
+            const r = await shareRenderDl(list[i]); if(r) pages[i].d = await shareUpDl(r, folder, String(i + 1).padStart(2, '0')); dn++;
+          }
+        }
         chk();
         // 作った人が分かる情報（フォルダの場所など）は入れない。パスワード付きのときは、題名も暗号化する
         const mb = await shareManBuild(title, pages, opt.exp, key, enc, opt.dl), mmeta = { name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } };
