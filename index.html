@@ -996,7 +996,9 @@ img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertica
 #stDrive .strhead small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center}
 #stDrive .strhead .gwhere{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #workOpen{display:none !important}   /* BOOKは最初の画面から開く（上のバーを1行に保つ） */
-.ghidlink{display:block;margin:2px 0 0 auto;font-size:11.5px}
+/* 一覧から外したBOOK：「前回の設定のまま始める」と同じ形のボタン */
+.ghidlink{display:block;margin:6px 0 0 auto;font-size:9.5px !important;padding:6.3px 12.6px !important}
+#driveShowHid.hidbtn{font-size:12px;padding:6px 14px}
 .savelead{margin:-4px 0 10px;font-size:12.5px;color:var(--muted)}
 .savedest{display:flex;flex-direction:column;gap:8px;margin:2px 0 4px}
 .sdopt b{display:flex;align-items:center;gap:7px}
@@ -2532,7 +2534,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <h3 id="driveTitle">Google ドライブから開く</h3>
     <p class="driveacct" id="driveAcct"></p>
     <div class="strlist drivelist" id="driveList"></div>
-    <p class="drivehid"><button type="button" class="saveas" id="driveShowHid" hidden></button></p>
+    <p class="drivehid"><button type="button" class="stkeep hidbtn" id="driveShowHid" hidden></button></p>
     <div class="actions" style="justify-content:flex-end">
       <button type="button" class="saveas" id="driveLocal"><span class="devn">パソコン</span>のBOOKファイル（.pbmk）を開く…</button>
       <button class="qbtn keep" id="driveClose" type="button">閉じる</button>
@@ -2543,7 +2545,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   <div class="sheet" style="max-width:440px">
     <h3 id="bookDelTitle">このBOOKをどうしますか？</h3>
     <p class="bdname" id="bookDelName"></p>
-    <button type="button" class="bdopt sdopt" id="bookDelHide"><b>一覧から外す</b><small>表示だけを消します。Google ドライブのデータはそのまま残り、「すべて見る」からいつでも戻せます。</small><span class="sdgo sub">外す</span></button>
+    <button type="button" class="bdopt sdopt" id="bookDelHide"><b>一覧から外す</b><small>表示だけを消します。Google ドライブのデータはそのまま残り、最初の画面の「一覧から外したBOOK」から、いつでも戻せます。</small><span class="sdgo sub">外す</span></button>
     <button type="button" class="bdopt sdopt danger" id="bookDelTrash"><b>Google ドライブから削除</b><small>写真ごと Google ドライブのゴミ箱に移します。30日のあいだは、ドライブのゴミ箱から戻せます。</small><span class="sdgo del">削除</span></button>
     <div class="actions" style="justify-content:flex-end"><button class="qbtn keep" id="bookDelCancel" type="button">キャンセル</button></div>
   </div>
@@ -8254,6 +8256,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       else toast('BOOKファイルに保存しました');
     }catch(e){
       closeAfterSave = false; if(saveAs){ workId = prevId; }
+      if(e && e.canceled){ gBusyOff(); status('保存を中止しました。'); askYesNo('中止しました', '<p>保存を中止しました。</p>', () => {}, '閉じる', ''); return; }
       console.error('BOOK save failed', e);
       const why = e && e.preview ? '写真の読み込みが終わってから、もう一度保存してください。' : e && e.auth ? 'Google ドライブとの接続が切れていました。<br>右上の「Google ドライブ」からつなぎ直して、もう一度保存してください。' : e && e.status ? `Google ドライブに保存できませんでした（${e.status}）。<br>通信の状態と、ドライブの空き容量を確かめて、もう一度お試しください。` : e && e.photos ? `元の写真が読めなくなっています（${e.photos.slice(0, 3).join('、')}${e.photos.length > 3 ? ` ほか${e.photos.length - 3}枚` : ''}）。<br>写真を書き出し直したり、動かしたり、名前を変えたりすると、読めなくなります。<br>その写真を入れ直してから、もう一度保存してください。`
         : `保存の途中で止まってしまいました（${String(e && (e.name || e.message) || '').replace(/[<>&]/g, '')}）。<br>保存先の空き容量を確かめて、もう一度お試しください。`;
@@ -8650,13 +8653,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   if(WEB) stylesHook = () => { clearTimeout(styT); styT = setTimeout(gStylesPush, 800); };
   // アップロード（大きな写真も途切れにくい「再開可能アップロード」）。id があれば中身を差し替え
-  async function gUpload(meta, blob, id){
-    const r = await gFetch(`${GAPI}/upload/drive/v3/files${id ? '/' + id : ''}?uploadType=resumable&fields=id,name`, { method: id ? 'PATCH' : 'POST',
+  async function gUpload(meta, blob, id, signal){
+    const r = await gFetch(`${GAPI}/upload/drive/v3/files${id ? '/' + id : ''}?uploadType=resumable&fields=id,name`, { method: id ? 'PATCH' : 'POST', signal,
       headers: { 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': blob.type || 'application/octet-stream' }, body: JSON.stringify(meta) });
     const loc = r.headers.get('Location'); if(!loc) throw new Error('upload');
-    const u = await fetch(loc, { method: 'PUT', headers: { 'Content-Type': blob.type || 'application/octet-stream' }, body: blob });
+    const u = await fetch(loc, { method: 'PUT', signal, headers: { 'Content-Type': blob.type || 'application/octet-stream' }, body: blob });
     if(!u.ok) throw new Error('upload ' + u.status);
     return u.json();
+  }
+  // 小さなファイル（プレビュー画像など）は、1回の通信で上げる
+  async function gUploadSmall(meta, blob, signal){
+    const bd = 'pbm' + Math.random().toString(36).slice(2), t = blob.type || 'application/octet-stream';
+    const body = new Blob([`--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${bd}\r\nContent-Type: ${t}\r\n\r\n`, blob, `\r\n--${bd}--`]);
+    return gJson(`${GAPI}/upload/drive/v3/files?uploadType=multipart&fields=id,name`, { method: 'POST', signal, headers: { 'Content-Type': `multipart/related; boundary=${bd}` }, body });
   }
   // マイドライブの「PHOTO BOOK MAKER」フォルダ（なければ作る）
   async function gRoot(){
@@ -9135,7 +9144,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const u = URL.createObjectURL(blob), old = gbUrl; gbUrl = u;
     im.classList.remove('in'); im.onload = () => { im.classList.add('in'); if(old) URL.revokeObjectURL(old); }; im.src = u; box.hidden = false;
   }
-  function gBusyOff(){ gBusyImg(null); $('gBusy').hidden = true; $('gBusyCancel').hidden = true; $('gBusyCancel').onclick = null; }
+  function gBusyOff(){ gBusyImg(null); $('gBusy').hidden = true; $('gBusyCancel').hidden = true; $('gBusyCancel').disabled = false; $('gBusyCancel').onclick = null; }
   // 文字列から短い目印（同じ画像を2回上げないため）
   function strHash(str){ let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for(let i = 0; i < str.length; i++){ const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0') + '-' + str.length.toString(36); }
   // プレビュー画像は、BOOKのフォルダの中の「preview」フォルダに、写真と同じ名前（.jpg）で置く
@@ -9174,7 +9183,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           if(gen !== pvGen || (h.pvIds[it.uid] && h.pvIds[it.uid][3])) return;
           try{
             const name = pvName(it), [w, hh] = it.pw ? [it.pw, it.ph] : dims(it.src);
-            const id = (await gUpload({ name, parents: [await pvDir()], appProperties: { pbm: 'preview', uid: it.uid } }, await pvMake(it.src))).id;
+            const id = (await gUploadSmall({ name, parents: [await pvDir()], appProperties: { pbm: 'preview', uid: it.uid } }, await pvMake(it.src))).id;
             h.pvIds[it.uid] = [id, w, hh, name]; made.push(it.uid);
           }catch(e){}
         });
@@ -9207,8 +9216,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
     await ensurePhotosReadable();
     const P = buildProject(); P.withPhotos = true; P.drive = { photos: {}, fonts: [] };
+    let madeNow = false;   // この保存で作ったフォルダ（中止したらゴミ箱へ）
     if(!h.folderId){
-      const root = await gRoot();
+      const root = await gRoot(); madeNow = true;
       h.folderId = (await gCreate({ name: h.name, mimeType: 'application/vnd.google-apps.folder', parents: [root], appProperties: { pbm: 'book' } })).id;
       h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.pvIds = {}; h.pvDir = '';
     } else if(h.name && h.renamed){ await gPatch(h.folderId, { name: h.name }); h.renamed = false; }
@@ -9219,34 +9229,49 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const src = from && from.photoIds ? from.photoIds : {};
     const used = new Set(Object.values(h.photoNames).map(n => n.toLowerCase()));
     const want = []; slots.forEach(it => { if(it && it.file && !want.some(x => x.uid === it.uid)) want.push({ uid: it.uid, it }); });
-    let n = 0; const need = want.filter(x => !h.photoIds[x.uid]).length, step = () => show && need && gBusy('', `写真 ${n} / ${need} 枚`, n / (need + 1));
+    let n = 0, stop = false; const need = want.filter(x => !h.photoIds[x.uid]).length, step = () => show && need && !stop && gBusy('', `写真 ${n} / ${need} 枚`, n / (need + 1));
     step();
-    for(const { uid, it } of want){
-      if(!h.photoIds[uid]){
-        if(it.pv && !src[uid]){ const e = new Error('preview'); e.preview = true; throw e; }   // 下見の画像を、写真としてドライブに上げない
-        const nm = (it.name || it.file.name || 'photo.jpg').replace(/[\\/:*?"<>|]/g, '_'), dot = nm.lastIndexOf('.'), stem = dot > 0 ? nm.slice(0, dot) : nm, ext = dot > 0 ? nm.slice(dot) : '.jpg';
-        let name = stem + ext, k = 2; while(used.has(name.toLowerCase())) name = `${stem} (${k++})${ext}`;
-        used.add(name.toLowerCase());
-        status(`Google ドライブに写真を保存しています…（${++n}）`);
-        const meta = { name, parents: [h.folderId], appProperties: { pbm: 'photo', uid } };
-        h.photoIds[uid] = src[uid] ? (await gCopy(src[uid], meta)).id : (await gUpload(meta, it.file)).id;
-        h.photoNames[uid] = name; step();
-      }
-      P.drive.photos[uid] = h.photoIds[uid];
-      // 下見の画像（開くときに先に見せる小さな画像）。作れなくても保存は止めない
-      // 前の版で作ったもの（名前の記録がない）は使わず、preview フォルダに作り直す
-      if(h.pvIds[uid] && !h.pvIds[uid][3]) delete h.pvIds[uid];
-      if(!h.pvIds[uid]){
-        try{
-          if((srcPv[uid] && srcPv[uid][3]) || !it.pv){
-            const name = pvName(it), meta = { name, parents: [await pvDir()], appProperties: { pbm: 'preview', uid } };
-            if(srcPv[uid] && srcPv[uid][3]) h.pvIds[uid] = [(await gCopy(srcPv[uid][0], meta)).id, srcPv[uid][1], srcPv[uid][2], name];
-            else { const [w, hh] = it.pw ? [it.pw, it.ph] : dims(it.src); h.pvIds[uid] = [(await gUpload(meta, await pvMake(it.src))).id, w, hh, name]; }
-          }
-        }catch(e){}
-      }
-      if(h.pvIds[uid]) P.drive.pv[uid] = h.pvIds[uid];
+    // 中止：写真を上げている間だけ（上げている途中のものも止める）。このあとの片付けと book.json の書き換えは数秒なので、止めない
+    const ac = window.AbortController ? new AbortController() : null;
+    const cb = $('gBusyCancel');
+    if(show && need){ cb.hidden = false; cb.disabled = false; cb.onclick = () => { if(stop) return; stop = true; cb.disabled = true; try{ ac && ac.abort(); }catch(e){} gBusy('', '中止しています…', null); }; }
+    // 下見の画像を、写真としてドライブに上げない（上げ始める前に確かめる）
+    if(want.some(({ uid, it }) => it.pv && !h.photoIds[uid] && !src[uid])){ const e = new Error('preview'); e.preview = true; throw e; }
+    // 写真は4枚ずつ同時に上げる。1枚でも失敗したら、新しく上げ始めるのをやめて、上げている途中のものを待ってから止める
+    let failed = null;
+    await pool(want, 4, async ({ uid, it }) => {
+      if(failed || stop) return;
+      try{
+        if(!h.photoIds[uid]){
+          const nm = (it.name || it.file.name || 'photo.jpg').replace(/[\\/:*?"<>|]/g, '_'), dot = nm.lastIndexOf('.'), stem = dot > 0 ? nm.slice(0, dot) : nm, ext = dot > 0 ? nm.slice(dot) : '.jpg';
+          let name = stem + ext, k = 2; while(used.has(name.toLowerCase())) name = `${stem} (${k++})${ext}`;
+          used.add(name.toLowerCase());
+          const meta = { name, parents: [h.folderId], appProperties: { pbm: 'photo', uid } };
+          h.photoIds[uid] = src[uid] ? (await gCopy(src[uid], meta)).id : (await gUpload(meta, it.file, '', ac && ac.signal)).id;
+          h.photoNames[uid] = name; n++; status(`Google ドライブに写真を保存しています…（${n}/${need}）`); step();
+        }
+        // プレビュー画像（開くときに先に見せる小さな画像）。作れなくても保存は止めない
+        // 前の版で作ったもの（名前の記録がない）は使わず、preview フォルダに作り直す
+        if(h.pvIds[uid] && !h.pvIds[uid][3]) delete h.pvIds[uid];
+        if(!h.pvIds[uid] && !stop){
+          try{
+            if((srcPv[uid] && srcPv[uid][3]) || !it.pv){
+              const name = pvName(it), meta = { name, parents: [await pvDir()], appProperties: { pbm: 'preview', uid } };
+              if(srcPv[uid] && srcPv[uid][3]) h.pvIds[uid] = [(await gCopy(srcPv[uid][0], meta)).id, srcPv[uid][1], srcPv[uid][2], name];
+              else { const [w, hh] = it.pw ? [it.pw, it.ph] : dims(it.src); h.pvIds[uid] = [(await gUploadSmall(meta, await pvMake(it.src), ac && ac.signal)).id, w, hh, name]; }
+            }
+          }catch(e){}
+        }
+      }catch(e){ if(!failed) failed = e; }
+    });
+    if(show){ cb.hidden = true; cb.onclick = null; }
+    if(stop){
+      // 新しく作ったフォルダは、作りかけのBOOKが一覧に出ないようにゴミ箱へ
+      if(madeNow && h.folderId){ try{ await gPatch(h.folderId, { trashed: true }); }catch(e){} h.folderId = ''; h.jsonId = ''; h.thumbId = ''; h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.assetIds = {}; h.pvIds = {}; h.pvDir = ''; }
+      const e = new Error('canceled'); e.canceled = true; throw e;
     }
+    if(failed) throw failed;
+    for(const { uid } of want){ P.drive.photos[uid] = h.photoIds[uid]; if(h.pvIds[uid]) P.drive.pv[uid] = h.pvIds[uid]; }
     if(h.pvDir) P.drive.pvDir = h.pvDir;
     // このBOOKで使わなくなった写真はゴミ箱へ（ドライブの容量を空ける）
     for(const uid of Object.keys(h.photoIds)) if(!want.some(x => x.uid === uid)){ try{ await gPatch(h.photoIds[uid], { trashed: true }); }catch(e){} delete h.photoIds[uid]; delete h.photoNames[uid]; }
@@ -9465,7 +9490,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('bookDelCancel').onclick = close;
     $('bookDelHide').onclick = async () => { close();
       try{ await gPatch(f.id, { appProperties: { hidden: '1' } }); }catch(e){ status('一覧から外せませんでした。もう一度お試しください。'); return; }
-      status(`「${f.name}」を一覧から外しました。データは Google ドライブに残っています（「すべて見る」から戻せます）。`); done(); };
+      status(`「${f.name}」を一覧から外しました。データは Google ドライブに残っています（最初の画面の「一覧から外したBOOK」から戻せます）。`); done(); };
     $('bookDelTrash').onclick = () => { close();
       askYesNo('本当に削除しますか？', `<p>「${esc2(f.name)}」を、写真ごと Google ドライブのゴミ箱に移します。<br>ゴミ箱からは <b>30日のあいだ</b> 戻せます。30日たつと、自動で完全に消えます。</p>`, async () => {
         try{ await gPatch(f.id, { trashed: true }); }catch(e){ status('削除できませんでした。もう一度お試しください。'); return; }
@@ -9476,7 +9501,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function syncHidToggle(n){
     const b = $('driveShowHid'); b.hidden = !n && !GD.showHid;
-    b.textContent = GD.showHid ? '一覧から外したBOOKを隠す' : `一覧から外したBOOK（${n}冊）も表示`;
+    b.textContent = GD.showHid ? '‹ BOOKの一覧に戻る' : `一覧から外したBOOK（${n}冊）`;
   }
   // 起動画面のドライブの段：５冊ずつ、左右の矢印で横に送る（画面は切り替えない）
   function setupCarousel(row){
@@ -9506,8 +9531,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // 「一覧から外す」にしたBOOK（データはドライブに残っている）。「すべて見る」で表示を切り替えられる
     const isHid = f => (f.appProperties || {}).hidden === '1';
     const nHid = list.filter(isHid).length; if(row.id === 'driveList') syncHidToggle(nHid);
-    if(!(row.id === 'driveList' && GD.showHid)) list = list.filter(f => !isHid(f));
-    row.innerHTML = list.length ? '' : `<p class="strnote">${nHid ? 'ここに表示するBOOKはありません。' : 'まだGoogle ドライブに保存したBOOKはありません。'}</p>`;
+    const hidOnly = row.id === 'driveList' && GD.showHid;   // 「一覧から外したBOOK」の窓：外したものだけ
+    if(row.id === 'driveList') $('driveTitle').textContent = hidOnly ? '一覧から外したBOOK' : 'Google ドライブから開く';
+    list = list.filter(f => hidOnly ? isHid(f) : !isHid(f));
+    row.innerHTML = list.length ? '' : `<p class="strnote">${hidOnly ? '一覧から外したBOOKはありません。' : nHid ? 'ここに表示するBOOKはありません。' : 'まだGoogle ドライブに保存したBOOKはありません。'}</p>`;
     const z = n => String(n).padStart(2, '0');
     // 起動画面：横スクロールしないで並ぶ数だけ（入りきらない分は「すべて見る」）
     const carousel = limit === 'fit'; if(carousel){ const w = row.clientWidth || 860, cw = 150; /* どの画面でも同じ大きさ（狭い画面では横にスクロール） */ $('startModal').style.setProperty('--cw', cw + 'px'); limit = 0; }
@@ -9524,7 +9551,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     list.forEach(f => {
       const a = f.appProperties || {}, d = new Date(f.modifiedTime), card = document.createElement('div');
       const hid = isHid(f);
-      card.className = 'strcard ' + (KIND_CLS[a.kind] || 'c1') + (hid ? ' strhid' : '');
+      card.className = 'strcard ' + (KIND_CLS[a.kind] || 'c1') + (hid && !hidOnly ? ' strhid' : '');
       card.innerHTML = `<div class="strkind"><i class="strdot"></i>${esc2(KIND_NAME[a.kind] || 'BOOK')}</div><button type="button" class="strthumb" title="続きから編集する"><span class="strnoimg">…</span></button>`
         + `<div class="strmeta"><small class="strfname" title="${esc2(f.name)}">${esc2(f.name).replace(/_/g, '_<wbr>')}</small><small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${a.pages || '?'}P・写真${a.photos || 0}枚・${(a.fmt || 'jpg').toUpperCase()}</small></div>`
         + `<button type="button" class="stredit">✎ 続きから編集</button>${hid ? '<button type="button" class="strback" title="一覧に戻す">一覧に戻す</button>' : '<button type="button" class="strdel" title="一覧から外す・削除" aria-label="一覧から外す・削除">×</button>'}`;
@@ -9550,7 +9577,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     });
     if(carousel) setupCarousel(row);
     if(row.id === 'stDriveList'){
-      let hl = $('stDriveHid'); if(!hl){ hl = document.createElement('button'); hl.type = 'button'; hl.className = 'saveas ghidlink'; hl.id = 'stDriveHid'; row.parentElement.appendChild(hl);
+      let hl = $('stDriveHid'); if(!hl){ hl = document.createElement('button'); hl.type = 'button'; hl.className = 'stkeep ghidlink'; hl.id = 'stDriveHid'; row.parentElement.appendChild(hl);
         hl.addEventListener('click', () => { GD.showHid = true; openDriveModal(); }); }
       hl.hidden = !nHid; hl.textContent = `一覧から外したBOOK（${nHid}冊）`;
     }
