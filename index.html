@@ -980,8 +980,6 @@ img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertica
 .bdopt.danger b{color:#B23A3A}.bdopt.danger:hover{border-color:#B23A3A;background:rgba(178,58,58,.04)}
 .drivehid{margin:-4px 0 0}.drivehid .saveas{margin:0}
 .strhid{opacity:.6}.strhid:hover{opacity:1}
-.strback{position:absolute;right:6px;top:6px;border:0;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:inherit;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer}
-.strback:hover{background:rgba(0,0,0,.75)}
 .gmine{margin-left:6px;color:var(--muted);flex:none}
 .gquota{order:9;margin-left:2px;padding-left:12px;border-left:1px solid var(--line);flex:none;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);white-space:nowrap}
 .gquota small{font-size:11px}
@@ -1223,9 +1221,9 @@ body.sidedrawer .grid{padding-right:0 !important}
 .strmeta small{display:block;font-size:11px;color:var(--muted);line-height:1.5}
 .stredit{margin:4px 10px 10px;padding:6px 8px;border:1px solid var(--c);color:var(--c);background:none;border-radius:8px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
 .stredit:hover{background:var(--t)}
-/* アーカイブの窓：カードの下に小さく［ドライブから削除］ */
-.strtrash{margin:-4px 10px 10px;padding:3px 8px;border:0;background:none;color:#B23A3A;font:inherit;font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
-.strtrash:hover{color:#8f2626}
+/* アーカイブの窓：［続きから編集］の下に小さく「一覧に戻す」 */
+.strcard .strback{margin:-4px 10px 10px;padding:3px 8px;border:0;background:none;color:var(--muted);font:inherit;font-size:11px;font-weight:400;cursor:pointer;text-decoration:underline;text-underline-offset:2px;box-shadow:none;opacity:1}
+.strcard .strback:hover{color:var(--c)}
 /* 取り消しにくい操作の確認：赤い警告の窓 */
 #pagesModal.warn .sheet{border-top:4px solid #B23A3A}
 #pagesModal.warn #pagesTitle{color:#B23A3A;display:flex;align-items:center;gap:8px}
@@ -9570,7 +9568,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       card.className = 'strcard ' + (KIND_CLS[a.kind] || 'c1') + (hid && !hidOnly ? ' strhid' : '');
       card.innerHTML = `<div class="strkind"><i class="strdot"></i>${esc2(KIND_NAME[a.kind] || 'BOOK')}</div><button type="button" class="strthumb" title="続きから編集する"><span class="strnoimg">…</span></button>`
         + `<div class="strmeta"><small class="strfname" title="${esc2(f.name)}">${esc2(f.name).replace(/_/g, '_<wbr>')}</small><small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${a.pages || '?'}P・写真${a.photos || 0}枚・${(a.fmt || 'jpg').toUpperCase()}</small></div>`
-        + `<button type="button" class="stredit">✎ 続きから編集</button>${hid ? '<button type="button" class="strback" title="一覧に戻す">一覧に戻す</button>' + (hidOnly ? '<button type="button" class="strtrash">ドライブから削除</button>' : '') : '<button type="button" class="strdel" title="アーカイブ・削除" aria-label="アーカイブ・削除">×</button>'}`;
+        + `<button type="button" class="stredit">✎ 続きから編集</button>${hid ? '<button type="button" class="strback">一覧に戻す</button><button type="button" class="strdel" title="ドライブから削除" aria-label="ドライブから削除">×</button>' : '<button type="button" class="strdel" title="アーカイブ・削除" aria-label="アーカイブ・削除">×</button>'}`;
       // この端末の変更より後に、ほかの端末でドライブに保存されていたら、ドライブの方が新しい（印は付けず、ドライブの版を開く）
       const pw = pend[f.id] && pend[f.id].at > new Date(f.modifiedTime).getTime() ? pend[f.id] : null;
       if(pw){
@@ -9582,7 +9580,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const openIt = pw ? async () => { try{ await openWork(pw.wid); stClose(); }catch(e){ onOpen(f); } } : () => onOpen(f);
       card.querySelector('.strthumb').addEventListener('click', openIt);
       const refresh = () => { if(!$('driveModal').hidden) openDriveModal(); if(!$('startModal').hidden) renderDriveStart(); };
-      if(hid && hidOnly) card.querySelector('.strtrash').addEventListener('click', () => bookTrash(f, refresh));
+      if(hid) card.querySelector('.strdel').addEventListener('click', () => bookTrash(f, refresh));   // アーカイブの × ：ドライブから削除（警告の窓）
       if(hid) card.querySelector('.strback').addEventListener('click', async () => {
         try{ await gPatch(f.id, { appProperties: { hidden: null } }); }catch(e){ status('戻せませんでした。もう一度お試しください。'); return; }
         status(`「${f.name}」を一覧に戻しました。`); refresh();
