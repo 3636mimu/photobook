@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-09D4mfV9VPw+gldG0PMoQ6hzhE9RN8XwvHhdrvYxMY8=' 'sha256-CvbkuNeU93OIqR0zX+8p0mcE8OipuWPyPcgqCwG5lZ4=' 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-09D4mfV9VPw+gldG0PMoQ6hzhE9RN8XwvHhdrvYxMY8=' 'sha256-CvbkuNeU93OIqR0zX+8p0mcE8OipuWPyPcgqCwG5lZ4=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -13,13 +13,15 @@
 <script>/* マウスオーバーの説明を、システム内すべて同じ吹き出しで出す（ブラウザ標準の title 表示は使わない） */
 (function(){var tip,cur,tm;
 function el(){if(!tip){tip=document.createElement('div');tip.id='gTip';tip.setAttribute('role','tooltip');document.body.appendChild(tip);}return tip;}
-function find(t){while(t&&t.nodeType===1){if((t.getAttribute('title')||'').trim()||t.hasAttribute('data-tip'))return t;t=t.parentElement;}return null;}
-function hide(){clearTimeout(tm);if(tip)tip.classList.remove('on');if(cur&&cur.hasAttribute('data-gtip')){if(!cur.hasAttribute('title'))cur.setAttribute('title',cur.getAttribute('data-gtip'));cur.removeAttribute('data-gtip');}cur=null;}
+function find(t){while(t&&t.nodeType===1){if((t.getAttribute('title')||'').trim()||(t.getAttribute('data-gtip')||'').trim()||t.hasAttribute('data-tip'))return t;t=t.parentElement;}return null;}
+function hide(){clearTimeout(tm);if(tip)tip.classList.remove('on');cur=null;}
 function show(){if(!cur||!cur.isConnected)return;var txt=cur.getAttribute('data-gtip')||cur.getAttribute('data-tip')||'';if(!txt.trim())return;var t=el();t.textContent=txt;t.className='';
 var r=cur.getBoundingClientRect(),w=t.offsetWidth,h=t.offsetHeight,vw=innerWidth,vh=innerHeight,cx=r.left+r.width/2,x=Math.max(8,Math.min(vw-w-8,cx-w/2)),y=r.bottom+8,up=false;
 if(y+h>vh-8&&r.top-8-h>8){y=r.top-8-h;up=true;}
 t.style.left=x+'px';t.style.top=y+'px';t.style.setProperty('--ax',Math.max(12,Math.min(w-12,cx-x))+'px');if(up)t.classList.add('up');void t.offsetWidth;t.classList.add('on');}
-function enter(n){if(n===cur)return;hide();if(!n)return;cur=n;var tt=n.getAttribute('title');if(tt&&tt.trim()){n.setAttribute('data-gtip',tt);n.removeAttribute('title');}tm=setTimeout(show,250);}
+function enter(n){if(n===cur)return;hide();if(!n)return;cur=n;take(n);tm=setTimeout(show,250);}
+/* ブラウザ標準の説明（title）は出さない：見つけたら data-gtip に移す（元には戻さない） */
+function take(n){var tt=n.getAttribute('title');if(tt!==null){n.removeAttribute('title');n.setAttribute('data-gtip',tt);}}
 document.addEventListener('pointerover',function(e){if(e.pointerType==='touch')return;enter(find(e.target));},true);
 document.addEventListener('pointerout',function(e){if(cur&&(!e.relatedTarget||!cur.contains(e.relatedTarget)))hide();},true);
 document.addEventListener('focusin',function(e){var n=e.target;if(n&&n.matches&&n.matches(':focus-visible'))enter(find(n));},true);
@@ -28,7 +30,7 @@ document.addEventListener('focusout',function(){hide();},true);
 addEventListener('scroll',function(){hide();},true);addEventListener('blur',hide);
 /* Google のロゴ画像が読めなかったら消す（画面の決まりで onerror="" は使わない） */
 document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('glogo'))t.remove();},true);
-try{new MutationObserver(function(ms){ms.forEach(function(m){var n=m.target;if(n!==cur)return;var tt=n.getAttribute('title');if(tt===null)return;n.removeAttribute('title');if(tt.trim()){n.setAttribute('data-gtip',tt);if(tip&&tip.classList.contains('on')){tip.textContent=tt;}}else{n.setAttribute('data-gtip','');hide();}});}).observe(document.documentElement,{attributes:true,attributeFilter:['title'],subtree:true});}catch(e){}
+try{new MutationObserver(function(ms){ms.forEach(function(m){var n=m.target;if(n.getAttribute('title')===null)return;take(n);if(n===cur&&tip&&tip.classList.contains('on')){var tt=n.getAttribute('data-gtip')||'';if(tt.trim())tip.textContent=tt;else hide();}});}).observe(document.documentElement,{attributes:true,attributeFilter:['title'],subtree:true});}catch(e){}
 })();</script>
 <!-- iPhone・iPad：メールアドレスや電話番号を勝手にリンクにしない（押すとメール作成が開いてしまうため） -->
 <meta name="format-detection" content="telephone=no,email=no,address=no,date=no">
