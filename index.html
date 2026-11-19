@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-77Z6jmX+K4L7F/D4/9KJMWdxwIs3bjMmTxlDRqTNhQI=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-Zf9S4M+ws7d4z75HL2O6b/NxjiSNAnSw5I1ih7gWVsU=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -8930,7 +8930,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         fin(ed ? { act: 'save', opt } : opt);
       };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
-      m.hidden = false; $('shName').focus(); $('shName').select();
+      m.hidden = false;   // 共有名は選択もフォーカスもしない（スマホ・タブレットでキーボードが勝手に出ないように）
     });
   }
   // パスワードから鍵を作る（見る側と同じ作り方）
