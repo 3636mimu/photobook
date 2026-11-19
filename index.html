@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-KzU0P3gzv4+/OS4cjju6HKu9ehLcd18XOhqLeyPj0BY=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM=' 'sha256-zY45hX8TeGDO4zwhUafbGRZeRseu1iPx8iRA1MjbhSE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-+ub7V5GCkodM101X71PX3Xk5UwXQL2LWm+7WIUnmi8k=' 'sha256-KzU0P3gzv4+/OS4cjju6HKu9ehLcd18XOhqLeyPj0BY=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -827,7 +827,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .shck{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;white-space:nowrap}
 /* 共有リンクの設定：見出しの右に公開の切り替え、その下にリンクと印だけのボタン、左下に削除 */
 #shareOpt .shhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}#shareOpt .shhead + .shsec{margin-top:0}#shareOpt .shhead h3{margin:0}
-#shareOpt .shlink{display:flex;gap:6px;align-items:center;margin:0 0 4px}#shareOpt .shlink .shbox{flex:1;min-width:0;color:var(--muted);font-size:12.5px}
+#shareOpt .shlink{display:flex;gap:6px;align-items:center;margin:0}#shareOpt .shlink .shbox{flex:1;min-width:0;margin-top:0;color:var(--muted);font-size:12.5px}
 #shareOpt .icb{flex:0 0 34px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:8px;background:#F1EFEB;color:#5a554e;cursor:pointer;padding:0;text-decoration:none}
 #shareOpt .icb:hover{background:#E7E3DD}#shareOpt .icb svg{width:18px;height:18px}#shareOpt .icb.done{color:#2A8C7F}
 #shareOpt .shdel{margin-right:auto;border:0;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 1px #E2B4B0;color:#C24A45;font:inherit;font-size:12px;font-weight:500;letter-spacing:.02em;white-space:nowrap;cursor:pointer;padding:6px 12px;transition:background .15s}#shareOpt .shdel:hover{background:#FBEFEE}
@@ -9045,6 +9045,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           <div class="shsec"><b>オプション</b><label class="shck"><input type="checkbox" id="shSheet"><span>一覧を含める</span></label></div>
           <div class="actions"><button type="button" class="shdel" id="shDel" hidden>共有リンク削除</button><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">保存</button></div></div>`;
         document.body.append(m);
+        bgClose(m, () => $('shNo').click());   // 窓の外を押したら［キャンセル］と同じ
         // パスワードは隠さずに見せる（ふつうの文字欄なので「パスワードを保存しますか？」も出ない）
         pwAsciiOnly($('shPw'));
         // 最後のページに、全部の見開きを並べた一覧を入れるか
@@ -9217,9 +9218,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     finally{ shRefreshing = false; if(shRefreshAgain){ shRefreshAgain = false; setTimeout(shareRefresh, 1000); } }
   }
   // ---------- 共有リンクの設定（作成の窓と同じ窓で、今の内容を見て・変えて・保存） ----------
-  async function shareEdit(f, made){
+  // keep：保存のあとに開き直すとき（「保存しています」の窓のまま読み直す）
+  async function shareEdit(f, made, keep){
     const ap = f.appProperties || {}; if(!ap.m){ gBusyOff(); return; }
-    if(made) gBusy('', '仕上げています…', 1); else gBusy('Photo Bookリンクを開いています', '', null);
+    if(made) gBusy('', '仕上げています…', 1); else if(!keep) gBusy('Photo Bookリンクを開いています', '', null);
     let man = null, pw = '', title = ap.nm || '', mp = [], key = null;
     try{
       // 設定ファイルとパスワードの控えは、同時に読む
@@ -9253,7 +9255,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       // 前の形（写真ごと暗号化）の共有は、まず新しい形に作り直す（見開きを全部作り直すので少し時間がかかる）
       if(man.v < 3 && (o.pw !== pw || !o.sheet !== !sheetNow)){ gBusy('', '見開きを作り直しています', null); while(shRefreshing) await new Promise(r => setTimeout(r, 300)); await shareRefresh(); return shareEditSaved(f, o, newTitle); }
       await shareEditApply(f, man, mp, key, pw, o, newTitle, sheetNow);
-      gBusyOff(); toast('共有リンクの設定を保存しました'); status('共有リンクの設定を保存しました。リンクはそのままです。');
+      toast('共有リンクの設定を保存しました'); status('共有リンクの設定を保存しました。リンクはそのままです。');
+      return shareEdit(f, false, true);   // 保存したあとも、設定の窓は開いたまま（［キャンセル］か窓の外で閉じる）
     }catch(e){ console.warn(e); gBusyOff(); askYesNo('保存できませんでした', `<p>しばらく時間をおいて、もう一度お試しください。</p><p style="font-size:12px;color:var(--muted)">${esc2(e && (e.message || e) || '')}</p>`, () => {}, '閉じる', ''); }
   }
   // 前の形から作り直したあとに、もう一度読み直して設定を当てる
@@ -9264,7 +9267,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!(man.v >= 3)) throw new Error('convert');
       if(man.enc){ pw = (await sharePwRead()).map[g.id] || ''; key = await shareDeriveKey(pw, unb64(man.enc.salt), man.enc.iter); mp = JSON.parse(new TextDecoder().decode(await shareDec(key, man.enc.iv, unb64(man.enc.c)))).pages || []; }
       await shareEditApply(g, man, mp, key, pw, o, newTitle, mp.some(x => x.flat));
-      gBusyOff(); toast('共有リンクの設定を保存しました');
+      toast('共有リンクの設定を保存しました'); return shareEdit(g, false, true);
     }catch(e){ console.warn(e); gBusyOff(); askYesNo('保存できませんでした', '<p>しばらく時間をおいて、もう一度お試しください。</p>', () => {}, '閉じる', ''); }
   }
   // 設定を当てる：題名・パスワード・期限・一覧を、設定ファイルとフォルダに書く（写真の画像はそのまま。URLも変わらない）
