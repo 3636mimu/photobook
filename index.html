@@ -9311,7 +9311,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     h.jsonId = (await gUpload(h.jsonId ? {} : { name: 'book.json', parents: [h.folderId], appProperties: { pbm: 'json' } }, json, h.jsonId)).id;
     const th = workThumb();
     if(th){ const tb = await (await fetch(th)).blob(); h.thumbId = (await gUpload(h.thumbId ? {} : { name: 'thumb.jpg', parents: [h.folderId], appProperties: { pbm: 'thumb' } }, tb, h.thumbId)).id; }
-    await gPatch(h.folderId, { appProperties: { hidden: null, pbm: 'book', json: h.jsonId, thumb: h.thumbId || '', kind: P.kind, pages: String(P.pages), photos: String(slots.filter(Boolean).length), fmt: (P.settings && P.settings.fmt) || 'jpg' } });
+    // アーカイブの印（hidden）には触れない：アーカイブしたBOOKは、編集・保存しても「一覧に戻す」を押すまでアーカイブのまま
+    await gPatch(h.folderId, { appProperties: { pbm: 'book', json: h.jsonId, thumb: h.thumbId || '', kind: P.kind, pages: String(P.pages), photos: String(slots.filter(Boolean).length), fmt: (P.settings && P.settings.fmt) || 'jpg' } });
     h.drive = true; delete h.isNew;
     return h;
   }
