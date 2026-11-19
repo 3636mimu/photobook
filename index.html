@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-RhBuXIObY/vBRxZUB7Ne08TkH2uC/cQS+bul7xGkhhI=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-W3dYxVg2VkTinvJ/ZLPjRD5iaY8tIRSiWPBd8Wvl+j4=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-09D4mfV9VPw+gldG0PMoQ6hzhE9RN8XwvHhdrvYxMY8=' 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-W3dYxVg2VkTinvJ/ZLPjRD5iaY8tIRSiWPBd8Wvl+j4=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -3055,7 +3055,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         document.title = (title || 'PHOTO BOOK') + ' | PHOTO BOOK';
         hd.hidden = true;   // 上の題名は出さない（写真だけを見せる）
         stage.innerHTML = ''; book = el('div', 'bk', stage); pos = 0;
-        loadImg(0, function(){ draw(); warm(); });
+        // 最初の見開きだけ、ゆっくり浮かび上がるように出す（めくるときは今まで通り）
+        book.style.opacity = '0'; book.style.webkitTransform = book.style.transform = 'translateY(14px)';
+        var shown = false, reveal = function(){ if(shown) return; shown = true;
+          requestAnimationFrame(function(){ requestAnimationFrame(function(){
+            book.style.webkitTransition = book.style.transition = 'opacity 1.4s ease, transform 1.4s cubic-bezier(.2,.7,.2,1)';
+            book.style.opacity = '1'; book.style.webkitTransform = book.style.transform = 'none';
+            setTimeout(function(){ book.style.webkitTransition = book.style.transition = ''; book.style.webkitTransform = book.style.transform = ''; }, 1500);
+          }); }); };
+        loadImg(0, function(){ draw(); warm(); reveal(); });
         draw();
         if(window.matchMedia && matchMedia('(pointer:coarse) and (orientation:portrait)').matches){
           var h = el('div', 'ht', root); h.textContent = '横にすると、大きく見られます';
