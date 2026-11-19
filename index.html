@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-d7/hj7FiOJvgga0zQHfkVjbl4e7qu/FoHB6vFQW7u7k=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-/uZgTQ8SObEYoVVqRja0VIAm0ckS2S+ZK07iQFp4ZXI=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -375,13 +375,15 @@ button{font:inherit}
 .blkbtn.on{background:#2A8C7F;border-color:#2A8C7F;color:#fff}
 @media (pointer:coarse){.blkbtn{opacity:.92}}
 .sharebtn{width:100%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.35}
-/* アイコン付きのメニューボタン：アイコンは左、文字は左右の余白をそろえて、題も補足も均等に割り付け */
-#saveAll,#saveSheet,#saveSingles,#shareBook{display:grid !important;grid-template-columns:22px minmax(0,1fr) 22px;column-gap:12px;align-items:center;padding:6px 14px !important;height:auto !important;min-height:48px;text-align:left}
+/* アイコン付きのメニューボタン：アイコン・題（左そろえ）・右に形式と枚数の小さな札 */
+#saveAll,#saveSheet,#saveSingles,#shareBook{display:grid !important;grid-template-columns:22px minmax(0,1fr) auto;column-gap:9px;align-items:center;padding:6px 9px 6px 12px !important;height:auto !important;min-height:44px;text-align:left}
 #saveAll .mi,#saveSheet .mi,#saveSingles .mi,#shareBook .mi{display:block;width:22px;height:22px;font-style:normal}
 #saveAll .mi svg,#saveSheet .mi svg,#saveSingles .mi svg,#shareBook .mi svg{display:block;width:22px;height:22px}
-#saveAll .mt,#saveSheet .mt,#saveSingles .mt,#shareBook .mt{display:block;min-width:0;line-height:1.3}
-#saveAll .mt b,#saveSheet .mt b,#saveSingles .mt b,#shareBook .mt b{display:block;font-weight:700;text-align:justify;text-align-last:justify;white-space:nowrap}
-#saveAll .mt .sub,#saveSheet .mt .sub,#saveSingles .mt .sub,#shareBook .mt .sub{display:block;margin-top:2px;text-align:center;letter-spacing:.02em;font-size:10.5px;line-height:1.3;white-space:nowrap}.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
+#saveAll .mt,#saveSheet .mt,#saveSingles .mt,#shareBook .mt{display:block;min-width:0;font-size:13.5px;font-weight:700;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#saveAll .bd,#saveSheet .bd,#saveSingles .bd,#shareBook .bd{font-size:10.5px;font-weight:500;letter-spacing:0;line-height:1;padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.2);white-space:nowrap}
+#shareBook{grid-template-columns:22px minmax(0,1fr)}#shareBook .bd{display:none}
+.mhead{font-size:11px;color:var(--muted);margin:6px 2px -2px;letter-spacing:.04em}
+.sharebtn .sub{display:block;font-size:11px;font-weight:500;opacity:.8}.sharebtn:disabled{opacity:.4;cursor:not-allowed}
 .shlbl{font-size:11.5px;color:var(--muted);margin:12px 0 -6px}
 .shrow2{display:flex;gap:8px;align-items:center;margin-top:10px}
 .shrow2 .shbox{margin-top:0;flex:1 1 auto;width:auto;min-width:0}
@@ -2090,10 +2092,12 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
       <div class="sec">
         <div class="picks"><label class="outline picklabel" id="pickMany" for="fileMany" role="button" tabindex="0" data-tip="写真は見開きに&#10;ドラッグ＆ドロップでもOK">写真を選ぶ（最大24枚）</label><span class="sample-note picknote" id="countNote"></span><button class="danger" id="clearAll" type="button" hidden>すべての写真を削除</button></div>
         <button class="outline" id="openViewer" hidden style="display:none;width:100%;padding:11px 14px;font-size:15px;letter-spacing:.04em">プレビュー</button>
+        <div class="mhead" id="hdOut">書き出し</div>
         <button class="primary" id="saveAll" disabled>見開一括書き出し</button>
         <button class="primary" id="saveSheet" disabled>一覧書き出し</button>
         <button class="primary" id="saveSingles" disabled title="調整した写真を1枚ずつ JPG で保存">1枚ずつ書き出し</button>
-        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled><i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg></i><span class="mt"><b>BOOK共有</b><span class="sub">めくって見られるリンク</span></span></button>
+        <div class="mhead" id="hdShare" hidden>共有</div>
+        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled><i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg></i><span class="mt">めくって見られるリンク</span><span class="bd"></span></button>
         <input type="file" id="workFile" class="vh" accept=".pbmk">
         <div id="pgTip" class="pgtip" aria-hidden="true">配置写真を調整</div><div id="dTapTip" class="pgtip" aria-hidden="true"></div>
         <input type="file" id="fileRelink" class="vh" accept="image/*" multiple>
@@ -2130,7 +2134,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
               <label for="q">写真の画質</label><output id="qo"></output>
               <input type="range" id="q" min="60" max="100" step="1" value="90">
             </div>
-            <p class="hint qnote"><b>数字を下げるほど、ファイルが軽くなります。</b><br>画面で見たり SNS に載せたり、デジタルで楽しむなら 90 で十分きれいです。<br>印刷に使う写真集書き出しと Photoback 入稿用は、ここの数字に関係なく自動で最高画質（100）になるので、安心してください。</p>
+            <p class="hint qnote"><b>数字を下げるほど、ファイルが軽くなります。</b><br>画面で見たり SNS に載せたり、デジタルで楽しむなら 90 で十分きれいです。<br>印刷に使う書き出しの「写真集」と「入稿用」は、ここの数字に関係なく自動で最高画質（100）になるので、安心してください。</p>
           </div>
           <div class="sec">
             <h2>ノドの影</h2>
@@ -2379,9 +2383,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <div class="tbl"><table>
       <tr><th><span class="btn">一覧</span> <span class="btn">見開き</span></th><td>「一覧」は見開きを並べて表示、「見開き」は1組ずつ大きく表示します（左右の矢印で前後へ）。</td></tr>
       <tr><th><span class="btn">プレビュー</span></th><td>見開きを1組ずつ大きく表示します。背景は「詳細設定」の「一覧書き出し仕様」の背景（白・黒）と同じです。<kbd>←</kbd> <kbd>→</kbd> キー、スワイプ、写真のクリック（右半分で次へ・左半分で前へ）で、本のようにページがめくれます。右上の <span class="btn">一覧</span> で全部の見開きを並べた表示に切り替わり（1行に並べる数と背景は、詳細設定の「一覧書き出し仕様」と同じ。保存される一覧画像と同じ見た目で確認できます）、見開きを押すとその見開きに戻ります（一覧のときはボタンが <span class="btn">見開き</span> になります）。</td></tr>
-      <tr><th><span class="btn fill">見開一括書き出し</span></th><td>（写真集モードのときは「写真集書き出し」という名前になります）写真が入っている見開きを、全部 JPG で保存します。片方だけの見開きも保存でき、空いたページは「空きページの色」（白か黒）で塗られます。Chrome・Edge では押すたびに保存先のフォルダを聞かれるので、選んだフォルダに全部まとめて書き出します。それ以外のブラウザや Claude 上のページでは、全部を1つの ZIP にまとめて保存します。画面上部の「保存形式」を PDF にすると、全部の見開きを1見開き1ページの PDF 1つにまとめて保存します。</td></tr>
-      <tr><th><span class="btn fill">一覧書き出し</span></th><td>全部の見開きを並べた、1枚の JPG 画像を保存します（保存形式が PDF のときも JPG です）。横幅 4500px で、JPG の画質は「詳細設定」の「画質」に従います。各見開きは一覧の枠の大きさに合わせて1回だけ縮めて作ります。見開一括書き出しと同じく、保存先のフォルダを選べます（選べない環境ではダウンロードフォルダに保存）。写真が1枚も入っていないときは押せません。</td></tr>
-      <tr><th><span class="btn fill">1枚ずつ書き出し</span></th><td>入っている写真を、このツールで調整したとおり（トリミング・拡大縮小・回転・傾き補正・反転）に1枚ずつ JPG で保存します。ノドの影・グリッドは入りません。写真が入っていないページでも、装飾（文字・画像）がそのページにかかっていれば書き出します。写真集モードの表紙・裏表紙・表紙の裏・裏表紙の裏も同じで、文字だけのページとして書き出せます（ファイル名は本の並び順の連番で、表紙が 000、裏表紙が最後の番号）。写真集モードで表紙・裏表紙に文字を入れているときは、その写真のページ部分の文字も入ります（またいだ文字はそれぞれのページの分だけ）。1枚写真の見開きは横長の1枚になります。大きさは「ページの解像度」、画質は「詳細設定」の「画質」に従います。保存形式が PDF でも JPG で保存します。まとめ方は見開一括書き出しと同じで、フォルダを選ぶとそこへ、選べないときは ZIP になります。</td></tr>
+      <tr><th><span class="btn fill">見開き一括</span></th><td>（「書き出し」の下のボタン。写真集モードのときは「写真集」という名前になります）写真が入っている見開きを、全部 JPG で保存します。片方だけの見開きも保存でき、空いたページは「空きページの色」（白か黒）で塗られます。Chrome・Edge では押すたびに保存先のフォルダを聞かれるので、選んだフォルダに全部まとめて書き出します。それ以外のブラウザや Claude 上のページでは、全部を1つの ZIP にまとめて保存します。画面上部の「保存形式」を PDF にすると、全部の見開きを1見開き1ページの PDF 1つにまとめて保存します。</td></tr>
+      <tr><th><span class="btn fill">一覧</span></th><td>全部の見開きを並べた、1枚の JPG 画像を保存します（保存形式が PDF のときも JPG です）。横幅 4500px で、JPG の画質は「詳細設定」の「画質」に従います。各見開きは一覧の枠の大きさに合わせて1回だけ縮めて作ります。見開一括書き出しと同じく、保存先のフォルダを選べます（選べない環境ではダウンロードフォルダに保存）。写真が1枚も入っていないときは押せません。</td></tr>
+      <tr><th><span class="btn fill">1枚ずつ</span></th><td>入っている写真を、このツールで調整したとおり（トリミング・拡大縮小・回転・傾き補正・反転）に1枚ずつ JPG で保存します。ノドの影・グリッドは入りません。写真が入っていないページでも、装飾（文字・画像）がそのページにかかっていれば書き出します。写真集モードの表紙・裏表紙・表紙の裏・裏表紙の裏も同じで、文字だけのページとして書き出せます（ファイル名は本の並び順の連番で、表紙が 000、裏表紙が最後の番号）。写真集モードで表紙・裏表紙に文字を入れているときは、その写真のページ部分の文字も入ります（またいだ文字はそれぞれのページの分だけ）。1枚写真の見開きは横長の1枚になります。大きさは「ページの解像度」、画質は「詳細設定」の「画質」に従います。保存形式が PDF でも JPG で保存します。まとめ方は見開一括書き出しと同じで、フォルダを選ぶとそこへ、選べないときは ZIP になります。</td></tr>
     </table></div>
     <p>1組だけ保存したいときは、各見開きの右下の <span class="btn fill">保存</span> を押します。</p>
     <p><b>グリッド</b>（書き出しボタンの下のスイッチ）をオンにすると、各ページに構図の目安の赤線が重なります。スイッチの下で種類を選べます：分割系：<b>6×6</b>（縦横6等分）／<b>3分割</b>／<b>黄金比（ファイグリッド）</b>（約 38:62 の位置）／<b>中心（十字）</b>。斜め系：<b>対角線（X）</b>／<b>斜め45°</b>（四隅から45度の線。Lightroom の「対角線」と同じもの）／<b>三角構図</b>・<b>三角構図（反転）</b>（対角線と、残りの角から下ろした垂線）。<b>黄金螺旋</b>：渦の中心が右下・左下・右上・左上の4種類。このグリッドは、一覧・見開き・プレビュー・保存画像に入ります（初期値はオフ、種類は 6×6）。写真の調整画面（初期値：ON・3分割）と装飾の画面（初期値：OFF・3分割）の下にもそれぞれ「グリッド」があり、一覧とは別に ON / OFF と種類を選べます（この2つの画面のグリッドは保存画像には入りません）。</p>
@@ -2391,10 +2395,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <li>ページ数は表紙・裏表紙を含めた小冊子全体のページ数です（A3 の枚数 = ページ数 ÷ 4）。表紙・表紙の裏・裏表紙の裏・裏表紙の4ページを除いた分が写真で、1枚目は右ページから始まります。例：36ページ → 写真32枚（A3 9枚）。見開きは「表紙の裏（白）｜1」「2-3」…「30-31」「32｜裏表紙の裏（白）」と並びます。写真集モードでは 16ページ（写真12枚）から選べます。</li>
       <li>ON にしたとき写真が収まらない場合は、収まるページ数に自動で増やします（例：写真36枚 → 48ページ）。</li>
       <li>ON にすると、比率が A判・保存形式が PDF に切り替わります（1ページが A4 にぴったり合う形）。</li>
-      <li><span class="btn fill">写真集書き出し</span> で、表紙 → 中身 → 裏表紙の順に A4 1ページずつ並んだ PDF ができます。写真の入っていないページは白紙になります。</li>
+      <li>書き出しの <span class="btn fill">写真集</span> で、表紙 → 中身 → 裏表紙の順に A4 1ページずつ並んだ PDF ができます。写真の入っていないページは白紙になります。</li>
       <li>ページの並べ替え（面付け）はコピー機が行います。セブン‐イレブンのマルチコピー機なら「普通紙プリント」で PDF を選び、「小冊子」・用紙 A3 を選んで印刷し、重ねて半分に折ってホチキスでとめます。</li>
       <li>ON/OFF を切り替えると、写真は順番のまま1ページずつずれます（1枚写真の見開きは解除されます）。</li>
-      <li>写真集モードのとき、ノドの影は、見開きの JPG（写真集書き出し・一覧書き出し・各見開きの保存）にはスイッチのとおり入ります。1ページずつのデータ（写真集の PDF・Photoback 入稿用・1枚ずつ書き出し）には入りません（本の折り目に本物の影ができるため）。グリッドは、保存するファイルには入りません。</li>
+      <li>写真集モードのとき、ノドの影は、見開きの JPG（書き出しの「写真集」「一覧」・各見開きの保存）にはスイッチのとおり入ります。1ページずつのデータ（写真集の PDF・入稿用・1枚ずつ）には入りません（本の折り目に本物の影ができるため）。グリッドは、保存するファイルには入りません。</li>
       <li>OFF に戻すと表紙の見開きはなくなります（表紙に写真があるときは確認が出ます）。</li>
       <li><b>装飾（文字・画像）</b>：各見開きのカードの <span class="btn">装飾</span> で、タイトルや名前、日付などの文字や、ロゴなどの画像を重ねられます。写真集モードの表紙・裏表紙だけでなく、普通の見開きモードでも、どの見開きにも別々に入れられます（装飾が入っている見開きはボタンの色が変わります）。見開きを「≡」で入れ替えると、装飾も一緒に移動します。文字はいくつでも追加でき、それぞれフォント（和文・欧文あわせて約160種類。和文はゴシック／明朝／筆文字／手書き（ペン・鉛筆）／丸文字／デザイン、欧文はセリフ／タイトル向きセリフ／サンセリフ／細長・ディスプレイ／タイプライター／手書き（ペン・ブラシ）／筆記体に分けて表示）・色・大きさ・回転・文字の間隔・行の間隔・不透明度・縦書き・揃え方を選べます。縁取りと影はそれぞれ ON / OFF でき（OFF にしても設定は残ります）、細かく調整できます。<br>・縁取りと影の色は、<span class="btn">文字と同じ</span> を押すと文字の色に合わせて自動で変わります（文字の色を変えると一緒に変わる）。ピッカーで色を選ぶと、自分で選んだ色になります。<br>・<b>縁取り</b>：色・太さ・間隔（文字から離して線を引く）・濃さ・ぼかし・左右／上下のずらし（マイナスで左・上へ）・縁の形（<b>文字に沿う</b>：文字の形のまま／丸く／角を切る。<b>板</b>（文字の後ろに敷く）ベーシック：四角／角丸四角／カプセル／円／楕円／ひし形／六角形／帯、ポップ：ハート／星／雲／花／ギザギザ／ドカン／吹き出し／値札／斜め／ブラシ、クラシック：リボン／八角形／チケット／盾／アーチ／ロゼット／メダル。<b>線</b>（枠線だけ）ベーシック：四角／角丸四角／カプセル／円／楕円／かぎ括弧／下線、クラシック：二重線／二重丸／二重楕円／八角形／チケット／アーチ／四隅飾り／上下の罫線／飾り罫。「文字に沿う」と「板・線」は組み合わせでき、板・線を選んでいるときは「文字の縁」に「文字に沿う」の角の形が使われます。板・線はもう一度押すと解除）。<b>線</b>（枠線だけ）：四角／角丸四角／カプセル／円／楕円／二重線／かぎ括弧／下線。板と線のときは、縁取りと影のあいだに「文字の縁」の行が出て、文字そのものにも縁を付けられます（初期値 ON。色は自由に選ぶか「文字と同じ」、太さも調整可）。板と線は文字の見た目の中心に合わせて配置され、太さ・間隔で大きさや線の太さを変えられます）。<br>・<b>影</b>：色・濃さ・ぼかし・広がり（影を太らせる）・左右／上下のずらし。縁取りがあるときは縁取りごと影が落ちます。<br>・<b>おまかせ</b>：なし／くっきり影／ふんわり影／光る／ネオン／袋文字／二重縁／ポップ立体／縁＋影 を一度で設定できます（そのあと自由に調整できます）。プレビューで文字をドラッグして動かし（Shift を押しながらだと水平・垂直にだけ動きます）、Shift か Ctrl / ⌘ を押しながらクリック（一覧の行でも可）で複数選択すると、まとめて動かしたり、「左揃え／左右中央／右揃え」「上揃え／上下中央／下揃え」「横に等間隔／縦に等間隔（3つ以上）」で位置を揃えたり、まとめて削除したりできます。2つ以上選んで <span class="btn">グループ化</span> すると1つのまとまりになり（一覧に「G1」などの印が付きます）、どれか1つをクリックするとグループ全体が選ばれ、まとめて動かせます。グループや複数選択のときは、大きさ・回転（全体の中心を軸に、全体が大きく・回る）、色・フォント・縁取り・影・不透明度・反転・配置などの設定も、選んだもの全部に一緒にかかります（文字の内容だけは1つずつ）。揃える・等間隔では、グループは1つのかたまりとして動きます。グループのうち1つだけを動かしたいときは Alt（Mac は Option）を押しながらクリックします。<span class="btn">複製</span> はグループごと複製し、<span class="btn">グループ解除</span> で元に戻せます。四隅の□をドラッグで大きさ、四隅の少し外側（カーソルが回転の矢印に変わるところ）か上の○をドラッグで回転（Shift で 15° ずつ）。写真の外にはみ出しても置けます（はみ出した部分は切れます）。折り目をこえて反対側のページ（表紙⇔裏表紙）にはみ出すかどうかは、文字ごとに「反対側のページにはみ出す」スイッチで選べます。OFF（新しく追加した文字の初期値）にすると、文字の中心がある側のページだけに表示され、折り目で切れます。ON にすると表紙と裏表紙にまたがって置けます。入れた文字は画面・プレビュー・PDF に入り、ブラウザに記憶されます。フォントはインターネットから読み込むので、オフラインでは普通の文字になります。</li>
       <li>「配置」の <span class="btn">左右中央</span> は、文字の中心がある側のページ（表紙か裏表紙）の左右中央に動かします。文字が1ページに収まらない大きさで「反対側のページにはみ出す」が ON のときは、表紙・裏表紙をあわせた全体の中央（折り目）に合わせます。<span class="btn">上下中央</span> は上下の真ん中に動かします。</li>
@@ -2443,11 +2447,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       <tr><th colspan="3">画面上部の設定（画質だけは「詳細設定」の中）</th></tr>
       <tr><td>ページ数</td><td>4・8・16・24・36・48・60・72・96・120 ページ（写真集は 16・20・24・28・32・36・44・52・64・76・100・120 ページ。表紙・表紙の裏・裏表紙の裏・裏表紙の4ページを含んだ数で、A3 の紙1枚で4ページです）。2ページで1見開き。写真が入っているページより少なくすると「写真が消えますが本当にいいですか？」と確認が出て、YES で減らし、NO でそのままになります</td><td class="def">24ページ</td></tr>
       <tr><td>保存形式</td><td>JPG（見開きごとに1枚）/ PDF（全部の見開きを1つのファイルに）</td><td class="def">JPG</td></tr>
-      <tr><td>画質</td><td>写真の画質。60〜100（JPG・PDF 共通）。数字を下げるほどファイルが軽くなり、デジタルで楽しむなら 90 で十分きれいです。印刷に使う「写真集書き出し」と「Photoback 入稿用」は、ここの数字に関係なく自動で 100 になります</td><td class="def">90</td></tr>
+      <tr><td>画質</td><td>写真の画質。60〜100（JPG・PDF 共通）。数字を下げるほどファイルが軽くなり、デジタルで楽しむなら 90 で十分きれいです。印刷に使う書き出しの「写真集」と「入稿用」は、ここの数字に関係なく自動で 100 になります</td><td class="def">90</td></tr>
       <tr><td>写真集 PDF のページの形</td><td>アスペクト比が A・B判のときは、コンビニのマルチコピー機の「小冊子」印刷用に A4 ページの PDF になります。それ以外の比率（1:1・2:3・4:3・Photoback など）では、各ページが画面に表示されている比率そのままの形の PDF になり、余白は入りません。1枚ずつ書き出しの JPG も同じく画面の比率のままです。</td></tr>
       <tr><td>写真集モード × Photoback</td><td>写真集モードでアスペクト比を Photoback LIFE / GRAPH にすると、Photoback では裏表紙に印刷できないため、裏表紙は空白になり写真も装飾も入れられなくなります（装飾画面では裏表紙が暗く表示され、そこに置いた文字は表示されません）。入れていた写真や装飾は消えずに残っていて、ほかの比率に戻すとまた表示されます。</td></tr>
       <tr><td>扉・奥付（Photoback）</td><td>写真集モードで Photoback LIFE / GRAPH を選ぶと、必ず Photoback と同じページ構成になります（切り替えスイッチはありません）：表紙（写真1枚）／扉／2-3（左は白紙）／4-5 …／22-23（右は白紙）／奥付。ページ数は表紙を除いた中身のページ数で、24ページなら写真は20枚＋表紙1枚です。扉・奥付・白紙のページに写真は入りません。扉と奥付の文字・ロゴは「装飾」で入れられ、1枚ずつ書き出しでは tobira / okuzuke の名前で保存されます。ほかの仕上がりサイズに切り替えても、入れた写真は順番どおりに並び直します。</td></tr>
-      <tr><td>Photoback への入稿</td><td>Photoback は印刷して届けるサービスなので、見開きの確認やデータの書き出しはできません。このツールで並べ替え・調整・装飾まで済ませて、右の「Photoback 入稿用」（Photoback のときは書き出しボタンの一番上）で各ページを JPG で保存します。ファイル名は Photoback のページ番号どおり（p00＝表紙、p01_tobira＝扉、p03 … p22、p24_okuzuke＝奥付）なので、Photoback の同じページにそのまま取り込めば入稿は完了です。白紙のページ（2・23ページ）と裏表紙は書き出しません。</td></tr>
+      <tr><td>Photoback への入稿</td><td>Photoback は印刷して届けるサービスなので、見開きの確認やデータの書き出しはできません。このツールで並べ替え・調整・装飾まで済ませて、右の書き出しの「入稿用」（Photoback のときは書き出しボタンの一番上）で各ページを JPG で保存します。ファイル名は Photoback のページ番号どおり（p00＝表紙、p01_tobira＝扉、p03 … p22、p24_okuzuke＝奥付）なので、Photoback の同じページにそのまま取り込めば入稿は完了です。白紙のページ（2・23ページ）と裏表紙は書き出しません。</td></tr>
       <tr><td>画素不足の警告</td><td>トリミングや拡大のあとの写真の画素が、ページの解像度に対して足りず 1.2 倍以上に引き伸ばすことになる写真には、カードのその写真の左下に赤い「画素不足」の印が出ます（写真の調整画面にも表示）。見開一括書き出し・見開きごとの保存・1枚ずつ書き出しのときは、該当する写真の一覧を出して「このまま保存しますか？」と確認します（保存はできます）。ページの解像度が「元の解像度」のときは出ません。</td></tr>
       <tr><td>仕上がりサイズ</td><td>A・B判（小冊子。A3・B4・A4・B5 の紙で刷れます。A判と B判は同じ形なので、どれでも同じデータで大丈夫です）/ Photoback LIFE（1783×2551px）/ Photoback GRAPH（2220×3000px）/ 1:1（スクエア）/ 2:3 / 4:3 / トリミングしない。ページは縦向きなので、4:3 は縦 3:4 で切り取ります。形が違う写真だけこの比率に切り取ります。選ぶとページの解像度も切り替わります（1:1・2:3・4:3 → 1600px、しない → 元の解像度、LIFE → 2551px、GRAPH → 3000px、A・B判 → 3508px）。A判で 3508px にすると、1ページが A4 300dpi（2480×3508px）、見開きが A3 横の大きさになり、PDF もちょうど A3 横（420×297mm）で保存されます</td><td class="def">2:3</td></tr>
       <tr><td>ページの解像度</td><td>1080 / 1600 / 2400 / 2551（Photoback LIFE）/ 3000（Photoback GRAPH）/ 3508（A3 小冊子用）px / 元の解像度</td><td class="def">1600px（2:3 のとき 1067×1600px）</td></tr>
@@ -4316,19 +4320,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     photo: '<path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-12a3 3 0 0 1-3-3z"/><path d="M3 16l5-5c.928-.893 2.072-.893 3 0l5 5"/><path d="M14 14l1-1c.928-.893 2.072-.893 3 0l3 3"/>',
     link: '<path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/>'
   };
-  const mbtn = (icon, title, sub) => `<i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${MICON[icon]}</svg></i><span class="mt"><b>${title}</b><span class="sub">${sub}</span></span>`;
+  const mbtn = (icon, title, sub) => `<i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${MICON[icon]}</svg></i><span class="mt">${title}</span><span class="bd">${sub}</span>`;
   function updateGlobal(){
     const n = allPairs().filter(pairReady).length;
     $('saveAll').disabled = n === 0;
-    if(WEB){ $('shareBook').hidden = false; $('shareBook').disabled = n === 0; try{ shareSub(); }catch(e){} }
-    { const nm = booklet ? '写真集書き出し' : '見開一括書き出し';
-      $('saveAll').innerHTML = mbtn('book', nm, n ? (isPdf() ? (booklet ? `PDF・${bookTotal()}ページ` : `PDF・${n}ページ`) : `JPG・${n}ファイル`) : (isPdf() ? 'PDF' : 'JPG')); }
+    if(WEB){ $('shareBook').hidden = $('hdShare').hidden = false; $('shareBook').disabled = n === 0; try{ shareSub(); }catch(e){} }
+    { const nm = booklet ? '写真集' : '見開き一括';
+      $('saveAll').innerHTML = mbtn('book', nm, n ? (isPdf() ? (booklet ? `PDF・${bookTotal()}P` : `PDF・${n}P`) : `JPG・${n}枚`) : (isPdf() ? 'PDF' : 'JPG')); }
     $('saveSheet').disabled = sample || !slots.some(Boolean);   // the overview needs at least one real photo
     $('saveAll').title = isPdf() ? (booklet && bookTotal() ? 'ページを順番に並べた\n1つのPDFで保存します' : '見開きを順番に並べた\n1つのPDFで保存します') : '見開きを1枚ずつ\nJPGで保存します';
-    $('saveSheet').innerHTML = mbtn('grid', '一覧書き出し', 'JPG');
+    $('saveSheet').innerHTML = mbtn('grid', '一覧', slots.some(Boolean) && !sample ? 'JPG・1枚' : 'JPG');
     $('saveSheet').title = 'すべての見開きを1枚に並べた\n一覧のJPGで保存します';
-    { const ns = singleList().length, pb = booklet && backOff(), nm = pb ? 'Photoback 入稿用' : '1枚ずつ書き出し';
-      $('saveSingles').disabled = !ns; $('saveSingles').innerHTML = mbtn('photo', nm, ns ? `JPG・${ns}ファイル` : 'JPG');
+    { const ns = singleList().length, pb = booklet && backOff(), nm = pb ? '入稿用' : '1枚ずつ';
+      $('saveSingles').disabled = !ns; $('saveSingles').innerHTML = mbtn('photo', nm, ns ? `JPG・${ns}枚` : 'JPG');
       $('saveSingles').title = pb ? '各ページを Photoback の\nページ番号つきのJPGで保存します' : '調整した写真を1枚ずつ\nJPGで保存します';
       // Photoback: the files that go into Photoback come first
       const host = $('saveAll').parentNode;
@@ -7514,7 +7518,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('lead').firstChild.textContent = booklet && tobiraLayout
       ? `写真集モード（Photoback・扉と奥付つき）：中身${n}ページ＋表紙。写真は中身に${photoPages(n)}枚、表紙に1枚です（扉の次と奥付の前のページは白紙）。`
       : booklet
-      ? `写真集モード：表紙・裏表紙を含めて全${n}ページ（A3 ${n/4}枚）、写真は${photoPages(n)}枚（1枚目は右ページから）の小冊子を作ります。見開一括書き出しの PDF をコンビニのマルチコピー機などで「小冊子」印刷できます。`
+      ? `写真集モード：表紙・裏表紙を含めて全${n}ページ（A3 ${n/4}枚）、写真は${photoPages(n)}枚（1枚目は右ページから）の小冊子を作ります。書き出しの「写真集」の PDF をコンビニのマルチコピー機などで「小冊子」印刷できます。`
       : `写真を最大${n}枚。1-2、3-4…${n-1}-${n} の2枚ずつ${np}組で見開きにして、JPG・PDF で書き出します。比率が違う写真は、選んだ比率（A・B判 / Photoback LIFE / Photoback GRAPH / 1:1 / 2:3 / 4:3）に揃えます。`;
     $('lead').title = $('lead').textContent;   // the line is cut to fit; the whole text on hover
     [...$('pages').options].forEach(o => { const v = +o.value; o.textContent = booklet ? `${v}P　${photoPages(v) + (backOff() ? 1 : 2)}枚（${photoPages(v)}+${backOff() ? '表紙1' : '表裏2'}）` : `${v}P（${v/2}見開き）`; o.disabled = o.hidden = !allowedPages().includes(v); });
@@ -7757,7 +7761,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // the resolution the size brings with it (same table as the top bar)
     const fx = stK === 'conv' && stCrop !== 'a' ? '' : START[stK].fixedOut, px = stPx(+stOut) + (fx === 'a3' ? '（A3 用。B4・A4・B5 の紙でもきれいに刷れます）' : fx === 'pb' ? '（Photoback の指定サイズ）' : '');
     // 「保存形式」は上で選んだとおりなので、代わりに何ができあがるかを書く
-    const out = fx === 'pb' ? '入稿：「Photoback 入稿用」で各ページを p01_tobira・p03… の名前で書き出し、Photoback の同じページへ'
+    const out = fx === 'pb' ? '入稿：書き出しの「入稿用」で各ページを p01_tobira・p03… の名前で書き出し、Photoback の同じページへ'
       : stK === 'conv' ? (stFmt === 'pdf' ? `できあがり：PDF 1つ（全${n}ページ）。コンビニのマルチコピー機で「小冊子」を選んで刷るだけ` : `できあがり：見開きごとの JPG 画像 ${n/2}枚（表紙・裏表紙の見開きを含む）`)
       : (stFmt === 'pdf' ? `できあがり：${n/2}見開きをまとめた PDF 1つ。タブレットでめくれば、ちいさな写真集に` : `できあがり：見開きごとの JPG 画像 ${n/2}枚。SNS にそのまま載せられます`);
     // 上のボタンをくり返さず、そこから分かること（並び・印刷のしかた・できあがりの大きさ）を書く
@@ -7894,7 +7898,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     { set: true, el: () => $('q').closest('.sec'), t: '画質', x: '書き出す写真の画質です。\n数字を下げるほどファイルが軽くなります。デジタルで楽しむなら 90 で十分、印刷するなら高めに。' },
     { set: true, el: () => $('shadowRows').closest('.sec'), t: 'ノドの影', x: '見開きの中央にかかる影の、幅・濃さ・ぼかし方を整えます。\n「中央の黒い線」で、左右の境目に細い線も入れられます。' },
     { set: true, el: () => $('pad').closest('.sec'), t: '背景色', x: '写真を傾けたときに四隅に出る余白の色と、写真が1枚だけの見開きの空きページの色を選べます。' },
-    { set: true, el: () => $('sheetCols').closest('.sec'), t: '一覧書き出し', x: '「一覧書き出し」で作る1枚の画像の、1行に並べる数と背景の色を選べます。' },
+    { set: true, el: () => $('sheetCols').closest('.sec'), t: '一覧書き出し', x: '書き出しの「一覧」で作る1枚の画像の、1行に並べる数と背景の色を選べます。' },
     { set: true, el: () => $('darkOn').closest('.sechead'), t: '暗い表示', x: '画面を暗い色にします。\nこの端末だけの設定です。' },
     { set: true, el: () => tourGroup(['tourAgain', 'manualOpen2', 'resetSettings'].map($)), t: '案内・説明書・初期値に戻す', x: 'この案内をもう一度見る、くわしい説明書を開く、設定をすべて初期値に戻す、ができます。' },
     { el: () => document.querySelector('.howto summary'), t: '困ったときは', x: '「使い方」で手順をいつでも見返せます。\nこの案内も、そこからもう一度見られます。' }
@@ -8856,8 +8860,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }catch(e){ console.warn(e); pwTidied = false; }
   }
   // ボタンの下の小さな文字：つながっていないときは、押す前に分かるように
-  function shareSub(){ const b = $('shareBook'), sub = b && b.querySelector('.sub'); if(!sub) return;
-    sub.textContent = (gValid() || GD.email) ? 'めくって見られるリンク' : 'ドライブ連携で使えます'; }
+  function shareSub(){ const b = $('shareBook'), sub = b && b.querySelector('.bd'); if(!sub) return;
+    $('hdShare').textContent = (gValid() || GD.email) ? '共有' : '共有（ドライブ連携で使えます）'; }
   // パスワード欄は半角英数字・記号だけ（日本語入力は受け付けない。全角英数は半角に直す）
   function pwAsciiOnly(i){
     i.setAttribute('inputmode', 'email'); i.setAttribute('lang', 'en'); i.style.imeMode = 'disabled';
@@ -9058,9 +9062,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     finally{ shRefreshing = false; if(shRefreshAgain){ shRefreshAgain = false; setTimeout(shareRefresh, 1000); } }
   }
   // ---------- 共有リンクの設定（作成の窓と同じ窓で、今の内容を見て・変えて・保存） ----------
-  async function shareEdit(f){
-    const ap = f.appProperties || {}; if(!ap.m) return;
-    gBusy('共有リンクの設定を読み込んでいます', '', null);
+  async function shareEdit(f, made){
+    const ap = f.appProperties || {}; if(!ap.m){ gBusyOff(); return; }
+    if(made) gBusy('', '仕上げています…', 1); else gBusy('共有リンクの設定を読み込んでいます', '', null);
     let man = null, pw = '', title = ap.nm || '', mp = [], key = null;
     try{
       man = await gJson(`${GAPI}/drive/v3/files/${ap.m}?alt=media`);
@@ -9171,7 +9175,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const fatal = /keyInvalid|ipRefererBlocked|API_KEY|accessNotConfigured|PERMISSION_DENIED_BY_POLICY|dailyLimitExceeded/i;
       // 確かめるのは設定ファイルだけを、間をあけて数回（何度も問い合わせると、Googleに機械的なアクセスと見なされて止められるため）。作り直しはしない
       const TRIES = 1;
-      let mfId = '', ok = false, lastWhy = '';
+      let mfId = '', ok = false, lastWhy = '', fap = null;
       for(let round = 1; round <= TRIES && !ok; round++){
         chk();
         if(folder){ trash(folder); folder = ''; await sleep(5000); }
@@ -9179,7 +9183,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const ap = { pbm: 'share', book: String(workId), nm: fitBytes(title, 100) };
         if(fileHandle && fileHandle.drive && fileHandle.folderId) ap.bf = String(fileHandle.folderId);   // ドライブに保存した BOOK なら、その BOOK のフォルダも印にする（開き直しても変わらない）
         if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1'; if(opt.sheet) ap.sh = '1';   // 有効期限・パスワードの有無（共有中のリンクの表示と、期限切れの片付けに使う）
-        folder = (await gCreate({ name: shareFolderName(title), parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
+        folder = (await gCreate({ name: shareFolderName(title), parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id; fap = ap;
         await sharePubRetry(folder);
         // 4枚ずつ同時に、1回の通信で上げる（公開はフォルダだけ。中の写真は、フォルダの公開を引き継ぐ）。並びは元の順のまま
         const pages = new Array(made.length); let upDone = 0;
@@ -9210,9 +9214,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       chk(); $('gBusyCancel').hidden = true;
       if(opt.pw) await sharePwSave(folder, opt.pw);
-      gBusyOff();
-      // 作り直しても確かめきれなかったときも、リンクは渡す（見る側は、開けるようになるまで待って読み込む）
-      shareDone(shareUrl(mfId), opt, ok ? '' : lastWhy || '?');
+      // できたら、そのまま「共有リンクの設定」の窓を開く（公開中・リンク・コピーがここにある）
+      shCache = null;
+      status(ok && !lastWhy ? '共有リンクを作成しました。' : '共有リンクを作成しました。開けるようになるまで、数分かかることがあります。');
+      const fid = folder; folder = '';   // ここから先は作り終わったもの（窓でエラーになっても消さない）
+      await shareEdit({ id: fid, appProperties: Object.assign({}, fap, { m: mfId }), permissions: [{ type: 'anyone' }] }, true);
     }catch(e){
       console.warn(e); gBusyOff();
       if(folder) trash(folder);   // 作りかけは残さない
@@ -9227,21 +9233,6 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // コピーする中身：パスワード付きなら「URL：…」「パスワード：…」の2行、なしなら URL だけ
   // コピーする中身：URL・パスワード・有効期限の3行（ないものは「なし」）
   const shareText = (url, pw, exp) => `URL：${url}\nパスワード：${pw || 'なし'}\n有効期限：${exp ? fmtUntil(exp) + ' まで' : 'なし'}`;
-  function shareDone(url, opt, unverified){
-    const notes = [], pw = (opt && opt.pw) || '';
-    if(unverified) notes.push(`開けるようになるまで、数分かかることがあります。<span style="opacity:.6">（${esc2(unverified)}）</span>`);
-    if(pw) notes.push('パスワードは、リンクとは別に伝えてください。');
-    if(opt && opt.exp) notes.push(`${fmtUntil(opt.exp)} まで見られます。`);
-    const row = (lbl, id, v, open) => `${lbl ? `<div class="shlbl">${lbl}</div>` : ''}<div class="shrow2"><input id="${id}" class="shbox" readonly value="${esc2(v)}">${open ? `<a class="shcp1" href="${esc2(v)}" target="_blank" rel="noopener">開く</a>` : ''}</div>`;
-    const label = 'コピー';
-    askYesNo('写真集が公開されました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('', 'shareLink', url, true)}${pw ? row('パスワード', 'sharePw', pw) : ''}`,
-      () => {}, label, '閉じる');
-    // コピーのボタンは下の1つだけ。押しても窓は閉じず、「コピー済み」に変わる（URL の横の［開く］で、自分でも見て確かめられる）
-    { const m = $('pagesModal'), no = $('pagesNo'); m._bg = () => no.click(); }   // 公開できた知らせは、外を押しても閉じる（［閉じる］と同じ）
-    const yes = $('pagesYes'); yes.classList.add('shcpall');
-    yes.onclick = async () => { if(await shareCopy(shareText(url, pw, opt && opt.exp), 'URL・パスワード・有効期限をコピーしました。')){ yes.textContent = '✓ コピー済み'; yes.classList.add('copied'); } };
-    ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
-  }
   // ---------- 共有中のリンク（一覧・オン／オフ・コピー・削除） ----------
   async function shareItems(){
     const sroot = await shareRoot();
