@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-N4NiqQBKCcFE7CmGqHTgVZeVQURBkVWOTJ5LFCh1OCk=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-gO0l4okl7kT79NJ4/dQwwGqWuu7yOikHUbmkZcYPGN8=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -9043,7 +9043,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   // この BOOK の共有（1つの BOOK に1つ）。2つ以上あれば、いちばん新しいもの以外はゴミ箱へ
   async function shareOfBook(items){
-    const mine = (items || await shareItems()).filter(shareMine).sort((a, b) => String(b.createdTime).localeCompare(String(a.createdTime)));
+    const mine = (items || await shareItems(true)).filter(shareMine).sort((a, b) => String(b.createdTime).localeCompare(String(a.createdTime)));
     for(const f of mine.slice(1)){ try{ await gPatch(f.id, { trashed: true }); if((f.appProperties || {}).pw === '1') sharePwSave(f.id, ''); }catch(e){} }
     return mine[0] || null;
   }
@@ -9103,11 +9103,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // ---------- 共有リンクの設定（作成の窓と同じ窓で、今の内容を見て・変えて・保存） ----------
   async function shareEdit(f, made){
     const ap = f.appProperties || {}; if(!ap.m){ gBusyOff(); return; }
-    if(made) gBusy('', '仕上げています…', 1); else gBusy('共有リンクの設定を読み込んでいます', '', null);
+    if(made) gBusy('', '仕上げています…', 1); else gBusy('Photo Bookリンクを開いています', '', null);
     let man = null, pw = '', title = ap.nm || '', mp = [], key = null;
     try{
+      // 設定ファイルとパスワードの控えは、同時に読む
+      const pwP = ap.pw === '1' ? sharePwRead().then(r => r.map[f.id] || '').catch(() => '') : null;
       man = await gJson(`${GAPI}/drive/v3/files/${ap.m}?alt=media`);
-      if(ap.pw === '1' || (man && man.enc)){ try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){} }
+      if(pwP) pw = await pwP; else if(man && man.enc){ try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){} }
       title = man.title || title; mp = man.pages || [];
       if(man.enc && pw){
         key = await shareDeriveKey(pw, unb64(man.enc.salt), man.enc.iter);
@@ -9183,7 +9185,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       return;
     }
     // 1つの BOOK に共有リンクは1つ：すでにあれば、作らずに「共有リンクの設定」を開く
+    gBusy('Photo Bookリンクを開いています', '', null);   // 押してすぐに反応を返す（ドライブに問い合わせているあいだ）
     { let ex = null; try{ ex = await shareOfBook(); }catch(e){} if(ex){ await shareEdit(ex); return; } }
+    gBusyOff();
     const opt = await shareAskOpt(); if(!opt) return;
     if(opt.pw && !(window.crypto && crypto.subtle)){ askYesNo('パスワードを使えません', '<p>このブラウザでは、パスワード付きの共有を作れません。</p>', () => {}, '閉じる', ''); return; }
     const title = (opt.name || workTitle() || 'PHOTO BOOK').trim();
@@ -9278,8 +9282,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // コピーする中身：URL・パスワード・有効期限の3行（ないものは「なし」）
   const shareText = (url, pw, exp) => `URL：${url}\nパスワード：${pw || 'なし'}\n有効期限：${exp ? fmtUntil(exp) + ' まで' : 'なし'}`;
   // ---------- 共有中のリンク（一覧・オン／オフ・コピー・削除） ----------
-  async function shareItems(){
-    const sroot = await shareRoot();
+  // 共有フォルダの場所は、この画面を開いているあいだ覚えておく（探すだけのときは確かめ直さない。作るときは shareRoot で確かめ直す）
+  let shRootC = '';
+  async function shareItems(fast){
+    const sroot = fast && shRootC ? shRootC : (shRootC = await shareRoot());
     return gList(`'${sroot}' in parents and appProperties has { key='pbm' and value='share' } and trashed=false`, 'files(id,name,createdTime,appProperties,permissions(id,type))');
   }
   const shareOn = f => (f.permissions || []).some(x => x.type === 'anyone');
