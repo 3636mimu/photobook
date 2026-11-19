@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-nwk2ALDDB2dqUK/abYH9unOhfp3SgdjXL8e0NkjKQdU=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-77Z6jmX+K4L7F/D4/9KJMWdxwIs3bjMmTxlDRqTNhQI=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -805,7 +805,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .shlink{display:flex;gap:6px;align-items:center;margin:0 0 4px}#shareOpt .shlink .shbox{flex:1;min-width:0;color:var(--muted);font-size:12.5px}
 #shareOpt .icb{flex:0 0 34px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:8px;background:#F1EFEB;color:#5a554e;cursor:pointer;padding:0;text-decoration:none}
 #shareOpt .icb:hover{background:#E7E3DD}#shareOpt .icb svg{width:18px;height:18px}#shareOpt .icb.done{color:#2A8C7F}
-#shareOpt .shdel{margin-right:auto;border:0;background:none;color:#C24A45;font:inherit;font-size:13px;cursor:pointer;padding:6px 4px}#shareOpt .shdel:hover{text-decoration:underline}
+#shareOpt .shdel{margin-right:auto;border:0;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 1px #E2B4B0;color:#C24A45;font:inherit;font-size:12px;font-weight:500;letter-spacing:.02em;white-space:nowrap;cursor:pointer;padding:6px 12px;transition:background .15s}#shareOpt .shdel:hover{background:#FBEFEE}
 #shareOpt .actions{align-items:center}
 #shareOpt .shck input{appearance:none;-webkit-appearance:none;width:19px;height:19px;margin:0;border:1.5px solid #cfcac2;border-radius:50%;background:#fff;cursor:pointer;flex:0 0 auto;transition:background .15s,border-color .15s}
 #shareOpt .shck input:checked{background:#2A8C7F url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat;border-color:#2A8C7F}
@@ -2874,27 +2874,27 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   var de = document.documentElement; de.className += ' shv';
   var css = document.createElement('style');
   css.textContent = [
-    'html.shv,html.shv body{margin:0;height:100%;background:#0E0F11;overflow:hidden}',
+    'html.shv,html.shv body{margin:0;height:100%;background:#fff;overflow:hidden}',
     'html.shv body>*:not(#shv){display:none!important}',
-    '#shv{position:fixed;left:0;top:0;right:0;bottom:0;background:#0E0F11;color:#E9E8E4;font-family:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Yu Gothic",sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}',
-    '#shv .hd{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0;text-align:center;font-size:13px;letter-spacing:.08em;color:rgba(233,232,228,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
-    '#shv .ft{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(12px + env(safe-area-inset-bottom,0px));text-align:center;font-size:12px;letter-spacing:.12em;color:rgba(233,232,228,.6)}',
+    '#shv{position:fixed;left:0;top:0;right:0;bottom:0;background:#fff;color:#3b3631;font-family:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Yu Gothic",sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}',
+    '#shv .hd{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0;text-align:center;font-size:13px;letter-spacing:.08em;color:rgba(59,54,49,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '#shv .ft{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(12px + env(safe-area-inset-bottom,0px));text-align:center;font-size:12px;letter-spacing:.12em;color:rgba(59,54,49,.5)}',
     '#shv .st{position:absolute;left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px);-webkit-perspective:3600px;perspective:3600px}',
-    '#shv .bk{position:absolute;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;box-shadow:0 10px 40px rgba(0,0,0,.45)}',
-    '#shv .hf{position:absolute;top:0;height:100%;background-repeat:no-repeat;background-color:#1a1b1e}',
+    '#shv .bk{position:absolute;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;box-shadow:0 1px 3px rgba(0,0,0,.08),0 8px 28px rgba(0,0,0,.10)}',
+    '#shv .hf{position:absolute;top:0;height:100%;background-repeat:no-repeat;background-color:#F2F1EE}',
     '#shv .lf{position:absolute;top:0;height:100%;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;z-index:3}',
-    '#shv .lf .fc{position:absolute;left:0;top:0;width:100%;height:100%;background-repeat:no-repeat;background-color:#1a1b1e;-webkit-backface-visibility:hidden;backface-visibility:hidden}',
+    '#shv .lf .fc{position:absolute;left:0;top:0;width:100%;height:100%;background-repeat:no-repeat;background-color:#F2F1EE;-webkit-backface-visibility:hidden;backface-visibility:hidden}',
     '#shv .lf .fc.bk2{-webkit-transform:rotateY(180deg);transform:rotateY(180deg)}',
     '#shv .lf .sh{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;opacity:0}',
-    '#shv .nv{position:absolute;top:50%;width:46px;height:46px;margin-top:-23px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;padding:0;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center}',
+    '#shv .nv{position:absolute;top:50%;width:46px;height:46px;margin-top:-23px;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:#3b3631;padding:0;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center}',
     '#shv .nv svg{width:20px;height:20px;display:block}',
     '#shv .nv.p{left:10px}#shv .nv.n{right:10px}#shv .nv[disabled]{opacity:0;pointer-events:none}',
-    '#shv .ld{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid rgba(255,255,255,.18);border-top-color:rgba(255,255,255,.75);border-radius:50%;-webkit-animation:shvr 1s linear infinite;animation:shvr 1s linear infinite}',
+    '#shv .ld{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid rgba(0,0,0,.08);border-top-color:rgba(0,0,0,.45);border-radius:50%;-webkit-animation:shvr 1s linear infinite;animation:shvr 1s linear infinite}',
     '@-webkit-keyframes shvr{to{-webkit-transform:rotate(360deg)}}@keyframes shvr{to{transform:rotate(360deg)}}',
     '#shv .ms{position:absolute;left:50%;top:50%;width:min(86vw,360px);-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);text-align:center;font-size:14px;line-height:1.8}',
-    '#shv .ms a,#shv .ms button{display:inline-block;margin:10px 6px 0;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:none;color:#fff;font:inherit;font-size:14px;text-decoration:none;cursor:pointer}',
-    '#shv .ht{position:absolute;left:50%;bottom:calc(44px + env(safe-area-inset-bottom,0px));-webkit-transform:translateX(-50%);transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.12);font-size:12px;white-space:nowrap;-webkit-transition:opacity .6s;transition:opacity .6s}',
-    '@media (pointer:coarse){#shv .nv{background:rgba(255,255,255,.08)}}',
+    '#shv .ms a,#shv .ms button{display:inline-block;margin:10px 6px 0;padding:10px 18px;border-radius:999px;border:1px solid rgba(0,0,0,.25);background:none;color:#3b3631;font:inherit;font-size:14px;text-decoration:none;cursor:pointer}',
+    '#shv .ht{position:absolute;left:50%;bottom:calc(44px + env(safe-area-inset-bottom,0px));-webkit-transform:translateX(-50%);transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.06);font-size:12px;white-space:nowrap;-webkit-transition:opacity .6s;transition:opacity .6s}',
+    '@media (pointer:coarse){#shv .nv{background:rgba(0,0,0,.05)}}',
     '#shv{-webkit-transition:background-color .9s ease;transition:background-color .9s ease}#shv.pw{background:#F4F0EA}#shv.pw .nv,#shv.pw .ft{display:none}',
     '#shv .pwc{width:min(86vw,340px);box-sizing:border-box;background:#fff;border:1px solid #E6DFD5;border-radius:20px;padding:30px 26px 22px;color:#3b3631;box-shadow:0 10px 30px rgba(120,100,80,.10);opacity:0;-webkit-transform:translate(-50%,-46%);transform:translate(-50%,-46%);-webkit-transition:opacity 1s ease,-webkit-transform 1s cubic-bezier(.2,.7,.2,1);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.7,.2,1)}',
     '#shv .pwc.in{opacity:1;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}#shv .pwc.out{opacity:0;-webkit-transition-duration:.5s;transition-duration:.5s}',
@@ -8888,7 +8888,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
               <label class="shck"><input type="checkbox" id="shExpOn"><span>有効期限</span></label><input type="datetime-local" id="shExpD" step="60" disabled>
             </div><p class="sherr" id="shPwErr" hidden>パスワードは6文字以上にしてください。</p></div>
           <div class="shsec"><b>オプション</b><label class="shck"><input type="checkbox" id="shSheet"><span>一覧を含める</span></label></div>
-          <div class="actions"><button type="button" class="shdel" id="shDel" hidden>削除</button><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">保存</button></div></div>`;
+          <div class="actions"><button type="button" class="shdel" id="shDel" hidden>共有リンク削除</button><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">保存</button></div></div>`;
         document.body.append(m);
         // パスワードは隠さずに見せる（ふつうの文字欄なので「パスワードを保存しますか？」も出ない）
         pwAsciiOnly($('shPw'));
