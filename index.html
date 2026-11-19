@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-Ib/Ah0z9shMYAICK0zvpiTKkxkLgXPGilscXStcJD/E=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-BtPxGDn0SrX9JJHnKETjDmvg8JWJKcT4b5xR7skwhQA=' 'sha256-KzU0P3gzv4+/OS4cjju6HKu9ehLcd18XOhqLeyPj0BY=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -3039,6 +3039,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     requestAnimationFrame(function(){ lf.style.webkitTransform = rot; lf.style.transform = rot; sh.style.opacity = '1'; setTimeout(function(){ sh2.style.opacity = '0'; }, ms / 2); sh2.style.opacity = '1'; });
     setTimeout(function(){ pos = k; busy = false; draw(); warm(); }, ms + 40);
   }
+  // 見られないとき（期限切れ・停止・削除）：パスワード画面と同じ生成り色の背景に、白いカードでやさしく伝える
+  function endCard(t1, t2, clock){
+    root.classList.add('pw'); stage.innerHTML = ''; var m = el('div', 'ms pwc', stage);
+    m.innerHTML = '<div class="ic" aria-hidden="true">' + (clock
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.3 5.2 7.8 4.5 4.5 4.5v13c3.3 0 5.8.7 7.5 2 1.7-1.3 4.2-2 7.5-2v-13c-3.3 0-5.8.7-7.5 2z"/><path d="M12 6.5v13"/></svg>')
+      + '</div><div class="t1">' + t1 + '</div><div class="t2" style="margin-bottom:4px">' + t2 + '</div>';
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ m.classList.add('in'); }); });
+  }
   function msg(html, retry){
     stage.innerHTML = ''; var m = el('div', 'ms', stage); m.innerHTML = html + '<br>';
     if(retry){ var b = el('button', '', m); b.textContent = '再読み込み'; b.onclick = function(){ start(); }; }
@@ -3074,11 +3083,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(man && man.p && !man.pages) man.pages = man.p.map(function(a){ return { id: a[0], w: a[1], h: a[2], seam: a[3], flat: !!a[4] }; });
         if(!man || ((!man.pages || !man.pages.length) && !(man.enc && man.enc.c))){
           // 作られた直後は、公開が行き渡るまで少し読めないことがあるので、しばらく待ってから判断する
-          if((x.status === 404 || x.status === 403) && !/rate|limit|quota/i.test(x.responseText || '')){ if(++tries < 3) return setTimeout(get, 5000 * tries); msg('この写真集は、見られなくなっています。<br>（共有が止められたか、削除されたようです）', false); return; }
+          if((x.status === 404 || x.status === 403) && !/rate|limit|quota/i.test(x.responseText || '')){ if(++tries < 3) return setTimeout(get, 5000 * tries); endCard('<span>この写真集は</span><span>見られなくなっています</span>', '公開が止められたか、削除されたようです。'); return; }
           if(++tries < 3) return setTimeout(get, 4000 * tries);
           msg('写真集を準備しています。<br>少し時間をおいて、再読み込みしてください。', true); return;
         }
-        if(man.exp && Date.now() > man.exp){ msg('この写真集の公開期間は、終わりました。', false); return; }
+        if(man.exp && Date.now() > man.exp){ endCard('<span>この写真集の公開は</span><span>終わりました</span>', '公開期間が過ぎたため、見られなくなりました。', true); return; }
         setPages(man.pages || []);
         if(man.enc) askPw(); else open1(man.title);
       };
@@ -3133,7 +3142,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           CK = k; var o = {}; try{ o = JSON.parse(new TextDecoder().decode(buf)) || {}; }catch(_){}
           // 新しい形：写真の並びも暗号化の中（パスワードがないと、どの写真がどこにあるか分からない）
           if(o.p) setPages(o.p.map(function(a){ return { id: a[0], w: a[1], h: a[2], seam: a[3], flat: !!a[4] }; })); else if(o.pages) setPages(o.pages);
-          if(!pages.length){ root.classList.remove('pw'); msg('この写真集は、見られなくなっています。', false); return; }
+          if(!pages.length){ endCard('<span>この写真集は</span><span>見られなくなっています</span>', '公開が止められたか、削除されたようです。'); return; }
           m.classList.add('out'); root.classList.remove('pw');   // 明るい画面から、暗い背景へゆっくり
           setTimeout(function(){ open1(o.title); }, 650);
         });
@@ -4389,8 +4398,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const NOTE_ERR = /できませんでした|つながりませんでした|開けませんでした|失敗|書き込めませんでした|大きすぎ|中身が空|保存できません|切り替えられませんでした|戻せませんでした/;
   const NOTE_WARN = /読み込めな|見つから|足りない|止まりました|接続が切れた|ページ数を.*ページにし|見開きは解除|空白にして編集できない|選ぶと戻ります|保存し直しました|数分かかる|閉じてから押して|写真を入れると|選んでください/;
   let noteT = 0;
+  // 書き出しの進み具合の窓（ドライブ保存と同じ窓）。［中止］で止められる。終わったら「書き出しました」の小さな表示
+  let exStop = false, exOn = false;
+  const exPaint = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));   // 窓を先に描いてから重い処理へ
+  function exStart(text, frac){
+    exStop = false; exOn = true; gBusy('書き出しています', text, frac == null ? 0 : frac);
+    const cb = $('gBusyCancel'); cb.hidden = false; cb.disabled = false; cb.onclick = () => { exStop = true; exOn = false; gBusyOff(); };
+  }
+  // 書き出しの関数を包む：終わったら「書き出し中」の印を必ず外す（あとで別の「保存しました」を書き出しと取り違えないように）
+  const exRun = fn => async (...a) => { try{ return await fn(...a); } finally { exOn = false; } };
   function status(t){
     const v = String(t == null ? '' : t).trim(); if(!v) return;
+    if(exOn && /保存しました|書き出しました/.test(v)){ exOn = false; toast('書き出しました'); return; }
+    if(exOn && NOTE_ERR.test(v)) exOn = false;
     const err = NOTE_ERR.test(v); if(!err && !NOTE_WARN.test(v)) return;
     const el = $('nToast');
     gpTxt(el, v); el.classList.toggle('err', err); el.hidden = false; notePlace(el);
@@ -6921,15 +6941,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     };
     await put(PAIRS, n, 1);                                   // cover: back (left) | front (right)
     for(let k=0;k<PAIRS;k++){
-      status(`写真集のページを書き出し中… ${k+1} / ${PAIRS}`);
+      if(exStop) return null;   // ［中止］
+      gBusy('', `ページを準備しています ${k+1} / ${PAIRS}`, k / PAIRS * .95);
       await put(k, 2*k + 2, 2*k + 3);
     }
     return L;
   }
   async function saveBookletPdf(st, toDir){
-    status('写真集のページを書き出し中…');
+    exStart('ページを準備しています'); await exPaint();
     let L;
-    try{ L = await bookletPages(); }catch(e){ status('書き出しに失敗しました。ページの解像度を下げてください。'); return; }
+    try{ L = await bookletPages(); }catch(e){ gBusyOff(); status('書き出しに失敗しました。ページの解像度を下げてください。'); return; }
+    if(!L) return;
     const A4W = 595.28, A4H = 841.89, n = bookTotal();
     const hex = $('blank').value.replace('#',''), fill = [0,2,4].map(i => parseInt(hex.substr(i,2),16));
     const pages = [];
@@ -6949,8 +6971,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const x = i % 2 === 1 ? 0 : A4W - dw, y = (A4H - dh) / 2;
       pages.push({ ...pg, pageW:A4W, pageH:A4H, x, y, dw, dh, fill: (dw < A4W - 0.5 || dh < A4H - 0.5) ? [255,255,255] : null });
     }
-    status('PDF にまとめています…');
+    gBusy('', 'PDF にまとめています', .97); await exPaint();
     const name = `photobook_${st}_${n}P.pdf`, blob = await makePdf(pages);
+    gBusyOff(); if(exStop) return;
     const done = where => status(a4 ? `写真集 PDF（A4・${n}ページ、A3に${n/4}枚。表紙の裏と裏表紙の裏は白紙）を${where}保存しました。マルチコピー機の「小冊子」で A3 に印刷してください。`
                                     : `写真集 PDF（${n}ページ、ページの形は画面のアスペクト比のまま）を${where}保存しました。`);
     if(toDir){
@@ -6976,10 +6999,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!list.length) return;
     const st = stamp(), t0 = new Date();
     let done = 0;
+    // 1つだけのときは、1秒たっても終わらないときだけ窓を出す（一瞬だけ出てチラつかないように）
+    exStop = false; exOn = true;
+    const showT = setTimeout(() => { if(exOn && !exStop) exStart(list.length > 1 ? `見開きを準備しています` : `見開き ${list[0] + 1} を準備しています`, null); }, list.length > 1 ? 0 : 1000);
+    const off = () => { clearTimeout(showT); gBusyOff(); };
     for(const p of list){
-      status(`見開き ${p+1} を書き出し中…`);
       const img = await render(p, true);
-      if(!img){ status(`見開き ${p+1} の書き出しに失敗しました。ページの解像度を下げてください。`); return; }
+      if(exStop){ clearTimeout(showT); return; }   // ［中止］
+      if(!img){ off(); status(`見開き ${p+1} の書き出しに失敗しました。ページの解像度を下げてください。`); return; }
+      if(list.length === 1) off();
       const pdf = isPdf();
       const blob = pdf ? await makePdf([img]) : await withExif(img.blob, exifAt(t0, done));
       const filename = `mihiraki_${st}_${isCover(p) ? '00' : String(p+1).padStart(2,'0')}.${pdf ? 'pdf' : 'jpg'}`;
@@ -7004,6 +7032,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         await new Promise(r => setTimeout(r, 400));
       }
     }
+    off();
     status(`${done}組を書き出しました。` + (!downloads && !inArtifact ? 'ダウンロードフォルダを確認してください。' : ''));
   }
   function buildSheet(){
@@ -7037,16 +7066,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     });
     return out;
   }
-  $('saveSheet').addEventListener('click', async () => {
+  $('saveSheet').addEventListener('click', exRun(async () => {
     if(pvBlock()) return;
     if(sample || !slots.some(Boolean)){ status('写真を入れると一覧を作れます。'); return; }
     // the same folder choice as 見開一括書き出し / 1枚ずつ書き出し (asked straight from the click)
     let toDir = false;
     try{ toDir = await ensureDir(); }catch(e){ status('保存しませんでした。'); return; }
+    exStart('一覧を作っています', null); await exPaint();
     const out = buildSheet();
-    if(!out){ status('写真を入れると一覧を作れます。'); return; }
-    status('一覧を書き出し中…');
+    if(!out){ gBusyOff(); status('写真を入れると一覧を作れます。'); return; }
     const blob = await new Promise(r => out.toBlob(r, 'image/jpeg', params().q));   // 画質スライダーに従う
+    gBusyOff(); if(exStop) return;
     if(!blob){ status('一覧の書き出しに失敗しました。'); return; }
     // the overview is always a JPG, whatever 保存形式 says
     const filename = `index_${stamp()}.jpg`;
@@ -7074,7 +7104,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       setTimeout(() => URL.revokeObjectURL(a.href), 10000);
       status('一覧を保存しました。ダウンロードフォルダを確認してください。');
     }
-  });
+  }));
   function showFallback(p, blob){
     const ui = pairUI[p];
     if(ui.fbImg.src.startsWith('blob:')) URL.revokeObjectURL(ui.fbImg.src);
@@ -7158,12 +7188,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const st = stamp(), files = [], t0 = new Date();
     const pdf = isPdf(), imgs = [];
     if(pdf && booklet){ await saveBookletPdf(st, toDir); return; }
-    const bTitle = dest ? 'Google フォトに保存しています' : '書き出しています', bSpan = dest ? .5 : .95;
-    gBusy(bTitle, `見開きを準備しています 1 / ${list.length}`, 0);
+    const bSpan = dest ? .5 : .95;
+    if(dest) gBusy('Google フォトに保存しています', `見開きを準備しています 1 / ${list.length}`, 0); else exStart(`見開きを準備しています 1 / ${list.length}`);
+    await exPaint();
     for(const p of list){
       status(`見開き ${imgs.length + 1} / ${list.length} を書き出し中…`);
       gBusy('', `見開きを準備しています ${imgs.length + 1} / ${list.length}`, imgs.length / list.length * bSpan);
       const img = await render(p, true, booklet ? 1 : null);
+      if(exStop && !dest) return;   // ［中止］
       if(!img){ gBusyOff(); status('書き出しに失敗しました。ページの解像度を下げてください。'); return; }
       gBusyImg(img.blob);
       imgs.push(img);
@@ -7177,11 +7209,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(sb) files.push({ name: `mihiraki_${st}_index.jpg`, blob: await withExif(sb, exifAt(t0, files.length)) });
     }
     if(dest && !pdf){ await gpUpload(files, dest); return; }
-    gBusyOff();
+    if(exStop) return;
     if(pdf){
       // one PDF holding every spread, one spread per page
-      status('PDF にまとめています…');
+      gBusy('', 'PDF にまとめています', .97); await exPaint();
       const name = `mihiraki_${st}.pdf`, blob = await makePdf(imgs);
+      gBusyOff(); if(exStop) return;
       if(toDir){
         try{
           const fh = await saveDir.getFileHandle(name, { create: true });
@@ -7202,6 +7235,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       return;
     }
+    gBusyOff();
     if(toDir){
       try{
         for(const f of files){
@@ -7231,6 +7265,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
   }
   $('saveAll').addEventListener('click', () => confirmLow(allPairs().filter(pairReady), () => (gpOn() && !isPdf()) ? gpAskDest() : saveAllSpreads()));
+  saveAllSpreads = exRun(saveAllSpreads); savePairs = exRun(savePairs); saveSingles = exRun(saveSingles);
 
   // ---------- 書き出し先に Google フォト（JPG のときだけ） ----------
   // ツールが新しいアルバムを作って、書き出した JPG を入れる（Google の決まりで、もともとあるアルバムには入れられない）
@@ -7467,13 +7502,17 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     try{ toDir = await ensureDir(); }catch(e){ status('保存しませんでした。フォルダを選んだあと「このサイトにファイルの編集を許可しますか？」で「許可する」を押すと保存できます。'); return; }
     const st = stamp(), files = [], t0 = new Date();
     const order = singleOrder(list), hasFront = booklet && order[0] === slots.length - 1;
+    exStart(`写真を準備しています 1 / ${list.length}`); await exPaint();
     for(let n = 0; n < order.length; n++){
       const i = order[n];
-      status(`写真 ${files.length + 1} / ${list.length} を書き出し中…`);
+      gBusy('', `写真を準備しています ${files.length + 1} / ${list.length}`, files.length / list.length);
       const blob = await renderSingle(i);
-      if(!blob){ status('書き出しに失敗しました。ページの解像度を下げてください。'); return; }
+      if(exStop) return;   // ［中止］
+      if(!blob){ gBusyOff(); status('書き出しに失敗しました。ページの解像度を下げてください。'); return; }
+      gBusyImg(blob);
       files.push({ name: singleName(st, i, hasFront ? n : n + 1), blob: await withExif(blob, exifAt(t0, files.length)) });
     }
+    gBusyOff();
     if(toDir){
       try{
         for(const f of files){
