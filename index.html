@@ -9377,16 +9377,27 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       // 写真を先に全部受け取る（ここまでなら中止できる）。下見の画像があれば下見を、なければ本物を。4枚ずつ同時に
       const uids = Object.keys(ids), total = uids.length, blobs = {}; let done = 0, usePv = false;
       const pvOk = v => Array.isArray(v) && v[0] && v[1] > 0 && v[2] > 0;
-      await pool(uids, 4, async uid => {
-        if(canceled) return;
-        let b = null;
-        if(pvOk(pvs[uid])){ try{ b = await gGet(pvs[uid][0]); if(!/^image\//.test(b.type || 'image/')) b = null; }catch(e){ b = null; } if(b){ b.pbmPv = { id: ids[uid], w: pvs[uid][1], h: pvs[uid][2] }; usePv = true; } }
-        if(!b && pvs[uid]) delete h.pvIds[uid];   // プレビュー画像が消されていたら、次の保存で作り直す
-        if(!b && !canceled){ try{ b = await gGet(ids[uid]); }catch(e){ b = null; } }
-        if(canceled) return;
+      const got = (uid, b) => {
         blobs[uid] = b;
         status(`Google ドライブから写真を読み込んでいます…（${++done}/${total}）`); gBusy('', `写真 ${done} / ${total} 枚`, done / (total + 1));
         if(b && /^image\//.test(b.type || 'image/')) gBusyImg(b);   // 受け取った写真をそのつど見せる
+      };
+      // プレビュー画像は軽いので、全部を同時に
+      const rest = uids.filter(uid => !pvOk(pvs[uid]));
+      await Promise.all(uids.filter(uid => pvOk(pvs[uid])).map(async uid => {
+        let b = null;
+        try{ b = await gGet(pvs[uid][0]); if(!/^image\//.test(b.type || 'image/')) b = null; }catch(e){ b = null; }
+        if(canceled) return;
+        if(b){ b.pbmPv = { id: ids[uid], w: pvs[uid][1], h: pvs[uid][2] }; usePv = true; got(uid, b); }
+        else { delete h.pvIds[uid]; rest.push(uid); }   // プレビュー画像が読めなければ、本物を受け取り、次の保存で作り直す
+      }));
+      if(canceled) return;
+      // プレビュー画像がない写真は、本物を4枚ずつ
+      await pool(rest, 4, async uid => {
+        if(canceled) return;
+        let b = null; try{ b = await gGet(ids[uid]); }catch(e){ b = null; }
+        if(canceled) return;
+        got(uid, b);
       });
       if(canceled) return;
       // ここからは編集画面に入れるので、中止はできない
