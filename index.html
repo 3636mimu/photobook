@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-gO0l4okl7kT79NJ4/dQwwGqWuu7yOikHUbmkZcYPGN8=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-g3XBhlavLOTyIaVxlFXLuRiOEO2xZCs0sIut8m5LdF0=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -430,6 +430,7 @@ button{font:inherit}
 .vbtns{display:flex;gap:8px}
 .vclose[aria-pressed="true"]{background:#8FB0DE;color:#101318;border-color:#8FB0DE}
 .vgrid{overflow:auto;min-height:0;padding:12px 20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(390px,100%),1fr));gap:8px 22px;align-content:start}
+.vgrid.fit{justify-content:center;align-content:center;padding:10px 16px 14px;gap:6px 16px}
 .vitem{background:none;border:0;padding:0;color:#C9C8C3;cursor:pointer;display:flex;flex-direction:column;gap:3px;line-height:1.3;align-items:center;font-family:var(--mono);font-size:12px}
 .vitem .vpno{position:relative;display:block;width:100%;height:1.3em}
 .vitem .vpno i{position:absolute;top:0;transform:translateX(-50%);font-style:normal;white-space:nowrap}
@@ -439,7 +440,9 @@ button{font:inherit}
 .vgrid.light .vitem{color:#3A3B3F}
 .vgrid.light .vitem canvas{box-shadow:0 6px 16px rgba(0,0,0,.28)}
 .vgrid.light .vitem:focus-visible{outline-color:var(--accent)}
-.viewer.gridmode .vstage,.viewer.gridmode .vstrip{display:none}
+.viewer.gridmode .vstage{display:none}
+/* ［一覧］はページ番号の並びの最後に置く（右上のボタンは使わない） */
+#vGridBtn{display:none !important}.vstrip button.vsgrid{margin-left:8px;padding:0 12px;font-family:inherit;font-weight:600;letter-spacing:.06em}
 .viewer:not(.gridmode) .vgrid{display:none}
 /* iPad の全画面：上の時計・電池の下にバーをさげ、見出しは左上の ✕ の右へ */
 .viewer.vfs{padding-top:max(env(safe-area-inset-top,0px),26px)}
@@ -2390,7 +2393,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <p>見開きの上の <span class="btn">一覧</span> <span class="btn">見開き</span> <span class="btn">プレビュー</span> で見かたを切り替え、右側のボタンで保存します。</p>
     <div class="tbl"><table>
       <tr><th><span class="btn">一覧</span> <span class="btn">見開き</span></th><td>「一覧」は見開きを並べて表示、「見開き」は1組ずつ大きく表示します（左右の矢印で前後へ）。</td></tr>
-      <tr><th><span class="btn">プレビュー</span></th><td>見開きを1組ずつ大きく表示します。背景は「詳細設定」の「一覧書き出し仕様」の背景（白・黒）と同じです。<kbd>←</kbd> <kbd>→</kbd> キー、スワイプ、写真のクリック（右半分で次へ・左半分で前へ）で、本のようにページがめくれます。右上の <span class="btn">一覧</span> で全部の見開きを並べた表示に切り替わり（1行に並べる数と背景は、詳細設定の「一覧書き出し仕様」と同じ。保存される一覧画像と同じ見た目で確認できます）、見開きを押すとその見開きに戻ります（一覧のときはボタンが <span class="btn">見開き</span> になります）。</td></tr>
+      <tr><th><span class="btn">プレビュー</span></th><td>見開きを1組ずつ大きく表示します。背景は「詳細設定」の「一覧書き出し仕様」の背景（白・黒）と同じです。<kbd>←</kbd> <kbd>→</kbd> キー、スワイプ、写真のクリック（右半分で次へ・左半分で前へ）で、本のようにページがめくれます。上に並んだページ番号の最後の <span class="btn">一覧</span> で、全部の見開きを並べた表示に切り替わります（できるだけ1画面に収まる大きさで並べます。背景は「一覧書き出し仕様」と同じ）。見開きかページ番号を押すと、その見開きに戻ります。</td></tr>
       <tr><th><span class="btn fill">見開き一括</span></th><td>（「書き出し」の下のボタン。写真集モードのときは「写真集」という名前になります）写真が入っている見開きを、全部 JPG で保存します。片方だけの見開きも保存でき、空いたページは「空きページの色」（白か黒）で塗られます。Chrome・Edge では押すたびに保存先のフォルダを聞かれるので、選んだフォルダに全部まとめて書き出します。それ以外のブラウザや Claude 上のページでは、全部を1つの ZIP にまとめて保存します。画面上部の「保存形式」を PDF にすると、全部の見開きを1見開き1ページの PDF 1つにまとめて保存します。</td></tr>
       <tr><th><span class="btn fill">一覧</span></th><td>全部の見開きを並べた、1枚の JPG 画像を保存します（保存形式が PDF のときも JPG です）。横幅 4500px で、JPG の画質は「詳細設定」の「画質」に従います。各見開きは一覧の枠の大きさに合わせて1回だけ縮めて作ります。見開一括書き出しと同じく、保存先のフォルダを選べます（選べない環境ではダウンロードフォルダに保存）。写真が1枚も入っていないときは押せません。</td></tr>
       <tr><th><span class="btn fill">1枚ずつ</span></th><td>入っている写真を、このツールで調整したとおり（トリミング・拡大縮小・回転・傾き補正・反転）に1枚ずつ JPG で保存します。ノドの影・グリッドは入りません。写真が入っていないページでも、装飾（文字・画像）がそのページにかかっていれば書き出します。写真集モードの表紙・裏表紙・表紙の裏・裏表紙の裏も同じで、文字だけのページとして書き出せます（ファイル名は本の並び順の連番で、表紙が 000、裏表紙が最後の番号）。写真集モードで表紙・裏表紙に文字を入れているときは、その写真のページ部分の文字も入ります（またいだ文字はそれぞれのページの分だけ）。1枚写真の見開きは横長の1枚になります。大きさは「ページの解像度」、画質は「詳細設定」の「画質」に従います。保存形式が PDF でも JPG で保存します。まとめ方は見開一括書き出しと同じで、フォルダを選ぶとそこへ、選べないときは ZIP になります。</td></tr>
@@ -4635,9 +4638,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     vList.forEach((p, k) => {
       const b = document.createElement('button'); b.textContent = pairLabel(p);
       b.setAttribute('aria-label', `見開き ${p+1}`);
-      b.addEventListener('click', () => showSpread(k));
+      b.addEventListener('click', () => { if(viewer.classList.contains('gridmode')){ setGrid(false); showSpread(k, true); } else showSpread(k); });
       strip.appendChild(b);
     });
+    { const g = document.createElement('button'); g.className = 'vsgrid'; g.textContent = '一覧'; g.setAttribute('aria-label', '一覧で見る'); g.addEventListener('click', () => showGrid()); strip.appendChild(g); }
     viewer.hidden = false;
     vFsEnter();
     document.body.style.overflow = 'hidden';
@@ -4650,15 +4654,28 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function showGrid(){
     setGrid(true);
+    [...$('vStrip').children].forEach(b => b.setAttribute('aria-current', b.classList.contains('vsgrid') ? 'true' : 'false'));
     $('vTitle').innerHTML = `一覧<small>${vList.length}組</small>`;
     const box = $('vGrid'); box.innerHTML = '';
-    // same look as the saved overview: columns and background from the 一覧書き出し仕様 settings
-    const cols = Math.max(1, Math.min(+$('sheetCols').value, vList.length, window.innerWidth < 640 ? 2 : 99));
+    // できるだけ1画面に収める：画面の広さと見開きの縦横比から、全部が入るいちばん大きい並べ方を選ぶ
+    //（小さくなりすぎるときだけ、決まった大きさで縦にスクロール）
     const bg = $('sheetBg').value, light = bg === '#FFFFFF';
-    box.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+    box.classList.add('fit');
+    const asp = (() => { const t = document.createElement('canvas'); compose(vList[0], t, 200); return t.width && t.height ? t.width / t.height : 1.5; })();
+    const W = box.clientWidth - 32, H = box.clientHeight - 24, GX = 16, GY = 6, LH = 19, n = vList.length;
+    let cols = 1, iw = 0;
+    for(let c = 1; c <= n; c++){
+      const r = Math.ceil(n / c), w = Math.min((W - GX * (c - 1)) / c, ((H - GY * (r - 1)) / r - LH) * asp);
+      if(w > iw){ iw = w; cols = c; }
+    }
+    const MIN = window.innerWidth < 640 ? 110 : 200;
+    if(iw < MIN){ cols = Math.max(1, Math.floor((W + GX) / (MIN + GX))); iw = Math.min(MIN * 1.6, (W - GX * (cols - 1)) / cols); box.style.alignContent = 'start'; }
+    else box.style.alignContent = '';
+    iw = Math.floor(iw);
+    box.style.gridTemplateColumns = `repeat(${cols}, ${iw}px)`;
     box.style.background = bg;
     box.classList.toggle('light', light);
-    const res = Math.min(1600, Math.round(window.innerWidth * Math.min(2, window.devicePixelRatio || 1) / cols));
+    const res = Math.min(1600, Math.round(iw * Math.min(2, window.devicePixelRatio || 1)));
     vList.forEach((p, k) => {
       const b = document.createElement('button'); b.className = 'vitem'; b.type = 'button';
       b.setAttribute('aria-label', `見開き ${p+1} を大きく表示`);
@@ -4984,6 +5001,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
   });
   window.addEventListener('resize', () => { if(!viewer.hidden && !viewer.classList.contains('gridmode')){ endFlip(); drawViewer(); } });
+  { let gt = 0; window.addEventListener('resize', () => { if(viewer.hidden || !viewer.classList.contains('gridmode')) return; clearTimeout(gt); gt = setTimeout(showGrid, 200); }); }   // 一覧は、画面の大きさが変わったら並べ直す
 
   // ---------- crop editor ----------
   const cm = $('cropModal'), ccv = $('cropCv'), cctx = ccv.getContext('2d');
