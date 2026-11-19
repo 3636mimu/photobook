@@ -9183,19 +9183,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       P.drive.photos[uid] = h.photoIds[uid];
       // 下見の画像（開くときに先に見せる小さな画像）。作れなくても保存は止めない
-      // 前の版で、BOOKのフォルダに直接置いたもの：preview フォルダへ移して、名前を写真に合わせる
-      if(h.pvIds[uid] && !h.pvIds[uid][3]){
-        try{
-          const v = h.pvIds[uid], d = await pvDir(), name = pvName(it);
-          await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(v[0])}?addParents=${encodeURIComponent(d)}&removeParents=${encodeURIComponent(h.folderId)}&fields=id`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-          h.pvIds[uid] = [v[0], v[1], v[2], name];
-        }catch(e){}
-      }
+      // 前の版で作ったもの（名前の記録がない）は使わず、preview フォルダに作り直す
+      if(h.pvIds[uid] && !h.pvIds[uid][3]) delete h.pvIds[uid];
       if(!h.pvIds[uid]){
         try{
-          if(srcPv[uid] || !it.pv){
+          if((srcPv[uid] && srcPv[uid][3]) || !it.pv){
             const name = pvName(it), meta = { name, parents: [await pvDir()], appProperties: { pbm: 'preview', uid } };
-            if(srcPv[uid]) h.pvIds[uid] = [(await gCopy(srcPv[uid][0], meta)).id, srcPv[uid][1], srcPv[uid][2], name];
+            if(srcPv[uid] && srcPv[uid][3]) h.pvIds[uid] = [(await gCopy(srcPv[uid][0], meta)).id, srcPv[uid][1], srcPv[uid][2], name];
             else { const [w, hh] = it.pw ? [it.pw, it.ph] : dims(it.src); h.pvIds[uid] = [(await gUpload(meta, await pvMake(it.src))).id, w, hh, name]; }
           }
         }catch(e){}
@@ -9327,6 +9321,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(canceled) return;
         let b = null;
         if(pvOk(pvs[uid])){ try{ b = await gGet(pvs[uid][0]); if(!/^image\//.test(b.type || 'image/')) b = null; }catch(e){ b = null; } if(b){ b.pbmPv = { id: ids[uid], w: pvs[uid][1], h: pvs[uid][2] }; usePv = true; } }
+        if(!b && pvs[uid]) delete h.pvIds[uid];   // プレビュー画像が消されていたら、次の保存で作り直す
         if(!b && !canceled){ try{ b = await gGet(ids[uid]); }catch(e){ b = null; } }
         if(canceled) return;
         blobs[uid] = b;
