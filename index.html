@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-/uZgTQ8SObEYoVVqRja0VIAm0ckS2S+ZK07iQFp4ZXI=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-UajJWVt2Wu4Ew4uVWhG3nxnDldcEjIsaXjfblmXgPCY=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -9082,7 +9082,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const r = await shareAskOpt({ f, title, pw, exp: +(ap.exp || man.exp || 0), sheet: sheetNow, url: shareUrl(ap.m) });
     if(!r) return;
     if(r.act === 'delete'){
-      askYesNo('この共有リンクを削除しますか？', `<p>「${esc2(title)}」のリンクを送った相手は、写真集を見られなくなります。</p><p><b>消えるもの</b><br>このリンクのために作った見開きの画像（Google ドライブの「PHOTO BOOK MAKER ＞ 共有」の中。ゴミ箱に入ります）</p><p><b>消えないもの</b><br>BOOKのデータ、元の写真</p><p style="color:var(--muted);font-size:12px">しばらく見せないだけなら、削除せずに「公開中」をOFFにしてください。</p>`, async () => {
+      askYesNo('この共有リンクを削除しますか？', `<p>「${esc2(title)}」のリンクを送った相手は、写真集を見られなくなります。</p>`, async () => {
         try{ await gPatch(f.id, { trashed: true }); if(ap.pw === '1') sharePwSave(f.id, ''); shCache = null; status('共有リンクを削除しました。'); }catch(e){ status('削除できませんでした。'); }
       }, '削除', 'キャンセル', () => shareEdit(f));
       $('pagesModal').classList.add('warn');
@@ -9314,7 +9314,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           try{ await shareSet(f, want); }catch(e){ console.warn(e); look(!want); status('切り替えられませんでした。'); }
           tg.classList.remove('busy'); busy = false;
         };
-        row.querySelector('.del').onclick = () => askYesNo('この共有リンクを削除しますか？', `<p>「${esc2(nm)}」のリンクを送った相手は、写真集を見られなくなります。</p><p><b>消えるもの</b><br>このリンクのために作った見開きの画像（Google ドライブの「PHOTO BOOK MAKER ＞ 共有」の中。ゴミ箱に入ります）</p><p><b>消えないもの</b><br>BOOKのデータ、元の写真、ほかの共有リンク</p><p style="color:var(--muted);font-size:12px">しばらく見せないだけなら、削除せずにスイッチをOFFにしてください。</p>`, async () => {
+        row.querySelector('.del').onclick = () => askYesNo('この共有リンクを削除しますか？', `<p>「${esc2(nm)}」のリンクを送った相手は、写真集を見られなくなります。</p>`, async () => {
           if(shCache) shCache = shCache.filter(x => x !== f);
           shareManager(true);   // 一覧からはすぐ消し、ドライブ側はうしろで
           try{ await gPatch(f.id, { trashed: true }); if(ap.pw === '1') sharePwSave(f.id, ''); }catch(e){ status('削除できませんでした。'); shCache = null; if(!$('shareMgr').hidden) shareManager(); } }, '削除', 'キャンセル', () => shareManager(true));
