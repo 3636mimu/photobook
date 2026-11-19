@@ -9696,6 +9696,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   if(WEB){
     $('driveClose').addEventListener('click', () => { $('driveModal').hidden = true; GD.showHid = false; });
+    // 窓の外（暗いところ）をクリックしても［閉じる］と同じ。窓の中で押して外で離したときは閉じない
+    { const m = $('driveModal'); let downOut = false;
+      m.addEventListener('pointerdown', e => { downOut = e.target === m; });
+      m.addEventListener('click', e => { if(downOut && e.target === m) $('driveClose').click(); downOut = false; }); }
     $('driveShowHid').addEventListener('click', () => { GD.showHid = !GD.showHid; driveCards($('driveList'), f => { $('driveModal').hidden = true; GD.showHid = false; openDriveBook(f); }); });
     $('driveModal').addEventListener('keydown', e => { if(e.key === 'Escape') $('driveModal').hidden = true; });
     $('driveLocal').addEventListener('click', () => { $('driveModal').hidden = true; pickBookFile(); });
