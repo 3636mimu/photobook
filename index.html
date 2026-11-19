@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-Zf9S4M+ws7d4z75HL2O6b/NxjiSNAnSw5I1ih7gWVsU=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-HEQUCBhbKjzaZTJJPdOe3H7sHhIugZ4XADe4gSXiOus=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -972,6 +972,14 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 .saveauto input{accent-color:var(--accent)}
 .savetoast{position:fixed;left:18px;bottom:18px;z-index:80;background:#2a2b2e;color:#fff;font-size:13px;padding:9px 14px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s;pointer-events:none}
 .savetoast.on{opacity:1;transform:none}
+/* お知らせ：画面の下中央に重ねて浮かせ、数秒で消える（押せばすぐ消える）。失敗のときだけ左に赤い印 */
+.ntoast{position:fixed;left:50%;width:max-content;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:120;max-width:min(92vw,520px);box-sizing:border-box;background:#2a2b2e;color:#fff;font-size:13px;line-height:1.6;padding:10px 16px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.22);opacity:0;transform:translate(-50%,8px);transition:opacity .35s,transform .35s;cursor:pointer}
+.ntoast.on{opacity:1;transform:translate(-50%,0)}
+.ntoast.row{bottom:auto;transform:translate(0,-50%) translateY(6px);font-size:12.5px;line-height:1.5;padding:7px 14px}.ntoast.row.on{transform:translate(0,-50%)}.ntoast.row.err{padding-left:28px}.ntoast.row.err::before{top:calc(50% - 4px);left:13px}
+.ntoast.below{bottom:auto;width:max-content;max-width:calc(100vw - 24px);transform:translate(-50%,-6px)}.ntoast.below.on{transform:translate(-50%,0)}
+.ntoast.err{padding-left:30px}.ntoast.err::before{content:"";position:absolute;left:14px;top:17px;width:8px;height:8px;border-radius:50%;background:#E5655B}
+.ntoast .glogo{vertical-align:-2px}
+#status{display:none !important}
 .strecent{margin-top:18px}
 .strhead{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px}
 .glogo{width:16px;height:16px;object-fit:contain;flex:none;vertical-align:-3px}
@@ -2097,7 +2105,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
         <button class="primary" id="saveSheet" disabled>一覧書き出し</button>
         <button class="primary" id="saveSingles" disabled title="調整した写真を1枚ずつ JPG で保存">1枚ずつ書き出し</button>
         <div class="mhead" id="hdShare" hidden>共有</div>
-        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled><i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg></i><span class="mt">めくって見られるリンク</span><span class="bd"></span></button>
+        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled><i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg></i><span class="mt">Photo Bookリンク</span><span class="bd"></span></button>
         <input type="file" id="workFile" class="vh" accept=".pbmk">
         <div id="pgTip" class="pgtip" aria-hidden="true">配置写真を調整</div><div id="dTapTip" class="pgtip" aria-hidden="true"></div>
         <input type="file" id="fileRelink" class="vh" accept="image/*" multiple>
@@ -2599,6 +2607,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   </div>
 </div>
 <div class="savetoast" id="saveToast" hidden role="status" aria-live="polite"></div>
+<div class="ntoast" id="nToast" hidden role="status" aria-live="polite"></div>
 <div class="modal" id="pagesModal" hidden role="alertdialog" aria-modal="true" aria-labelledby="pagesTitle" aria-describedby="pagesMsg">
   <div class="sheet" style="max-width:420px">
     <h3 id="pagesTitle">ページ数を減らします</h3>
@@ -4369,7 +4378,31 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('gapo').textContent = (+$('gap').value).toFixed(2) + ' %';
     $('qo').textContent = $('q').value;
   }
-  function status(t){ gpTxt($('status'), t); }
+  // お知らせ：サイドバーの欄は使わない。失敗・写真の欠け・自動保存の停止・勝手に変わったこと・押しても何も起きない理由だけ、
+  //          画面の下に重ねて浮かせ、数秒で自然に消す（押せばすぐ消える）。完了の報告や進み具合は出さない
+  const NOTE_ERR = /できませんでした|つながりませんでした|開けませんでした|失敗|書き込めませんでした|大きすぎ|中身が空|保存できません|切り替えられませんでした|戻せませんでした/;
+  const NOTE_WARN = /読み込めな|見つから|足りない|止まりました|接続が切れた|ページ数を.*ページにし|見開きは解除|空白にして編集できない|選ぶと戻ります|保存し直しました|数分かかる|閉じてから押して|写真を入れると|選んでください/;
+  let noteT = 0;
+  function status(t){
+    const v = String(t == null ? '' : t).trim(); if(!v) return;
+    const err = NOTE_ERR.test(v); if(!err && !NOTE_WARN.test(v)) return;
+    const el = $('nToast');
+    gpTxt(el, v); el.classList.toggle('err', err); el.hidden = false; notePlace(el);
+    requestAnimationFrame(() => el.classList.add('on'));
+    clearTimeout(noteT); noteT = setTimeout(noteOff, err ? 6000 : 4500);
+  }
+  // 置き場所：編集画面では、表示の切り替え（一覧・見開き・プレビュー）とメニューのあいだ。
+  //  そこが狭いとき（スマホなど）は、その段のすぐ下の中央。編集画面でないときは、画面の下の中央
+  function notePlace(el){
+    const db = $('dropbar'), vs = db && db.querySelector('.vseg'), mn = db && db.querySelector('.viewrow .sidetab');
+    const S = el.style; S.left = S.top = S.bottom = S.width = S.maxWidth = ''; el.classList.remove('row', 'below');
+    const R = vs && vs.getBoundingClientRect();
+    if(!R || !R.width || db.offsetParent === null) return;
+    const left = R.right + 14, right = (mn && mn.offsetParent !== null ? mn.getBoundingClientRect().left : db.getBoundingClientRect().right) - 14;
+    if(right - left >= 220){ el.classList.add('row'); S.left = left + 'px'; S.maxWidth = (right - left) + 'px'; S.top = (R.top + R.height / 2) + 'px'; }
+    else { el.classList.add('below'); S.top = (db.getBoundingClientRect().bottom + 8) + 'px'; }
+  }
+  function noteOff(){ const el = $('nToast'); clearTimeout(noteT); el.classList.remove('on'); setTimeout(() => { if(!el.classList.contains('on')) el.hidden = true; }, 400); }
 
   // ---------- move between slots (pointer drag) ----------
   function swapSlots(i, j){
@@ -8238,6 +8271,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
 
   // 保存したことを、画面の左下に数秒だけ知らせる
   let toastT = 0;
+  document.addEventListener('click', e => { if(e.target.closest && e.target.closest('#nToast')) noteOff(); });   // お知らせは押せばすぐ消える
   function toast(msg){
     const el = $('saveToast'), d = new Date(), z = n => String(n).padStart(2, '0');
     el.textContent = `✓ ${msg}　${z(d.getHours())}:${z(d.getMinutes())}`; el.hidden = false; el.classList.add('on');
@@ -9628,7 +9662,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         fonts: async () => { let n = 0; for(const x of (P.drive && P.drive.fonts) || []){ h.fontIds[x.name] = x.id; if(myFonts.includes(x.name)) continue; try{ const data = await (await gGet(x.id)).arrayBuffer(); await registerFont(x.name, data); await fontDbDo('readwrite', st => st.put({ name: x.name, data })); n++; }catch(e){} } if(n) renderMyFonts(); return n; } });
       if(usePv) pvFetchAll(ids);   // 本物の写真は、開いたあとに裏で受け取る（そろったら、プレビュー画像がない写真の分を作る）
       else pvHeal(h);              // はじめから本物で開いたとき：プレビュー画像がない写真の分を、裏で作る
-      status(`Google ドライブの「${f.name}」を開きました。続きから編集できます。` + (r.missing ? `読み込めなかった写真が${r.missing}枚あります。` : '') + (r.forked ? 'このブラウザに残っていた、より新しい版は「続きから作る」にそのまま残しています。' : ''));
+      status(r.missing ? `読み込めなかった写真が${r.missing}枚あります。` : '');   // 開けたことの知らせは出さない（読み込めない写真があるときだけ伝える）
     };
     if(hasWork()) askYesNo('このBOOKを開きますか？', '<p>編集中のBOOKは、この画面から消えます。<br>（自動保存されているので、最初の画面の「続きから作る」から戻せます）</p>', go);
     else go();
