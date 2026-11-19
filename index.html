@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-09D4mfV9VPw+gldG0PMoQ6hzhE9RN8XwvHhdrvYxMY8=' 'sha256-CvbkuNeU93OIqR0zX+8p0mcE8OipuWPyPcgqCwG5lZ4=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-43AZ/VONzXkKDm0M4gv/EZbCkajL79Tm+6bFYWxDG+Q=' 'sha256-4G34MDgei+7gmafJJN0SzfEIMaDdTqjGVqP6gLk50Tc=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://*.googleusercontent.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -798,6 +798,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .shgrid input[type=text],#shareOpt .shgrid input[type=datetime-local]{width:100%;max-width:none;box-sizing:border-box}
 #shareOpt .shgrid input:disabled{background:#f6f5f2;color:#b3aea6;border-color:#ece9e3}
 #shareOpt .shck{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;white-space:nowrap}
+#shareOpt .shck2{margin-top:12px}
 #shareOpt .shck input{appearance:none;-webkit-appearance:none;width:19px;height:19px;margin:0;border:1.5px solid #cfcac2;border-radius:50%;background:#fff;cursor:pointer;flex:0 0 auto;transition:background .15s,border-color .15s}
 #shareOpt .shck input:checked{background:#2A8C7F url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat;border-color:#2A8C7F}
 #shareOpt .shck input:focus-visible{outline:2px solid #8FB0DE;outline-offset:2px}
@@ -2884,11 +2885,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     '#shv .ms a,#shv .ms button{display:inline-block;margin:10px 6px 0;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:none;color:#fff;font:inherit;font-size:14px;text-decoration:none;cursor:pointer}',
     '#shv .ht{position:absolute;left:50%;bottom:calc(44px + env(safe-area-inset-bottom,0px));-webkit-transform:translateX(-50%);transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.12);font-size:12px;white-space:nowrap;-webkit-transition:opacity .6s;transition:opacity .6s}',
     '@media (pointer:coarse){#shv .nv{background:rgba(255,255,255,.08)}}',
+    '#shv .nv.dl[hidden]{display:none}#shv .nv.dl.busy svg{opacity:.25}#shv .nv.dl.busy::after{content:"";position:absolute;width:22px;height:22px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;-webkit-animation:shvr 1s linear infinite;animation:shvr 1s linear infinite}',
+    '#shv .dlt{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:12px;padding:10px 12px 10px 18px;border-radius:999px;background:rgba(32,33,36,.94);box-shadow:0 6px 24px rgba(0,0,0,.4);font-size:13px;white-space:nowrap}',
+    '#shv .dlt button{font:inherit;font-size:13px;border:0;border-radius:999px;padding:8px 16px;background:#2A8C7F;color:#fff;cursor:pointer}#shv .dlt button.x{background:rgba(255,255,255,.12)}',
     '#shv.ns,#shv.ns *{-webkit-touch-callout:none}'
   ].join('\n');
   document.head.appendChild(css);
 
-  var root, stage, book, hd, ft, prevB, nextB, pages = [], man = null, pos = 0, busy = false, imgs = [];
+  var root, stage, book, hd, ft, prevB, nextB, dlB, pages = [], man = null, pos = 0, busy = false, imgs = [], TITLE = '';
   function el(t, c, p){ var e = document.createElement(t); if(c) e.className = c; if(p) p.appendChild(e); return e; }
   // 写真集が更新されたら（man.at）、古い画像を使い回さないよう、版の番号を付けて読む
   function ver(){ return man && man.at ? '&v=' + man.at : ''; }
@@ -2949,9 +2953,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       var rx = r.left + bl + W + (vw - bl - W) / 2;
       put(prevB, r.left + bl / 2, r.top + vh / 2); put(nextB, rx, r.top + vh / 2);
       ft.style.left = rx + 'px'; ft.style.top = (r.top + bt + H) + 'px'; ft.style.transform = ft.style.webkitTransform = 'translate(-50%,-100%)';   // 右の空きの、写真の下端にそろえて
+      put(dlB, rx, r.top + bt + NB / 2);   // ダウンロード：右の空きの、写真の上端にそろえて
     } else {
       var cx = r.left + vw / 2, cy = r.top + bt + H + B / 2;
-      put(prevB, cx - 74, cy); put(nextB, cx + 74, cy);
+      put(prevB, cx - 74, cy); put(nextB, cx + 74, cy); put(dlB, Math.min(r.left + vw - NB / 2 - 6, cx + 140), cy);
       ft.style.left = cx + 'px'; ft.style.top = cy + 'px'; ft.style.transform = ft.style.webkitTransform = 'translate(-50%,-50%)';   // ‹ 13 / 15 › の並び
     }
   }
@@ -3015,6 +3020,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     document.addEventListener('contextmenu', function(e){ e.preventDefault(); }); document.addEventListener('dragstart', function(e){ e.preventDefault(); });
     hd = el('div', 'hd', root); stage = el('div', 'st', root); ft = el('div', 'ft', root);
     prevB = el('button', 'nv p', root); prevB.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 5l-7 7 7 7"/></svg>'; prevB.setAttribute('aria-label', '前の見開き');
+    dlB = el('button', 'nv dl', root); dlB.hidden = true; dlB.title = '写真をダウンロード（JPG）'; dlB.setAttribute('aria-label', '写真をダウンロード');
+    dlB.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>';
+    dlB.onclick = function(e){ e.stopPropagation(); dlStart(); };
     nextB = el('button', 'nv n', root); nextB.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5l7 7-7 7"/></svg>'; nextB.setAttribute('aria-label', '次の見開き');
     prevB.onclick = function(e){ e.stopPropagation(); go(-1); }; nextB.onclick = function(e){ e.stopPropagation(); go(1); };
     document.addEventListener('keydown', function(e){ if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); } else if(e.key === 'ArrowLeft') go(-1); });
@@ -3052,9 +3060,69 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       x.send();
     })();
   }
+  // ---------- ダウンロード（作った人が許可した共有だけ）：見開きを JPG で。スマホは写真アプリへ、パソコンは ZIP にまとめて ----------
+  var dlBusy = false, CRC = null;
+  function crc32(a){ if(!CRC){ CRC = []; for(var n = 0; n < 256; n++){ var c = n; for(var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; CRC[n] = c >>> 0; } }
+    var x = 0xFFFFFFFF; for(var i = 0; i < a.length; i++) x = CRC[(x ^ a[i]) & 255] ^ (x >>> 8); return (x ^ 0xFFFFFFFF) >>> 0; }
+  function zipOf(files){   // 無圧縮の ZIP（写真はもう圧縮されているので、そのまま入れる）。日本語の名前も読めるように UTF-8 の印を付ける
+    var parts = [], cen = [], off = 0, enc = new TextEncoder();
+    files.forEach(function(f){
+      var nm = enc.encode(f.name), d = f.data, crc = crc32(d), h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint32(14, crc, true); h.setUint32(18, d.length, true); h.setUint32(22, d.length, true); h.setUint16(26, nm.length, true);
+      parts.push(h.buffer, nm, d);
+      var c = new DataView(new ArrayBuffer(46)); c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint32(16, crc, true); c.setUint32(20, d.length, true); c.setUint32(24, d.length, true); c.setUint16(28, nm.length, true); c.setUint32(42, off, true);
+      cen.push(c.buffer, nm); off += 30 + nm.length + d.length;
+    });
+    var cs = cen.reduce(function(t, b){ return t + b.byteLength; }, 0), e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cs, true); e.setUint32(16, off, true);
+    return new Blob(parts.concat(cen, [e.buffer]), { type: 'application/zip' });
+  }
+  function dlName(i){ var b = TITLE.replace(/[\\/:*?"<>|]/g, '_').trim().slice(0, 60) || 'PHOTO BOOK'; return b + '_' + (i < 9 ? '0' : '') + (i + 1) + '.jpg'; }
+  // 見開き k の JPG：表示に使った画像（パスワード付きの前の形は、元に戻した画像）→ Google の画像配信 → ダウンロード、の順に
+  function dlBytes(k){
+    var P = pages[k], list = [];
+    if(P.src && /^blob:/.test(P.src)) list.push(P.src);
+    list.push('https://lh3.googleusercontent.com/d/' + encodeURIComponent(P.id) + '=s2400', API + encodeURIComponent(P.id) + '?alt=media&key=' + encodeURIComponent(KEY));
+    var i = 0;
+    return (function next(){
+      if(i >= list.length) return Promise.reject(new Error('dl'));
+      return fetch(list[i++], { referrerPolicy: 'strict-origin-when-cross-origin' }).then(function(r){ if(!r.ok || !/^image\/|octet-stream/.test(r.headers.get('content-type') || 'image/')) throw 0; return r.arrayBuffer(); }).then(function(b){ return new Uint8Array(b); }, function(){ return next(); });
+    })();
+  }
+  function dlToast(text, btn, act){
+    var o = root.querySelector('.dlt'); if(o) o.parentNode.removeChild(o);
+    if(!text) return;
+    var t = el('div', 'dlt', root), s = el('span', '', t); s.textContent = text;
+    if(btn){ var b = el('button', '', t); b.type = 'button'; b.textContent = btn; b.onclick = function(e){ e.stopPropagation(); act(); }; }
+    var x = el('button', 'x', t); x.type = 'button'; x.textContent = '閉じる'; x.onclick = function(e){ e.stopPropagation(); dlToast(''); };
+  }
+  function dlStart(){
+    if(dlBusy) return; dlBusy = true; dlB.classList.add('busy'); dlToast('');
+    var out = new Array(pages.length), k = 0;
+    (function next(){
+      if(k >= pages.length) return done();
+      var i = k++; dlBytes(i).then(function(d){ out[i] = d; next(); }, function(){ dlBusy = false; dlB.classList.remove('busy'); dlToast('ダウンロードできませんでした。少し時間をおいて、もう一度お試しください。'); });
+    })();
+    function done(){
+      dlBusy = false; dlB.classList.remove('busy');
+      var files = out.map(function(d, i){ return { name: dlName(i), data: d }; });
+      // スマホ・タブレット：共有の画面から「画像を保存」で、写真アプリにそのまま入る（ボタンを押してから出す決まりなので、もう一度押してもらう）
+      var touch = window.matchMedia && matchMedia('(pointer:coarse)').matches, ff = null;
+      try{ ff = files.map(function(f){ return new File([f.data], f.name, { type: 'image/jpeg' }); }); }catch(e){ ff = null; }
+      if(touch && ff && navigator.canShare && navigator.canShare({ files: ff })){
+        dlToast(files.length + '枚の写真を用意しました', '写真に保存', function(){ navigator.share({ files: ff }).then(function(){ dlToast(''); }, function(){}); });
+        return;
+      }
+      // パソコン：ZIP にまとめて保存
+      var a = document.createElement('a'), u = URL.createObjectURL(zipOf(files));
+      a.href = u; a.download = TITLE.replace(/[\\/:*?"<>|]/g, '_').trim().slice(0, 60) + '.zip'; document.body.appendChild(a); a.click(); a.parentNode.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(u); }, 60000);
+    }
+  }
   function setPages(list){ pages = list.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.flat ? 1 : (p.seam || .5), flat: !!p.flat, iv: p.iv || '' }; }); }
   function open1(title){
-        document.title = (title || 'PHOTO BOOK') + ' | PHOTO BOOK';
+        document.title = (title || 'PHOTO BOOK') + ' | PHOTO BOOK'; TITLE = title || 'PHOTO BOOK';
+        if(man && man.dl && window.fetch && window.Promise) dlB.hidden = false;   // 作った人がダウンロードを許可した共有だけ
         hd.hidden = true;   // 上の題名は出さない（写真だけを見せる）
         stage.innerHTML = ''; book = el('div', 'bk', stage); pos = 0;
         // 最初の見開きだけ、ゆっくり浮かび上がるように出す（めくるときは今まで通り）
@@ -8862,7 +8930,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
               <label class="shck"><input type="checkbox" id="shPwOn"><span>パスワードが必要</span></label><input type="text" id="shPw" disabled placeholder="6文字以上（半角英数字・記号）" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore>
               <label class="shck"><input type="checkbox" id="shExpOn"><span>有効期限</span></label><input type="datetime-local" id="shExpD" step="60" disabled>
             </div><p class="sherr" id="shPwErr" hidden>パスワードは6文字以上にしてください。</p></div>
-          <div class="shsec"><b>オプション</b><label class="shck"><input type="checkbox" id="shSheet"><span>一覧を含める</span></label></div>
+          <div class="shsec"><b>オプション</b><label class="shck"><input type="checkbox" id="shSheet"><span>一覧を含める</span></label><label class="shck shck2"><input type="checkbox" id="shDl"><span>見る人のダウンロードを許可（JPG）</span></label></div>
           <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">保存</button></div></div>`;
         document.body.append(m);
         // パスワードは隠さずに見せる（ふつうの文字欄なので「パスワードを保存しますか？」も出ない）
@@ -8875,7 +8943,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           if(on && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}T23:59`; }
           if(on) d.focus(); };
       }
-      $('shPw').value = ''; $('shPw').disabled = true; $('shPwErr').hidden = true; $('shPwOn').checked = false; $('shExpOn').checked = false; $('shExpD').value = ''; $('shExpD').disabled = true;
+      $('shPw').value = ''; $('shPw').disabled = true; $('shPwErr').hidden = true; $('shPwOn').checked = false; $('shDl').checked = false;   // ダウンロードの許可は、毎回オフから $('shExpOn').checked = false; $('shExpD').value = ''; $('shExpD').disabled = true;
       $('shName').value = [workTitle(), (bookFile || '').replace(/\.pbmk?$/i, '')].map(x => (x || '').trim()).filter(Boolean).join(' ');   // 名前の初期値：表紙などの文字＋BOOK名（自由に変えられる）
       const fin = r => { $('shPw').value = ''; m.hidden = true; m.onkeydown = null; done(r); };
       $('shNo').onclick = () => fin(null);
@@ -8883,7 +8951,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         let exp = 0, pw = '';
         if($('shPwOn').checked){ pw = $('shPw').value; if(pw.length < SH_PW_MIN){ $('shPwErr').hidden = false; $('shPw').focus(); return; } }   // 短いパスワードは総当たりで破られやすい
         if($('shExpOn').checked){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d.length <= 10 ? d + 'T23:59:59' : d).getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
-        fin({ pw, exp, sheet: $('shSheet').checked, name: $('shName').value.trim() });
+        fin({ pw, exp, sheet: $('shSheet').checked, dl: $('shDl').checked, name: $('shName').value.trim() });
       };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
       m.hidden = false; $('shName').focus(); $('shName').select();
@@ -8898,8 +8966,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   async function shareDec(key, iv, data){ return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(iv) }, key, data)); }
   // 共有の設定（v3）：写真は暗号化しない（Google の画像の配信経路から見せるため）。パスワード付きは、題名と写真の並び（どの写真がどこにあるか）を暗号化する
   //  full：share.json の中身（作った人が差し替えに使う。目印 k も入れる）／ desc：share.json の説明欄（見る人はここを読む。ダウンロードを使わない）
-  async function shareManBuild(title, pages, exp, key, encBase){
-    const head = { app: 'pbm-share', v: 3, at: Date.now() }; if(exp) head.exp = exp;
+  async function shareManBuild(title, pages, exp, key, encBase, dl){
+    const head = { app: 'pbm-share', v: 3, at: Date.now() }; if(exp) head.exp = exp; if(dl) head.dl = 1;   // dl：見る人がJPGでダウンロードできる
     const vp = pages.map(p => [p.id, p.w, p.h, +(+(p.seam || .5)).toFixed(4), p.flat ? 1 : 0]);
     const pack = async obj => { if(!key) return obj; const e = await shareEnc(key, new TextEncoder().encode(JSON.stringify(obj))); return { enc: Object.assign({}, encBase, { iv: e.iv, c: b64(e.c) }) }; };
     const full = Object.assign({}, head, await pack({ title, pages })), view = Object.assign({}, head, await pack({ title, p: vp }));
@@ -9011,7 +9079,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         }
       }
       if(!changed) return;
-      const mb = await shareManBuild(title, sheet ? [...pages, sheet] : pages, man.exp, key, encBase);
+      const mb = await shareManBuild(title, sheet ? [...pages, sheet] : pages, man.exp, key, encBase, man.dl || ap.dl === '1');
       try{ await gUpload({ description: mb.desc }, mb.full, ap.m); }catch(e){ await gUpload({ description: '' }, mb.full, ap.m); }
       for(const id of spare){ try{ await gPatch(id, { trashed: true }); }catch(e){} }   // 新しい一覧に切り替えてから、古い画像をゴミ箱へ
     }catch(e){ console.warn('share refresh', e); }
@@ -9067,7 +9135,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(!workId) workId = newId();
         const ap = { pbm: 'share', book: String(workId), nm: fitBytes(title, 100) };
         if(fileHandle && fileHandle.drive && fileHandle.folderId) ap.bf = String(fileHandle.folderId);   // ドライブに保存した BOOK なら、その BOOK のフォルダも印にする（開き直しても変わらない）
-        if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1'; if(opt.sheet) ap.sh = '1';   // 有効期限・パスワードの有無（共有中のリンクの表示と、期限切れの片付けに使う）
+        if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1'; if(opt.sheet) ap.sh = '1'; if(opt.dl) ap.dl = '1';   // 有効期限・パスワードの有無（共有中のリンクの表示と、期限切れの片付けに使う）
         folder = (await gCreate({ name: shareFolderName(title), parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
         await sharePubRetry(folder);
         // 4枚ずつ同時に、1回の通信で上げる（公開はフォルダだけ。中の写真は、フォルダの公開を引き継ぐ）。並びは元の順のまま
@@ -9082,7 +9150,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         });
         chk();
         // 作った人が分かる情報（フォルダの場所など）は入れない。パスワード付きのときは、題名も暗号化する
-        const mb = await shareManBuild(title, pages, opt.exp, key, enc), mmeta = { name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } };
+        const mb = await shareManBuild(title, pages, opt.exp, key, enc, opt.dl), mmeta = { name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } };
         try{ mfId = (await gUploadSmall(Object.assign({ description: mb.desc }, mmeta), mb.full)).id; }
         catch(e){ console.warn('share desc', e); mfId = (await gUploadSmall(mmeta, mb.full)).id; }   // 説明欄に入らないときは、中身だけ（見る側はダウンロードで読む）
         try{ await gPatch(folder, { appProperties: { m: mfId } }); }catch(e){}
@@ -9190,7 +9258,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const ap = f.appProperties || {}, exp = +(ap.exp || 0), on = shareOn(f), past = exp && exp < Date.now();
         const nm = (f.appProperties || {}).nm || (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');   // 一覧には共有の名前（フォルダ名ではなく）
         // 上の行：作成日時／下の行：期限・パスワード
-        const sub1 = fmtUntil(f.createdTime), sub2 = [exp ? (past ? '期限切れ' : `${fmtUntil(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : ''].filter(Boolean).join('・');
+        const sub1 = fmtUntil(f.createdTime), sub2 = [exp ? (past ? '期限切れ' : `${fmtUntil(exp)} まで`) : '期限なし', ap.pw === '1' ? 'パスワードあり' : '', ap.dl === '1' ? 'ダウンロード可' : ''].filter(Boolean).join('・');
         const row = document.createElement('div'); row.className = 'shitem' + (on ? '' : ' off');
         row.innerHTML = `<button class="toggle tg" type="button" role="switch" aria-checked="${on}" ${past && !on ? 'disabled' : ''}><span class="knob"></span><span class="tl">${on ? '公開中' : '非公開'}</span></button><div class="shmeta"><b>${esc2(nm)}</b><small>${esc2(sub1)}<br>${esc2(sub2)}</small></div><div class="shbtns">${ap.m ? `<a class="op" href="${esc2(shareUrl(ap.m))}" target="_blank" rel="noopener">開く</a><button type="button" class="cp">リンクをコピー</button>` : ''}<button type="button" class="del">削除</button></div>`;
         const cp = row.querySelector('.cp'); if(cp) cp.onclick = async () => {
