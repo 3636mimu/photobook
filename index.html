@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-NbLsHZgsRzvf4tf3qfRrUThUmDgCN7rvl+OCWUA4ojE=' 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-XKDBqj2MggkhZHhDaajeNqav7bk7PtMxVlgod9fRiJo=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-1/U1y7FQ3Skyl1AkakVzOK1HAR0K8BWitDxmGCu52Qw=' 'sha256-I0kaPJkhVuRAlPgrrbZpnrTbSpVXq4jw7Nc0ds3LSTI=' 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -815,6 +815,15 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareMgr .shbtns button.cp.copied{background:#2A8C7F;border-color:#2A8C7F;color:#fff}
 #shareMgr .shbtns .del{color:#C24A45;border-color:#E9C3C1}
 #shareMgr .shnote{font-size:13px;color:var(--muted);text-align:center;padding:18px 0}
+/* スマホなど狭い画面：上の段に［公開中］と名前、下の段にボタンを横いっぱいに並べる */
+@media (max-width:600px){
+  #shareOpt .gpsheet,#shareMgr .gpsheet{padding:22px 18px 18px}
+  #shareMgr .shitem{flex-wrap:wrap;row-gap:10px}
+  #shareMgr .shmeta{flex:1 1 0}
+  #shareMgr .shbtns{flex:1 1 100%}
+  #shareMgr .shbtns > *{flex:1 1 0;text-align:center;padding:8px 6px}
+  #shareMgr .shbtns button.cp{min-width:0}
+}
 .sharemgr{display:block;width:100%;margin-top:6px;background:none;border:0;color:var(--accent);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 #gpDup{z-index:59}
 #gpDup .gpsheet{max-width:520px;padding:26px 28px 22px}
@@ -2854,7 +2863,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     '#shv{position:fixed;left:0;top:0;right:0;bottom:0;background:#0E0F11;color:#E9E8E4;font-family:"Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Yu Gothic",sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}',
     '#shv .hd{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 0;text-align:center;font-size:13px;letter-spacing:.08em;color:rgba(233,232,228,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '#shv .ft{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(12px + env(safe-area-inset-bottom,0px));text-align:center;font-size:12px;letter-spacing:.12em;color:rgba(233,232,228,.6)}',
-    '#shv .st{position:absolute;left:0;right:0;top:calc(34px + env(safe-area-inset-top,0px));bottom:calc(34px + env(safe-area-inset-bottom,0px));-webkit-perspective:3600px;perspective:3600px}',
+    '#shv .st{position:absolute;left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px);-webkit-perspective:3600px;perspective:3600px}',
     '#shv .bk{position:absolute;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;box-shadow:0 10px 40px rgba(0,0,0,.45)}',
     '#shv .hf{position:absolute;top:0;height:100%;background-repeat:no-repeat;background-color:#1a1b1e}',
     '#shv .lf{position:absolute;top:0;height:100%;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;z-index:3}',
@@ -2919,13 +2928,26 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     var k = 0; (function seq(){ while(k < pages.length && pages[k].ok) k++; if(k < pages.length) loadImg(k, function(){ k++; setTimeout(seq, 150); }); })(); }
 
   var W = 0, H = 0;
+  // 写真をなるべく大きく：矢印とページ番号を「左右の空き」に置くか「下の空き」に置くか、写真が大きくなる方を自動で選ぶ（機器に関係なく）
+  // 写真の上には何も重ねず、写真が詰まっている向きには余白を取らない
   function layout(){
     if(!pages.length) return;
-    var P = pages[pos], ar = P.w / P.h, sw = stage.clientWidth - 24, sh = stage.clientHeight - 8;
-    if(window.matchMedia && matchMedia('(min-width:700px)').matches) sw -= 110;   // 左右の矢印のぶん
-    W = Math.floor(Math.min(sw, sh * ar)); H = Math.floor(W / ar);
-    book.style.width = W + 'px'; book.style.height = H + 'px';
-    book.style.left = Math.round((stage.clientWidth - W) / 2) + 'px'; book.style.top = Math.round((stage.clientHeight - H) / 2) + 'px';
+    var P = pages[pos], ar = P.w / P.h, vw = stage.clientWidth, vh = stage.clientHeight, m = 6, NB = 46, S = NB + 16, B = NB + 14;
+    var wSide = Math.min(vw - 2 * S, (vh - 2 * m) * ar), wLow = Math.min(vw - 2 * m, (vh - 2 * m - B) * ar), side = wSide >= wLow;
+    W = Math.max(40, Math.floor(side ? wSide : wLow)); H = Math.floor(W / ar);
+    var bl = Math.round((vw - W) / 2), bt = side ? Math.round((vh - H) / 2) : Math.max(m, Math.round((vh - B - H) / 2));
+    book.style.width = W + 'px'; book.style.height = H + 'px'; book.style.left = bl + 'px'; book.style.top = bt + 'px';
+    var r = stage.getBoundingClientRect(), put = function(el, cx, cy){ el.style.left = Math.round(cx - NB / 2) + 'px'; el.style.top = Math.round(cy - NB / 2) + 'px'; el.style.right = 'auto'; el.style.marginTop = '0'; };
+    ft.style.right = 'auto'; ft.style.bottom = 'auto'; ft.style.padding = '0'; ft.style.whiteSpace = 'nowrap';
+    if(side){
+      var rx = r.left + bl + W + (vw - bl - W) / 2;
+      put(prevB, r.left + bl / 2, r.top + vh / 2); put(nextB, rx, r.top + vh / 2);
+      ft.style.left = rx + 'px'; ft.style.top = (r.top + bt + H) + 'px'; ft.style.transform = ft.style.webkitTransform = 'translate(-50%,-100%)';   // 右の空きの、写真の下端にそろえて
+    } else {
+      var cx = r.left + vw / 2, cy = r.top + bt + H + B / 2;
+      put(prevB, cx - 74, cy); put(nextB, cx + 74, cy);
+      ft.style.left = cx + 'px'; ft.style.top = cy + 'px'; ft.style.transform = ft.style.webkitTransform = 'translate(-50%,-50%)';   // ‹ 13 / 15 › の並び
+    }
   }
   // 見開き k の、左（0）か右（1）半分を背景にする
   function face(e, k, side){
@@ -8996,14 +9018,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1'; if(opt.sheet) ap.sh = '1';   // 有効期限・パスワードの有無（共有中のリンクの表示と、期限切れの片付けに使う）
         folder = (await gCreate({ name: shareFolderName(title), parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
         await sharePubRetry(folder);
-        const pages = [];
-        for(let i = 0; i < made.length; i++){
+        // 4枚ずつ同時に、1回の通信で上げる（公開はフォルダだけ。中の写真は、フォルダの公開を引き継ぐ）。並びは元の順のまま
+        const pages = new Array(made.length); let upDone = 0;
+        gBusy('', `アップロードしています 0 / ${made.length}`, .45);
+        await pool(made.map((m, i) => i), 4, async i => {
           chk();
-          gBusy('', round === 1 ? `アップロードしています ${i + 1} / ${made.length}` : `もう一度作っています ${i + 1} / ${made.length}`, .45 + i / made.length * .45);
           const { pg, up, nm } = made[i];
-          const id = (await gUpload({ name: nm, parents: [folder] }, up)).id;   // 公開はフォルダだけ（中の写真は、フォルダの公開を引き継ぐ）
-          pages.push(Object.assign({}, pg, { id }));
-        }
+          const id = (await gUploadSmall({ name: nm, parents: [folder] }, up)).id;
+          pages[i] = Object.assign({}, pg, { id });
+          upDone++; if(!stop) gBusy('', `アップロードしています ${upDone} / ${made.length}`, .45 + upDone / made.length * .45);
+        });
         chk();
         // 作った人が分かる情報（フォルダの場所など）は入れない。パスワード付きのときは、題名も暗号化する
         const man = { app: 'pbm-share', v: 2, at: Date.now(), pages };
@@ -9011,8 +9035,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(tblob) man.enc = Object.assign({}, enc, tblob); else man.title = title;
         mfId = (await gUpload({ name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } }, new Blob([JSON.stringify(man)], { type: 'application/json' }))).id;
         try{ await gPatch(folder, { appProperties: { m: mfId } }); }catch(e){}
-        // 確かめる（3秒・8秒・20秒後の3回だけ）
-        for(const w of [3000, 8000, 20000]){
+        // 確かめる（3秒後の1回だけ。開けなくてもリンクは渡す：見る側が、開けるまで待って読み直す）
+        for(const w of [3000]){
           chk(); gBusy('', '仕上げています…', .95);
           await sleep(w); chk();
           const r = await shareProbe(mfId, 'json');
