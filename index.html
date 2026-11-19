@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-CvbkuNeU93OIqR0zX+8p0mcE8OipuWPyPcgqCwG5lZ4=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-d7/hj7FiOJvgga0zQHfkVjbl4e7qu/FoHB6vFQW7u7k=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -798,6 +798,13 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .shgrid input[type=text],#shareOpt .shgrid input[type=datetime-local]{width:100%;max-width:none;box-sizing:border-box}
 #shareOpt .shgrid input:disabled{background:#f6f5f2;color:#b3aea6;border-color:#ece9e3}
 #shareOpt .shck{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;white-space:nowrap}
+/* 共有リンクの設定：見出しの右に公開の切り替え、その下にリンクと印だけのボタン、左下に削除 */
+#shareOpt .shhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}#shareOpt .shhead h3{margin:0}
+#shareOpt .shlink{display:flex;gap:6px;align-items:center;margin:0 0 4px}#shareOpt .shlink .shbox{flex:1;min-width:0;color:var(--muted);font-size:12.5px}
+#shareOpt .icb{flex:0 0 34px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:8px;background:#F1EFEB;color:#5a554e;cursor:pointer;padding:0;text-decoration:none}
+#shareOpt .icb:hover{background:#E7E3DD}#shareOpt .icb svg{width:18px;height:18px}#shareOpt .icb.done{color:#2A8C7F}
+#shareOpt .shdel{margin-right:auto;border:0;background:none;color:#C24A45;font:inherit;font-size:13px;cursor:pointer;padding:6px 4px}#shareOpt .shdel:hover{text-decoration:underline}
+#shareOpt .actions{align-items:center}
 #shareOpt .shck input{appearance:none;-webkit-appearance:none;width:19px;height:19px;margin:0;border:1.5px solid #cfcac2;border-radius:50%;background:#fff;cursor:pointer;flex:0 0 auto;transition:background .15s,border-color .15s}
 #shareOpt .shck input:checked{background:#2A8C7F url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat;border-color:#2A8C7F}
 #shareOpt .shck input:focus-visible{outline:2px solid #8FB0DE;outline-offset:2px}
@@ -2086,7 +2093,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
         <button class="primary" id="saveAll" disabled>見開一括書き出し</button>
         <button class="primary" id="saveSheet" disabled>一覧書き出し</button>
         <button class="primary" id="saveSingles" disabled title="調整した写真を1枚ずつ JPG で保存">1枚ずつ書き出し</button>
-        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled><i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg></i><span class="mt"><b>共有リンク</b><span class="sub">めくって見られるリンク</span></span></button>
+        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled><i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg></i><span class="mt"><b>BOOK共有</b><span class="sub">めくって見られるリンク</span></span></button>
         <input type="file" id="workFile" class="vh" accept=".pbmk">
         <div id="pgTip" class="pgtip" aria-hidden="true">配置写真を調整</div><div id="dTapTip" class="pgtip" aria-hidden="true"></div>
         <input type="file" id="fileRelink" class="vh" accept="image/*" multiple>
@@ -8861,12 +8868,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     i.addEventListener('input', () => { if(!comp) fix(); });
   }
   // 共有の設定を選ぶ窓（パスワード・有効期限）
-  function shareAskOpt(){
+  // 作成の窓（ed なし）と、共有リンクの設定の窓（ed あり）は同じ窓。設定では今の内容を入れて開き、公開の切り替え・リンク・削除も出す
+  //  返り値：作成＝{ pw, exp, sheet, name }／設定＝{ act: 'save', opt } か { act: 'delete' }／閉じた＝null
+  function shareAskOpt(ed){
     return new Promise(done => {
       let m = $('shareOpt');
       if(!m){
         m = document.createElement('div'); m.className = 'modal'; m.id = 'shareOpt'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
-        m.innerHTML = `<div class="sheet gpsheet"><h3>写真集の共有リンクを作成</h3>
+        m.innerHTML = `<div class="sheet gpsheet"><div class="shhead"><h3 id="shTitle">写真集の共有リンクを作成</h3><button class="toggle tg" type="button" role="switch" id="shTg" hidden><span class="knob"></span><span class="tl">公開中</span></button></div>
+          <div class="shlink" id="shLinkRow" hidden><input class="shbox" id="shUrl" readonly><a class="icb" id="shOpen" target="_blank" rel="noopener" title="新しいタブで開く" aria-label="新しいタブで開く"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></a><button type="button" class="icb" id="shCopy" title="URL・パスワード・有効期限をコピー" aria-label="URL・パスワード・有効期限をコピー"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
           <div class="shsec"><b>共有名</b><input type="text" id="shName" maxlength="60" autocomplete="off" spellcheck="false" placeholder="PHOTO BOOK"></div>
           <div class="shsec"><b>リンク保護</b>
             <div class="shgrid">
@@ -8874,7 +8884,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
               <label class="shck"><input type="checkbox" id="shExpOn"><span>有効期限</span></label><input type="datetime-local" id="shExpD" step="60" disabled>
             </div><p class="sherr" id="shPwErr" hidden>パスワードは6文字以上にしてください。</p></div>
           <div class="shsec"><b>オプション</b><label class="shck"><input type="checkbox" id="shSheet"><span>一覧を含める</span></label></div>
-          <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">保存</button></div></div>`;
+          <div class="actions"><button type="button" class="shdel" id="shDel" hidden>削除</button><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">保存</button></div></div>`;
         document.body.append(m);
         // パスワードは隠さずに見せる（ふつうの文字欄なので「パスワードを保存しますか？」も出ない）
         pwAsciiOnly($('shPw'));
@@ -8888,13 +8898,32 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       $('shPw').value = ''; $('shPw').disabled = true; $('shPwErr').hidden = true; $('shPwOn').checked = false; $('shExpOn').checked = false; $('shExpD').value = ''; $('shExpD').disabled = true;
       $('shName').value = [workTitle(), (bookFile || '').replace(/\.pbmk?$/i, '')].map(x => (x || '').trim()).filter(Boolean).join(' ');   // 名前の初期値：表紙などの文字＋BOOK名（自由に変えられる）
+      $('shTitle').textContent = ed ? '共有リンクの設定' : '写真集の共有リンクを作成'; $('shTg').hidden = $('shLinkRow').hidden = $('shDel').hidden = !ed;
       const fin = r => { $('shPw').value = ''; m.hidden = true; m.onkeydown = null; done(r); };
+      if(ed){
+        const two = n => String(n).padStart(2, '0'), dt = t => { const d = new Date(t); return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}T${two(d.getHours())}:${two(d.getMinutes())}`; };
+        $('shName').value = ed.title || '';
+        if(ed.pw){ $('shPwOn').checked = true; $('shPw').disabled = false; $('shPw').value = ed.pw; }
+        if(ed.exp){ $('shExpOn').checked = true; $('shExpD').disabled = false; $('shExpD').value = dt(ed.exp); }
+        $('shSheet').checked = !!ed.sheet;
+        $('shUrl').value = ed.url; $('shOpen').href = ed.url;
+        // コピー：保存してある内容（URL・パスワード・有効期限）。押したら印が ✓ に
+        const cp = $('shCopy'); cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>'; cp.classList.remove('done'); cp.setAttribute('data-gtip', 'URL・パスワード・有効期限をコピー');
+        cp.onclick = async () => { if(await shareCopy(shareText(ed.url, ed.pw, ed.exp), 'URL・パスワード・有効期限をコピーしました。')){ cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'; cp.classList.add('done'); cp.setAttribute('data-gtip', 'コピーしました'); } };
+        // 公開の切り替え：押した瞬間に反映（［保存］は待たない）
+        const tg = $('shTg'), look = v => { tg.setAttribute('aria-checked', v ? 'true' : 'false'); tg.querySelector('.tl').textContent = v ? '公開中' : '非公開'; };
+        let on = shareOn(ed.f), busy = false; look(on);
+        tg.onclick = async () => { if(busy) return; busy = true; const want = !on; look(want); tg.classList.add('busy');
+          try{ await shareSet(ed.f, want); on = want; ed.f.permissions = want ? [{ type: 'anyone' }] : []; }catch(e){ console.warn(e); look(on); status('切り替えられませんでした。'); } tg.classList.remove('busy'); busy = false; };
+        $('shDel').onclick = () => fin({ act: 'delete' });
+      }
       $('shNo').onclick = () => fin(null);
       $('shGo').onclick = () => {
         let exp = 0, pw = '';
         if($('shPwOn').checked){ pw = $('shPw').value; if(pw.length < SH_PW_MIN){ $('shPwErr').hidden = false; $('shPw').focus(); return; } }   // 短いパスワードは総当たりで破られやすい
         if($('shExpOn').checked){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d.length <= 10 ? d + 'T23:59:59' : d).getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
-        fin({ pw, exp, sheet: $('shSheet').checked, name: $('shName').value.trim() });
+        const opt = { pw, exp, sheet: $('shSheet').checked, name: $('shName').value.trim() };
+        fin(ed ? { act: 'save', opt } : opt);
       };
       m.onkeydown = e => { if(e.key === 'Escape') fin(null); };
       m.hidden = false; $('shName').focus(); $('shName').select();
@@ -9028,14 +9057,85 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }catch(e){ console.warn('share refresh', e); }
     finally{ shRefreshing = false; if(shRefreshAgain){ shRefreshAgain = false; setTimeout(shareRefresh, 1000); } }
   }
+  // ---------- 共有リンクの設定（作成の窓と同じ窓で、今の内容を見て・変えて・保存） ----------
+  async function shareEdit(f){
+    const ap = f.appProperties || {}; if(!ap.m) return;
+    gBusy('共有リンクの設定を読み込んでいます', '', null);
+    let man = null, pw = '', title = ap.nm || '', mp = [], key = null;
+    try{
+      man = await gJson(`${GAPI}/drive/v3/files/${ap.m}?alt=media`);
+      if(ap.pw === '1' || (man && man.enc)){ try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){} }
+      title = man.title || title; mp = man.pages || [];
+      if(man.enc && pw){
+        key = await shareDeriveKey(pw, unb64(man.enc.salt), man.enc.iter);
+        if(man.v >= 3){ const o = JSON.parse(new TextDecoder().decode(await shareDec(key, man.enc.iv, unb64(man.enc.c)))); title = o.title || title; mp = o.pages || []; }
+        else title = JSON.parse(new TextDecoder().decode(await shareDec(key, man.enc.tiv, unb64(man.enc.t)))).title || title;
+      }
+    }catch(e){ console.warn(e); }
+    gBusyOff();
+    if(!man){ askYesNo('共有リンクを開けませんでした', '<p>しばらく時間をおいて、もう一度お試しください。</p>', () => {}, '閉じる', ''); return; }
+    const sheetNow = mp.some(x => x.flat) || ap.sh === '1';
+    const r = await shareAskOpt({ f, title, pw, exp: +(ap.exp || man.exp || 0), sheet: sheetNow, url: shareUrl(ap.m) });
+    if(!r) return;
+    if(r.act === 'delete'){
+      askYesNo('この共有リンクを削除しますか？', `<p>「${esc2(title)}」のリンクを送った相手は、写真集を見られなくなります。</p><p><b>消えるもの</b><br>このリンクのために作った見開きの画像（Google ドライブの「PHOTO BOOK MAKER ＞ 共有」の中。ゴミ箱に入ります）</p><p><b>消えないもの</b><br>BOOKのデータ、元の写真</p><p style="color:var(--muted);font-size:12px">しばらく見せないだけなら、削除せずに「公開中」をOFFにしてください。</p>`, async () => {
+        try{ await gPatch(f.id, { trashed: true }); if(ap.pw === '1') sharePwSave(f.id, ''); shCache = null; status('共有リンクを削除しました。'); }catch(e){ status('削除できませんでした。'); }
+      }, '削除', 'キャンセル', () => shareEdit(f));
+      $('pagesModal').classList.add('warn');
+      return;
+    }
+    const o = r.opt, newTitle = (o.name || title || 'PHOTO BOOK').trim();
+    // パスワードの控えがない前の共有は、中身を読み直せないので、パスワードと一覧はそのまま（題名・期限だけ）
+    if(man.enc && !pw && (o.pw || !o.sheet !== !sheetNow)){ askYesNo('変えられない項目があります', '<p>この共有リンクは、パスワードの控えがないため、パスワードと一覧は変えられません。<br>変えたいときは、削除して作り直してください。</p>', () => {}, '閉じる', ''); return; }
+    gBusy('共有リンクの設定を保存しています', '', null);
+    try{
+      // 前の形（写真ごと暗号化）の共有は、まず新しい形に作り直す（見開きを全部作り直すので少し時間がかかる）
+      if(man.v < 3 && (o.pw !== pw || !o.sheet !== !sheetNow)){ gBusy('', '見開きを作り直しています', null); while(shRefreshing) await new Promise(r => setTimeout(r, 300)); await shareRefresh(); return shareEditSaved(f, o, newTitle); }
+      await shareEditApply(f, man, mp, key, pw, o, newTitle, sheetNow);
+      gBusyOff(); toast('共有リンクの設定を保存しました'); status('共有リンクの設定を保存しました。リンクはそのままです。');
+    }catch(e){ console.warn(e); gBusyOff(); askYesNo('保存できませんでした', `<p>しばらく時間をおいて、もう一度お試しください。</p><p style="font-size:12px;color:var(--muted)">${esc2(e && (e.message || e) || '')}</p>`, () => {}, '閉じる', ''); }
+  }
+  // 前の形から作り直したあとに、もう一度読み直して設定を当てる
+  async function shareEditSaved(f, o, newTitle){
+    try{
+      const items = await shareItems(), g = items.find(x => x.id === f.id) || f, ap = g.appProperties || {};
+      let man = await gJson(`${GAPI}/drive/v3/files/${ap.m}?alt=media`), pw = '', key = null, mp = man.pages || [];
+      if(!(man.v >= 3)) throw new Error('convert');
+      if(man.enc){ pw = (await sharePwRead()).map[g.id] || ''; key = await shareDeriveKey(pw, unb64(man.enc.salt), man.enc.iter); mp = JSON.parse(new TextDecoder().decode(await shareDec(key, man.enc.iv, unb64(man.enc.c)))).pages || []; }
+      await shareEditApply(g, man, mp, key, pw, o, newTitle, mp.some(x => x.flat));
+      gBusyOff(); toast('共有リンクの設定を保存しました');
+    }catch(e){ console.warn(e); gBusyOff(); askYesNo('保存できませんでした', '<p>しばらく時間をおいて、もう一度お試しください。</p>', () => {}, '閉じる', ''); }
+  }
+  // 設定を当てる：題名・パスワード・期限・一覧を、設定ファイルとフォルダに書く（写真の画像はそのまま。URLも変わらない）
+  async function shareEditApply(f, man, mp, key, pw, o, newTitle, sheetNow){
+    let pages = mp.filter(x => !x.flat), sheet = mp.find(x => x.flat) || null, trashIds = [];
+    if(o.sheet && !sheet){
+      const list = allPairs().filter(pairReady), base = shareSigBase(), sigs = list.map(p => pairSig(p, base));
+      const rs = await shareRenderSheet(null, strHash(sigs.join(',') + base));
+      if(rs){ const id = (await gUploadSmall({ name: `${String(pages.length + 1).padStart(2, '0')}.jpg`, parents: [f.id] }, rs.up)).id; sheet = Object.assign(rs.pg, { id }); }
+    } else if(!o.sheet && sheet){ trashIds.push(sheet.id); sheet = null; }
+    // パスワード：同じなら同じ鍵、変えたら新しい鍵、外したら暗号化しない
+    let k2 = null, encBase = null;
+    if(o.pw){
+      if(o.pw === pw && key && man.enc) { k2 = key; encBase = { salt: man.enc.salt, iter: man.enc.iter }; }
+      else { const salt = crypto.getRandomValues(new Uint8Array(16)), iter = 210000; k2 = await shareDeriveKey(o.pw, salt, iter); encBase = { salt: b64(salt), iter }; }
+    }
+    const mb = await shareManBuild(newTitle, sheet ? [...pages, sheet] : pages, o.exp || 0, k2, encBase);
+    try{ await gUpload({ description: mb.desc }, mb.full, (f.appProperties || {}).m); }catch(e){ await gUpload({ description: '' }, mb.full, (f.appProperties || {}).m); }
+    await gPatch(f.id, { name: shareFolderName(newTitle), appProperties: { nm: fitBytes(newTitle, 100), exp: o.exp ? String(o.exp) : null, pw: o.pw ? '1' : null, sh: sheet ? '1' : null } });
+    f.appProperties = Object.assign({}, f.appProperties, { nm: fitBytes(newTitle, 100), exp: o.exp ? String(o.exp) : undefined, pw: o.pw ? '1' : undefined, sh: sheet ? '1' : undefined });
+    await sharePwSave(f.id, o.pw || '');
+    for(const id of trashIds){ try{ await gPatch(id, { trashed: true }); }catch(e){} }
+    shCache = null;
+  }
   async function shareBook(){
     if(pvBlock()) return;
     const list = allPairs().filter(pairReady);
     if(!list.length) return;
     if(!shareKey()){ askYesNo('共有リンクを作れません', '<p>共有リンクの準備（API キー）が、まだ設定されていません。</p>', () => {}, '閉じる', ''); return; }
     if(!(await gEnsure(true))) return;
-    // 1つの BOOK に共有リンクは1つ：すでにあれば、作らずに「共有中のリンク」を開く
-    try{ if(await shareOfBook()){ shareManager(); return; } }catch(e){}
+    // 1つの BOOK に共有リンクは1つ：すでにあれば、作らずに「共有リンクの設定」を開く
+    { let ex = null; try{ ex = await shareOfBook(); }catch(e){} if(ex){ await shareEdit(ex); return; } }
     const opt = await shareAskOpt(); if(!opt) return;
     if(opt.pw && !(window.crypto && crypto.subtle)){ askYesNo('パスワードを使えません', '<p>このブラウザでは、パスワード付きの共有を作れません。</p>', () => {}, '閉じる', ''); return; }
     const title = (opt.name || workTitle() || 'PHOTO BOOK').trim();
