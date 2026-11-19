@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-1/U1y7FQ3Skyl1AkakVzOK1HAR0K8BWitDxmGCu52Qw=' 'sha256-I0kaPJkhVuRAlPgrrbZpnrTbSpVXq4jw7Nc0ds3LSTI=' 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-RhBuXIObY/vBRxZUB7Ne08TkH2uC/cQS+bul7xGkhhI=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-W3dYxVg2VkTinvJ/ZLPjRD5iaY8tIRSiWPBd8Wvl+j4=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -2887,7 +2887,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function el(t, c, p){ var e = document.createElement(t); if(c) e.className = c; if(p) p.appendChild(e); return e; }
   // 写真集が更新されたら（man.at）、古い画像を使い回さないよう、版の番号を付けて読む
   function ver(){ return man && man.at ? '&v=' + man.at : ''; }
-  function urls(id){ return [API + encodeURIComponent(id) + '?alt=media&key=' + encodeURIComponent(KEY) + ver(), 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w2400', 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=w2400']; }
+  // 写真は、Google の画像の配信経路から先に読む（ダウンロードは止められやすいので最後の手段）
+  function urls(id){ return ['https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=s2400', 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=s2400', API + encodeURIComponent(id) + '?alt=media&key=' + encodeURIComponent(KEY) + ver()]; }
   // 画像を読む：だめなら別の取り出し口へ、ひと回りしてもだめならもう一度
   var CK = null;   // パスワードから作った鍵（パスワード付きのとき）
   function u8(b64s){ var s = atob(b64s), a = new Uint8Array(s.length); for(var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
@@ -3023,26 +3024,30 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   function start(){
     stage.innerHTML = ''; el('div', 'ld', stage);
-    var tries = 0;
+    var tries = 0, viaDesc = true;
     (function get(){
       if(!KEY){ msg('このリンクは、いま開けません。<br>少し時間をおいて、再読み込みしてください。', true); return; }
-      var x = new XMLHttpRequest(); x.open('GET', API + encodeURIComponent(q.v) + '?alt=media&key=' + encodeURIComponent(KEY) + '&t=' + Date.now()); x.timeout = 20000;   // 設定ファイルはいつも最新を
+      // 設定は、まずファイルの説明欄から読む（ダウンロードを使わない）。説明欄にないとき（前の形の共有）だけ、中身をダウンロードする
+      var x = new XMLHttpRequest(); x.open('GET', API + encodeURIComponent(q.v) + (viaDesc ? '?fields=description' : '?alt=media') + '&key=' + encodeURIComponent(KEY) + '&t=' + Date.now()); x.timeout = 20000;   // 設定ファイルはいつも最新を
       x.onload = function(){
-        if(x.status === 200){ try{ man = JSON.parse(x.responseText); }catch(e){ man = null; } }
-        if(!man || !man.pages || !man.pages.length){
+        if(x.status === 200){ try{ man = JSON.parse(viaDesc ? (JSON.parse(x.responseText).description || '') : x.responseText); }catch(e){ man = null; } }
+        if(viaDesc && x.status === 200 && !(man && man.app === 'pbm-share')){ viaDesc = false; man = null; return get(); }
+        if(man && man.p && !man.pages) man.pages = man.p.map(function(a){ return { id: a[0], w: a[1], h: a[2], seam: a[3], flat: !!a[4] }; });
+        if(!man || ((!man.pages || !man.pages.length) && !(man.enc && man.enc.c))){
           // 作られた直後は、公開が行き渡るまで少し読めないことがあるので、しばらく待ってから判断する
           if((x.status === 404 || x.status === 403) && !/rate|limit|quota/i.test(x.responseText || '')){ if(++tries < 3) return setTimeout(get, 5000 * tries); msg('この写真集は、見られなくなっています。<br>（共有が止められたか、削除されたようです）', false); return; }
           if(++tries < 3) return setTimeout(get, 4000 * tries);
           msg('写真集を準備しています。<br>少し時間をおいて、再読み込みしてください。', true); return;
         }
         if(man.exp && Date.now() > man.exp){ msg('この写真集の公開期間は、終わりました。', false); return; }
-        pages = man.pages.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.flat ? 1 : (p.seam || .5), flat: !!p.flat, iv: p.iv || '' }; });
+        setPages(man.pages || []);
         if(man.enc) askPw(); else open1(man.title);
       };
       x.onerror = x.ontimeout = function(){ if(++tries < 3) return setTimeout(get, 4000 * tries); msg('写真集を準備しています。<br>少し時間をおいて、再読み込みしてください。', true); };
       x.send();
     })();
   }
+  function setPages(list){ pages = list.map(function(p){ return { id: p.id, w: p.w || 4, h: p.h || 3, seam: p.flat ? 1 : (p.seam || .5), flat: !!p.flat, iv: p.iv || '' }; }); }
   function open1(title){
         document.title = (title || 'PHOTO BOOK') + ' | PHOTO BOOK';
         hd.hidden = true;   // 上の題名は出さない（写真だけを見せる）
@@ -3075,7 +3080,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       crypto.subtle.importKey('raw', new TextEncoder().encode(inp.value), 'PBKDF2', false, ['deriveKey']).then(function(base){
         return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: u8(E.salt), iterations: E.iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
       }).then(function(k){
-        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8(E.tiv) }, k, u8(E.t)).then(function(buf){ CK = k; var t = ''; try{ t = JSON.parse(new TextDecoder().decode(buf)).title; }catch(_){} open1(t); });
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: u8(E.c ? E.iv : E.tiv) }, k, u8(E.c || E.t)).then(function(buf){
+          CK = k; var o = {}; try{ o = JSON.parse(new TextDecoder().decode(buf)) || {}; }catch(_){}
+          // 新しい形：写真の並びも暗号化の中（パスワードがないと、どの写真がどこにあるか分からない）
+          if(o.p) setPages(o.p.map(function(a){ return { id: a[0], w: a[1], h: a[2], seam: a[3], flat: !!a[4] }; })); else if(o.pages) setPages(o.pages);
+          if(!pages.length){ msg('この写真集は、見られなくなっています。', false); return; }
+          open1(o.title);
+        });
       }).catch(function(){ bt.disabled = false; bt.textContent = 'ひらく'; er.textContent = 'パスワードがちがいます'; inp.select(); });
     };
     setTimeout(function(){ try{ inp.focus(); }catch(e){} }, 50);
@@ -8730,7 +8741,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // 見る人の画面とまったく同じ読み方（ログインなし・APIキーだけ）で読めるか。読めないときは理由も返す
   //  json：設定ファイル（XHR） ／ img：写真（<img>。だめなら見る画面と同じく別の取り出し口も） ／ bin：パスワード付きの写真（XHR）
   function shareProbe(id, kind){
-    const api = `${GAPI}/drive/v3/files/${encodeURIComponent(id)}?alt=media&key=${encodeURIComponent(shareKey())}`;
+    const api = `${GAPI}/drive/v3/files/${encodeURIComponent(id)}?${kind === 'meta' ? 'fields=description' : 'alt=media'}&key=${encodeURIComponent(shareKey())}`;
     if(kind === 'img'){
       const list = [api + '&t=' + Date.now(), `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w400&t=${Date.now()}`, `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w400`];
       return new Promise(res => { let i = 0; const next = () => { if(i >= list.length) return res({ ok: false, st: 0, why: 'img' });
@@ -8741,7 +8752,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
     return new Promise(res => {
       const x = new XMLHttpRequest(); x.open('GET', api + '&t=' + Date.now()); x.timeout = 20000; x.responseType = kind === 'bin' ? 'arraybuffer' : 'text';
-      x.onload = () => { if(x.status === 200) return res({ ok: true });
+      x.onload = () => { if(x.status === 200){ if(kind !== 'meta') return res({ ok: true }); try{ const m = JSON.parse(JSON.parse(x.responseText).description || ''); if(m && m.app === 'pbm-share') return res({ ok: true }); }catch(e){} return res({ ok: false, st: 200, why: 'desc' }); }
         let why = ''; try{ const t = kind === 'bin' ? new TextDecoder().decode(x.response) : x.responseText; const j = JSON.parse(t); why = ((j.error && j.error.errors && j.error.errors[0]) || {}).reason || (j.error && j.error.status) || ''; }catch(e){}
         res({ ok: false, st: x.status, why }); };
       x.onerror = () => res({ ok: false, st: 0, why: 'network' }); x.ontimeout = () => res({ ok: false, st: 0, why: 'timeout' });
@@ -8859,6 +8870,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
   }
   const b64 = u8 => { let s = ''; u8.forEach(c => { s += String.fromCharCode(c); }); return btoa(s); };
+  async function shareDec(key, iv, data){ return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(iv) }, key, data)); }
+  // 共有の設定（v3）：写真は暗号化しない（Google の画像の配信経路から見せるため）。パスワード付きは、題名と写真の並び（どの写真がどこにあるか）を暗号化する
+  //  full：share.json の中身（作った人が差し替えに使う。目印 k も入れる）／ desc：share.json の説明欄（見る人はここを読む。ダウンロードを使わない）
+  async function shareManBuild(title, pages, exp, key, encBase){
+    const head = { app: 'pbm-share', v: 3, at: Date.now() }; if(exp) head.exp = exp;
+    const vp = pages.map(p => [p.id, p.w, p.h, +(+(p.seam || .5)).toFixed(4), p.flat ? 1 : 0]);
+    const pack = async obj => { if(!key) return obj; const e = await shareEnc(key, new TextEncoder().encode(JSON.stringify(obj))); return { enc: Object.assign({}, encBase, { iv: e.iv, c: b64(e.c) }) }; };
+    const full = Object.assign({}, head, await pack({ title, pages })), view = Object.assign({}, head, await pack({ title, p: vp }));
+    return { full: new Blob([JSON.stringify(full)], { type: 'application/json' }), desc: JSON.stringify(view) };
+  }
   async function shareEnc(key, data){ const iv = crypto.getRandomValues(new Uint8Array(12)); const c = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data)); return { iv: b64(iv), c }; }
   const shareLimited = e => /sharingRateLimitExceeded|userRateLimitExceeded|rateLimitExceeded/.test((e && (e.reason || e.message)) || '') || (e && e.status === 429);
   async function sharePubRetry(id){ for(let k = 0; ; k++){ try{ return await sharePublic(id); }catch(e){ if((e && e.auth) || shareLimited(e) || k >= 2) throw e; await new Promise(r => setTimeout(r, 2000 * (k + 1))); } } }
@@ -8930,20 +8951,28 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const ap = f.appProperties || {}; if(!ap.m) return;
       const exp = +(ap.exp || 0); if(exp && exp < Date.now()) return;
       const man = await gJson(`${GAPI}/drive/v3/files/${ap.m}?alt=media`); if(!man || man.app !== 'pbm-share') return;
-      let key = null;
-      if(man.enc){ const pw = (await sharePwRead()).map[f.id]; if(!pw) return; key = await shareDeriveKey(pw, unb64(man.enc.salt), man.enc.iter); }
+      let key = null, encBase = null, title = man.title || '', mp = man.pages || [];
+      if(man.enc){
+        const pw = (await sharePwRead()).map[f.id]; if(!pw) return; key = await shareDeriveKey(pw, unb64(man.enc.salt), man.enc.iter); encBase = { salt: man.enc.salt, iter: man.enc.iter };
+        try{
+          if(man.v >= 3){ const o = JSON.parse(new TextDecoder().decode(await shareDec(key, man.enc.iv, unb64(man.enc.c)))); title = o.title || ''; mp = o.pages || []; }
+          else { title = JSON.parse(new TextDecoder().decode(await shareDec(key, man.enc.tiv, unb64(man.enc.t)))).title || ''; }
+        }catch(e){ return; }
+      }
       const list = allPairs().filter(pairReady); if(!list.length) return;
       const base = shareSigBase(), sigs = list.map(p => pairSig(p, base));
-      const old = (man.pages || []).filter(x => !x.flat), oldSheet = (man.pages || []).find(x => x.flat);
+      // 前の形（写真を暗号化していた共有）は、全部を新しい形で作り直す
+      const v3 = man.v >= 3, old = v3 ? mp.filter(x => !x.flat) : [], oldSheet = v3 ? mp.find(x => x.flat) : null;
+      const legacy = v3 ? [] : mp.map(x => x.id);
       const byK = new Map(); old.forEach(x => { if(x.k && !byK.has(x.k)) byK.set(x.k, x); });
       const used = new Set(), pages = new Array(list.length), todo = [];
       sigs.forEach((k, i) => { const o = byK.get(k); if(o && !used.has(o.id)){ used.add(o.id); pages[i] = o; } else todo.push(i); });
-      const spare = old.filter(x => !used.has(x.id)).map(x => x.id);
-      let changed = todo.length > 0 || old.length !== list.length || old.some((x, i) => !pages[i] || pages[i].id !== x.id);
+      // 変わった見開きは、新しいファイルとして上げ、古いものはゴミ箱へ（同じファイルを書き換えると、Google の配信の控えに古い写真が残るため）
+      const spare = [...old.filter(x => !used.has(x.id)).map(x => x.id), ...legacy];
+      let changed = !v3 || todo.length > 0 || old.length !== list.length || old.some((x, i) => !pages[i] || pages[i].id !== x.id);
       for(const i of todo){
-        const r = await shareRenderPair(list[i], key, sigs[i]);
-        let id = spare.shift();
-        if(id) await gUpload({}, r.up, id); else id = (await gUpload({ name: `${String(i + 1).padStart(2, '0')}${key ? '.bin' : '.jpg'}`, parents: [f.id] }, r.up)).id;
+        const r = await shareRenderPair(list[i], null, sigs[i]);
+        const id = (await gUploadSmall({ name: `${String(i + 1).padStart(2, '0')}.jpg`, parents: [f.id] }, r.up)).id;
         pages[i] = Object.assign(r.pg, { id });
       }
       // 一覧を含める共有なら、一覧も（見開きか設定が変わったときだけ）作り直す
@@ -8952,14 +8981,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const sk = strHash(sigs.join(',') + base);
         if(oldSheet && oldSheet.k === sk) sheet = oldSheet;
         else {
-          const r = await shareRenderSheet(key, sk);
-          if(r){ let id = oldSheet && oldSheet.id; if(id) await gUpload({}, r.up, id); else id = (await gUpload({ name: `${String(list.length + 1).padStart(2, '0')}${key ? '.bin' : '.jpg'}`, parents: [f.id] }, r.up)).id; sheet = Object.assign(r.pg, { id }); changed = true; }
+          const r = await shareRenderSheet(null, sk);
+          if(r){ const id = (await gUploadSmall({ name: `${String(list.length + 1).padStart(2, '0')}.jpg`, parents: [f.id] }, r.up)).id; if(oldSheet) spare.push(oldSheet.id); sheet = Object.assign(r.pg, { id }); changed = true; }
         }
       }
-      for(const id of spare){ try{ await gPatch(id, { trashed: true }); }catch(e){} }   // 減った見開きの画像
       if(!changed) return;
-      man.pages = sheet ? [...pages, sheet] : pages; man.at = Date.now();
-      await gUpload({}, new Blob([JSON.stringify(man)], { type: 'application/json' }), ap.m);
+      const mb = await shareManBuild(title, sheet ? [...pages, sheet] : pages, man.exp, key, encBase);
+      try{ await gUpload({ description: mb.desc }, mb.full, ap.m); }catch(e){ await gUpload({ description: '' }, mb.full, ap.m); }
+      for(const id of spare){ try{ await gPatch(id, { trashed: true }); }catch(e){} }   // 新しい一覧に切り替えてから、古い画像をゴミ箱へ
     }catch(e){ console.warn('share refresh', e); }
     finally{ shRefreshing = false; if(shRefreshAgain){ shRefreshAgain = false; setTimeout(shareRefresh, 1000); } }
   }
@@ -8991,18 +9020,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       for(let i = 0; i < list.length; i++){
         chk();
         gBusy('', `見開きを準備しています ${i + 1} / ${list.length}`, i / list.length * .45);
-        const r = await shareRenderPair(list[i], key, sigs[i]);
+        const r = await shareRenderPair(list[i], null, sigs[i]);   // 写真は暗号化しない（パスワードは並びの一覧を守る）
         gBusyImg(r.blob);
-        made.push({ pg: r.pg, up: r.up, nm: `${String(i + 1).padStart(2, '0')}${key ? '.bin' : '.jpg'}` });
+        made.push({ pg: r.pg, up: r.up, nm: `${String(i + 1).padStart(2, '0')}.jpg` });
       }
       // 最後に一覧（全部の見開きを並べた1枚）。めくらずに1枚で見せるページ
       if(opt.sheet){
         chk(); gBusy('', '一覧を作っています', .45);
-        const r = await shareRenderSheet(key, strHash(sigs.join(',') + base));
-        if(r){ gBusyImg(r.blob); made.push({ pg: r.pg, up: r.up, nm: `${String(made.length + 1).padStart(2, '0')}${key ? '.bin' : '.jpg'}` }); }
+        const r = await shareRenderSheet(null, strHash(sigs.join(',') + base));
+        if(r){ gBusyImg(r.blob); made.push({ pg: r.pg, up: r.up, nm: `${String(made.length + 1).padStart(2, '0')}.jpg` }); }
       }
-      let tblob = null;
-      if(key){ const t = await shareEnc(key, new TextEncoder().encode(JSON.stringify({ title }))); tblob = { tiv: t.iv, t: b64(t.c) }; }
       // 2) アップロードして公開 → 見る人と同じ条件で開けるか確かめる。
       //    しばらく待っても開けなければ、自動で作り直す（最大3回）。設定の誤りなど、作り直しても直らないときだけ止める
       const fatal = /keyInvalid|ipRefererBlocked|API_KEY|accessNotConfigured|PERMISSION_DENIED_BY_POLICY|dailyLimitExceeded/i;
@@ -9030,16 +9057,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         });
         chk();
         // 作った人が分かる情報（フォルダの場所など）は入れない。パスワード付きのときは、題名も暗号化する
-        const man = { app: 'pbm-share', v: 2, at: Date.now(), pages };
-        if(opt.exp) man.exp = opt.exp;
-        if(tblob) man.enc = Object.assign({}, enc, tblob); else man.title = title;
-        mfId = (await gUpload({ name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } }, new Blob([JSON.stringify(man)], { type: 'application/json' }))).id;
+        const mb = await shareManBuild(title, pages, opt.exp, key, enc), mmeta = { name: 'share.json', parents: [folder], appProperties: { pbm: 'sharejson' } };
+        try{ mfId = (await gUploadSmall(Object.assign({ description: mb.desc }, mmeta), mb.full)).id; }
+        catch(e){ console.warn('share desc', e); mfId = (await gUploadSmall(mmeta, mb.full)).id; }   // 説明欄に入らないときは、中身だけ（見る側はダウンロードで読む）
         try{ await gPatch(folder, { appProperties: { m: mfId } }); }catch(e){}
         // 確かめる（3秒後の1回だけ。開けなくてもリンクは渡す：見る側が、開けるまで待って読み直す）
         for(const w of [3000]){
           chk(); gBusy('', '仕上げています…', .95);
           await sleep(w); chk();
-          const r = await shareProbe(mfId, 'json');
+          const r = await shareProbe(mfId, 'meta');
           if(r.ok){ ok = true; break; }
           lastWhy = `${r.st || ''} ${r.why || ''}`.trim(); console.warn('share probe', lastWhy);
           if(fatal.test(r.why || '')){ const e = new Error('config'); e.why = r.why; throw e; }
