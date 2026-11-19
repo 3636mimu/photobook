@@ -997,7 +997,8 @@ img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertica
 #stDrive .strhead .gwhere{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #workOpen{display:none !important}   /* BOOKは最初の画面から開く（上のバーを1行に保つ） */
 /* 一覧から外したBOOK：「前回の設定のまま始める」と同じ形のボタン */
-.ghidlink{display:block;margin:6px 0 0 auto;font-size:9.5px !important;padding:6.3px 12.6px !important}
+.ghidlink{font-size:9.5px !important;padding:6.3px 12.6px !important}
+.ghidlink[hidden]{display:none}
 #driveShowHid.hidbtn{font-size:12px;padding:6px 14px}
 .savelead{margin:-4px 0 10px;font-size:12.5px;color:var(--muted)}
 .savedest{display:flex;flex-direction:column;gap:8px;margin:2px 0 4px}
@@ -9500,8 +9501,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     };
   }
   function syncHidToggle(n){
-    const b = $('driveShowHid'); b.hidden = !n && !GD.showHid;
-    b.textContent = GD.showHid ? '‹ BOOKの一覧に戻る' : `一覧から外したBOOK（${n}冊）`;
+    const b = $('driveShowHid'); b.hidden = !n || GD.showHid;   // 「一覧から外したBOOK」の窓では出さない
+    b.textContent = `一覧から外したBOOK（${n}冊）`;
   }
   // 起動画面のドライブの段：５冊ずつ、左右の矢印で横に送る（画面は切り替えない）
   function setupCarousel(row){
@@ -9532,7 +9533,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const isHid = f => (f.appProperties || {}).hidden === '1';
     const nHid = list.filter(isHid).length; if(row.id === 'driveList') syncHidToggle(nHid);
     const hidOnly = row.id === 'driveList' && GD.showHid;   // 「一覧から外したBOOK」の窓：外したものだけ
-    if(row.id === 'driveList') $('driveTitle').textContent = hidOnly ? '一覧から外したBOOK' : 'Google ドライブから開く';
+    if(row.id === 'driveList'){ $('driveTitle').textContent = hidOnly ? '一覧から外したBOOK' : 'Google ドライブから開く'; $('driveAcct').hidden = hidOnly; $('driveLocal').hidden = hidOnly; }   // 外したBOOKの窓は、BOOKと［閉じる］だけ
     list = list.filter(f => hidOnly ? isHid(f) : !isHid(f));
     row.innerHTML = list.length ? '' : `<p class="strnote">${hidOnly ? '一覧から外したBOOKはありません。' : nHid ? 'ここに表示するBOOKはありません。' : 'まだGoogle ドライブに保存したBOOKはありません。'}</p>`;
     const z = n => String(n).padStart(2, '0');
@@ -9577,7 +9578,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     });
     if(carousel) setupCarousel(row);
     if(row.id === 'stDriveList'){
-      let hl = $('stDriveHid'); if(!hl){ hl = document.createElement('button'); hl.type = 'button'; hl.className = 'stkeep ghidlink'; hl.id = 'stDriveHid'; row.parentElement.appendChild(hl);
+      let hl = $('stDriveHid'); if(!hl){ hl = document.createElement('button'); hl.type = 'button'; hl.className = 'stkeep ghidlink'; hl.id = 'stDriveHid'; $('stOpenFile').before(hl);   // 下の段の、パソコンのBOOKファイルを開くの左
         hl.addEventListener('click', () => { GD.showHid = true; openDriveModal(); }); }
       hl.hidden = !nHid; hl.textContent = `一覧から外したBOOK（${nHid}冊）`;
     }
