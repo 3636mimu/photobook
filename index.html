@@ -996,7 +996,7 @@ img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertica
 #stDrive .strhead small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center}
 #stDrive .strhead .gwhere{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #workOpen{display:none !important}   /* BOOKは最初の画面から開く（上のバーを1行に保つ） */
-/* 一覧から外したBOOK：「前回の設定のまま始める」と同じ形のボタン */
+/* アーカイブ：「前回の設定のまま始める」と同じ形のボタン */
 .ghidlink{font-size:9.5px !important;padding:6.3px 12.6px !important}
 .ghidlink[hidden]{display:none}
 #driveShowHid.hidbtn{font-size:12px;padding:6px 14px}
@@ -1068,7 +1068,8 @@ img.glogo.gpl,img.glogo.gdl{width:1.15em;height:1.15em;margin-right:.3em;vertica
 
 /* BOOKの扱いを選ぶ画面：読みやすく */
 #bookDelModal .bdname{margin:0;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:14px;font-weight:600;color:var(--ink)}
-#bookDelModal .bdopt{width:100%;margin:0;padding:13px 92px 13px 15px}
+#bookDelModal .bdopt{width:100%;margin:0;padding:13px 128px 13px 15px}
+#bookDelModal .sdopt .sdgo{min-width:100px;text-align:center}   /* ［アーカイブ］［削除］を同じ幅に */
 #bookDelModal .bdopt b{font-size:15px}
 #bookDelModal .bdopt small{font-size:12.5px;line-height:1.65}
 .sdopt .sdgo.sub{background:transparent;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
@@ -1222,6 +1223,16 @@ body.sidedrawer .grid{padding-right:0 !important}
 .strmeta small{display:block;font-size:11px;color:var(--muted);line-height:1.5}
 .stredit{margin:4px 10px 10px;padding:6px 8px;border:1px solid var(--c);color:var(--c);background:none;border-radius:8px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
 .stredit:hover{background:var(--t)}
+/* アーカイブの窓：カードの下に小さく［ドライブから削除］ */
+.strtrash{margin:-4px 10px 10px;padding:3px 8px;border:0;background:none;color:#B23A3A;font:inherit;font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.strtrash:hover{color:#8f2626}
+/* 取り消しにくい操作の確認：赤い警告の窓 */
+#pagesModal.warn .sheet{border-top:4px solid #B23A3A}
+#pagesModal.warn #pagesTitle{color:#B23A3A;display:flex;align-items:center;gap:8px}
+#pagesModal.warn #pagesTitle::before{content:"";flex:none;width:20px;height:20px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B23A3A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 2 20h20z'/%3E%3Cpath d='M12 10v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E") center/contain no-repeat}
+#pagesModal.warn #pagesMsg{background:#FBF1F0;border:1px solid #EBC9C5;border-radius:8px;padding:12px 14px}
+#pagesModal.warn #pagesMsg p{margin:0}
+#pagesModal.warn #pagesMsg .warnsub{margin-top:8px;font-size:12px;color:#7a5a55}
 .strdel{position:absolute;right:6px;top:6px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;font-size:13px;line-height:22px;padding:0;cursor:pointer;opacity:0;transition:opacity .15s}
 .strcard:hover .strdel,.strdel:focus-visible{opacity:1}
 @media(hover:none){.strdel{opacity:1}}
@@ -2546,7 +2557,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   <div class="sheet" style="max-width:440px">
     <h3 id="bookDelTitle">このBOOKをどうしますか？</h3>
     <p class="bdname" id="bookDelName"></p>
-    <button type="button" class="bdopt sdopt" id="bookDelHide"><b>一覧から外す</b><small>表示だけを消します。Google ドライブのデータはそのまま残り、最初の画面の「一覧から外したBOOK」から、いつでも戻せます。</small><span class="sdgo sub">外す</span></button>
+    <button type="button" class="bdopt sdopt" id="bookDelHide"><b>アーカイブする</b><small>一覧には出さず、しまっておきます。Google ドライブのデータはそのまま残り、最初の画面の「アーカイブ」から、いつでも戻せます。</small><span class="sdgo sub">アーカイブ</span></button>
     <button type="button" class="bdopt sdopt danger" id="bookDelTrash"><b>Google ドライブから削除</b><small>写真ごと Google ドライブのゴミ箱に移します。30日のあいだは、ドライブのゴミ箱から戻せます。</small><span class="sdgo del">削除</span></button>
     <div class="actions" style="justify-content:flex-end"><button class="qbtn keep" id="bookDelCancel" type="button">キャンセル</button></div>
   </div>
@@ -7532,9 +7543,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('pagesMsg').innerHTML = gpLogo(html);
     const notice = noLabel === '';   // お知らせだけ（ボタン1つ）
     $('pagesNo').hidden = notice;
-    const m = $('pagesModal'); m.hidden = false; (notice ? $('pagesYes') : $('pagesNo')).focus();
+    const m = $('pagesModal'); m.classList.remove('warn'); m.hidden = false; (notice ? $('pagesYes') : $('pagesNo')).focus();
     const close = (ok, no) => {
-      m.hidden = true; $('pagesNo').hidden = false; $('pagesYes').onclick = $('pagesNo').onclick = null; document.removeEventListener('keydown', esc);
+      m.hidden = true; m.classList.remove('warn'); $('pagesNo').hidden = false; $('pagesYes').onclick = $('pagesNo').onclick = null; document.removeEventListener('keydown', esc);
       if(ok) onYes(); else if(no && onNo) onNo();
     };
     const esc = e => { if(e.key === 'Escape') close(false); };
@@ -9482,7 +9493,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     });
     gSync();
   }
-  // カードの × ：一覧から外す（データは残す）か、ゴミ箱に移すか
+  // カードの × ：アーカイブする（データは残す）か、ゴミ箱に移すか
   function askBookRemove(f, done){
     const m = $('bookDelModal'); $('bookDelName').textContent = `「${f.name}」`; m.hidden = false; $('bookDelCancel').focus();
     const close = () => { m.hidden = true; $('bookDelHide').onclick = $('bookDelTrash').onclick = $('bookDelCancel').onclick = null; document.removeEventListener('keydown', esc); };
@@ -9490,19 +9501,22 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     document.addEventListener('keydown', esc);
     $('bookDelCancel').onclick = close;
     $('bookDelHide').onclick = async () => { close();
-      try{ await gPatch(f.id, { appProperties: { hidden: '1' } }); }catch(e){ status('一覧から外せませんでした。もう一度お試しください。'); return; }
-      status(`「${f.name}」を一覧から外しました。データは Google ドライブに残っています（最初の画面の「一覧から外したBOOK」から戻せます）。`); done(); };
-    $('bookDelTrash').onclick = () => { close();
-      askYesNo('本当に削除しますか？', `<p>「${esc2(f.name)}」を、写真ごと Google ドライブのゴミ箱に移します。<br>ゴミ箱からは <b>30日のあいだ</b> 戻せます。30日たつと、自動で完全に消えます。</p>`, async () => {
-        try{ await gPatch(f.id, { trashed: true }); }catch(e){ status('削除できませんでした。もう一度お試しください。'); return; }
-        if(fileHandle && fileHandle.drive && fileHandle.folderId === f.id){ fileHandle = null; autoOn = false; syncAutoUI(); }
-        status(`「${f.name}」を Google ドライブのゴミ箱に移しました。30日のあいだは、ドライブのゴミ箱から戻せます。`); done();
-      });
-    };
+      try{ await gPatch(f.id, { appProperties: { hidden: '1' } }); }catch(e){ status('アーカイブできませんでした。もう一度お試しください。'); return; }
+      status(`「${f.name}」をアーカイブしました。データは Google ドライブに残っています（最初の画面の「アーカイブ」から戻せます）。`); done(); };
+    $('bookDelTrash').onclick = () => { close(); bookTrash(f, done); };
+  }
+  // Google ドライブから削除（写真ごとゴミ箱へ）：取り消しにくい操作なので、警告の窓で確かめる
+  function bookTrash(f, done){
+    askYesNo('Google ドライブから削除します', `<p><b>「${esc2(f.name)}」</b>を、写真ごと Google ドライブのゴミ箱に移します。<br>このツールからは開けなくなります。</p><p class="warnsub">ゴミ箱からは30日のあいだ戻せます。30日たつと、自動で完全に消えます。</p>`, async () => {
+      try{ await gPatch(f.id, { trashed: true }); }catch(e){ status('削除できませんでした。もう一度お試しください。'); return; }
+      if(fileHandle && fileHandle.drive && fileHandle.folderId === f.id){ fileHandle = null; autoOn = false; syncAutoUI(); }
+      status(`「${f.name}」を Google ドライブのゴミ箱に移しました。30日のあいだは、ドライブのゴミ箱から戻せます。`); done();
+    }, '削除する', 'キャンセル');
+    $('pagesModal').classList.add('warn');
   }
   function syncHidToggle(n){
-    const b = $('driveShowHid'); b.hidden = !n || GD.showHid;   // 「一覧から外したBOOK」の窓では出さない
-    b.textContent = `一覧から外したBOOK（${n}冊）`;
+    const b = $('driveShowHid'); b.hidden = !n || GD.showHid;   // 「アーカイブ」の窓では出さない
+    b.textContent = `アーカイブ（${n}冊）`;
   }
   // 起動画面のドライブの段：５冊ずつ、左右の矢印で横に送る（画面は切り替えない）
   function setupCarousel(row){
@@ -9529,13 +9543,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     let list = [];
     try{ list = await gBooks(); }catch(e){ row.innerHTML = '<p class="strnote">Google ドライブから読み込めませんでした。</p>'; return 0; }
     const full = list;
-    // 「一覧から外す」にしたBOOK（データはドライブに残っている）。「すべて見る」で表示を切り替えられる
+    // アーカイブしたBOOK（データはドライブに残っている）。「アーカイブ」の窓に出す
     const isHid = f => (f.appProperties || {}).hidden === '1';
     const nHid = list.filter(isHid).length; if(row.id === 'driveList') syncHidToggle(nHid);
-    const hidOnly = row.id === 'driveList' && GD.showHid;   // 「一覧から外したBOOK」の窓：外したものだけ
-    if(row.id === 'driveList'){ $('driveTitle').textContent = hidOnly ? '一覧から外したBOOK' : 'Google ドライブから開く'; $('driveAcct').hidden = hidOnly; $('driveLocal').hidden = hidOnly; }   // 外したBOOKの窓は、BOOKと［閉じる］だけ
+    const hidOnly = row.id === 'driveList' && GD.showHid;   // 「アーカイブ」の窓：アーカイブしたものだけ
+    if(row.id === 'driveList'){ $('driveTitle').textContent = hidOnly ? 'アーカイブ' : 'Google ドライブから開く'; $('driveAcct').hidden = hidOnly; $('driveLocal').hidden = hidOnly; }   // アーカイブの窓は、BOOKと［閉じる］だけ
     list = list.filter(f => hidOnly ? isHid(f) : !isHid(f));
-    row.innerHTML = list.length ? '' : `<p class="strnote">${hidOnly ? '一覧から外したBOOKはありません。' : nHid ? 'ここに表示するBOOKはありません。' : 'まだGoogle ドライブに保存したBOOKはありません。'}</p>`;
+    row.innerHTML = list.length ? '' : `<p class="strnote">${hidOnly ? 'アーカイブしたBOOKはありません。' : nHid ? 'ここに表示するBOOKはありません。' : 'まだGoogle ドライブに保存したBOOKはありません。'}</p>`;
     const z = n => String(n).padStart(2, '0');
     // 起動画面：横スクロールしないで並ぶ数だけ（入りきらない分は「すべて見る」）
     const carousel = limit === 'fit'; if(carousel){ const w = row.clientWidth || 860, cw = 150; /* どの画面でも同じ大きさ（狭い画面では横にスクロール） */ $('startModal').style.setProperty('--cw', cw + 'px'); limit = 0; }
@@ -9555,7 +9569,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       card.className = 'strcard ' + (KIND_CLS[a.kind] || 'c1') + (hid && !hidOnly ? ' strhid' : '');
       card.innerHTML = `<div class="strkind"><i class="strdot"></i>${esc2(KIND_NAME[a.kind] || 'BOOK')}</div><button type="button" class="strthumb" title="続きから編集する"><span class="strnoimg">…</span></button>`
         + `<div class="strmeta"><small class="strfname" title="${esc2(f.name)}">${esc2(f.name).replace(/_/g, '_<wbr>')}</small><small>${d.getMonth() + 1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())} 保存</small><small>${a.pages || '?'}P・写真${a.photos || 0}枚・${(a.fmt || 'jpg').toUpperCase()}</small></div>`
-        + `<button type="button" class="stredit">✎ 続きから編集</button>${hid ? '<button type="button" class="strback" title="一覧に戻す">一覧に戻す</button>' : '<button type="button" class="strdel" title="一覧から外す・削除" aria-label="一覧から外す・削除">×</button>'}`;
+        + `<button type="button" class="stredit">✎ 続きから編集</button>${hid ? '<button type="button" class="strback" title="一覧に戻す">一覧に戻す</button>' + (hidOnly ? '<button type="button" class="strtrash">ドライブから削除</button>' : '') : '<button type="button" class="strdel" title="アーカイブ・削除" aria-label="アーカイブ・削除">×</button>'}`;
       // この端末の変更より後に、ほかの端末でドライブに保存されていたら、ドライブの方が新しい（印は付けず、ドライブの版を開く）
       const pw = pend[f.id] && pend[f.id].at > new Date(f.modifiedTime).getTime() ? pend[f.id] : null;
       if(pw){
@@ -9567,6 +9581,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const openIt = pw ? async () => { try{ await openWork(pw.wid); stClose(); }catch(e){ onOpen(f); } } : () => onOpen(f);
       card.querySelector('.strthumb').addEventListener('click', openIt);
       const refresh = () => { if(!$('driveModal').hidden) openDriveModal(); if(!$('startModal').hidden) renderDriveStart(); };
+      if(hid && hidOnly) card.querySelector('.strtrash').addEventListener('click', () => bookTrash(f, refresh));
       if(hid) card.querySelector('.strback').addEventListener('click', async () => {
         try{ await gPatch(f.id, { appProperties: { hidden: null } }); }catch(e){ status('戻せませんでした。もう一度お試しください。'); return; }
         status(`「${f.name}」を一覧に戻しました。`); refresh();
@@ -9580,7 +9595,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(row.id === 'stDriveList'){
       let hl = $('stDriveHid'); if(!hl){ hl = document.createElement('button'); hl.type = 'button'; hl.className = 'stkeep ghidlink'; hl.id = 'stDriveHid'; $('stOpenFile').before(hl);   // 下の段の、パソコンのBOOKファイルを開くの左
         hl.addEventListener('click', () => { GD.showHid = true; openDriveModal(); }); }
-      hl.hidden = !nHid; hl.textContent = `一覧から外したBOOK（${nHid}冊）`;
+      hl.hidden = !nHid; hl.textContent = `アーカイブ（${nHid}冊）`;
     }
     return all;
   }
