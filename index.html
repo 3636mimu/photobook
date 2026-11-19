@@ -292,6 +292,9 @@ body.moving,body.moving *{cursor:grabbing!important;user-select:none}
 #stStep1 .stfoot .stopen svg{width:10.5px !important;height:10.5px !important}
 .stfoot .sthow{border:1px solid var(--line);background:#fff;color:var(--muted);font:inherit;font-size:12px;border-radius:999px;padding:3px 11px;cursor:pointer;line-height:1.5}
 .stfoot .sthow:hover,.stfoot .sthow[aria-expanded=true]{color:var(--ink);border-color:#9a8a80}
+.stfoot .stpriv{font-size:11px;color:var(--muted);text-decoration:none;white-space:nowrap}.stfoot .stpriv:hover{color:var(--ink);text-decoration:underline}   /* 最初の画面：プライバシーポリシーへのリンク（Google の審査で必要） */
+.stfoot .sthow{white-space:nowrap}
+@media (max-width:600px){.stfoot .stnote-r{flex-wrap:wrap;justify-content:flex-end;row-gap:6px}.stfoot .stpriv{flex-basis:100%;text-align:right}}
 .sthowbox{background:var(--bg);border-radius:12px;padding:12px 16px;font-size:12.5px;line-height:1.6}
 .sthowbox ol{margin:0;padding-left:1.4em;display:grid;gap:6px}
 .sthowbox li b{display:block}
@@ -2533,7 +2536,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     </dl>
   </section>
 
-  <footer>PHOTO BOOK MAKER</footer>
+  <footer>PHOTO BOOK MAKER　·　<a href="https://photobook-maker.github.io/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a></footer>
 </div>
 </body>
 </html>
@@ -2570,7 +2573,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         <li><b>前と同じでいいときは</b>右下の「前回の設定のまま始める」を押すと、この質問をとばして始められます。</li>
         <li id="stHowCont"><b>続きから作るときは</b>BOOKは自動で保存され、「続きから作る」に並びます。<br>保存したBOOKファイル（.pbmk）は、右下の「<span class="devn">パソコン</span>のBOOKファイルを開く」から開けます。</li>
       </ol></div>
-      <div class="stfoot"><button type="button" class="stopen" id="stOpenFile" title="保存したBOOKファイル（.pbmk）を選びます。この画面にドラッグ＆ドロップしても開けます"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 3.8h9.6v6.9H3.2z"/><path d="M1.5 12.6h13"/></svg><span><span class="devn">パソコン</span>のBOOKファイルを開く</span></button><button type="button" class="stkeep" id="stKeep">前回の設定のまま始める ›</button><span class="stnote stnote-r">設定は編集中に変えられます。<button type="button" class="sthow" id="stHow" aria-expanded="false">? 使い方</button></span></div>
+      <div class="stfoot"><button type="button" class="stopen" id="stOpenFile" title="保存したBOOKファイル（.pbmk）を選びます。この画面にドラッグ＆ドロップしても開けます"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 3.8h9.6v6.9H3.2z"/><path d="M1.5 12.6h13"/></svg><span><span class="devn">パソコン</span>のBOOKファイルを開く</span></button><button type="button" class="stkeep" id="stKeep">前回の設定のまま始める ›</button><span class="stnote stnote-r">設定は編集中に変えられます。<button type="button" class="sthow" id="stHow" aria-expanded="false">? 使い方</button><a class="stpriv" href="https://photobook-maker.github.io/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a></span></div>
     </div>
     <div class="ststep" id="stStep2" hidden>
       <div class="sthead2"><i class="stic" id="stIc2"></i><div><span class="stkicker">STEP 2</span><h3 id="stTitle2"></h3></div><div class="stwarnbox" id="stWarn" hidden></div></div>
