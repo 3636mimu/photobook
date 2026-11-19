@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-UajJWVt2Wu4Ew4uVWhG3nxnDldcEjIsaXjfblmXgPCY=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-nwk2ALDDB2dqUK/abYH9unOhfp3SgdjXL8e0NkjKQdU=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -9690,9 +9690,26 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     $('bookDelTrash').onclick = () => { close(); bookTrash(f, done); };
   }
   // Google ドライブから削除（写真ごとゴミ箱へ）：取り消しにくい操作なので、警告の窓で確かめる
-  function bookTrash(f, done){
-    askYesNo('Google ドライブから削除します', `<p><b>「${esc2(f.name)}」</b>を、写真ごと Google ドライブのゴミ箱に移します。<br>このツールからは開けなくなります。</p><p class="warnsub">ゴミ箱からは30日のあいだ戻せます。30日たつと、自動で完全に消えます。</p>`, async () => {
+  // この BOOK の共有リンク（共有フォルダに付けた BOOK のフォルダの印、なければ BOOK の番号で探す。共有フォルダがなければ作らない）
+  async function bookShares(f){
+    const root = await gRoot();
+    const sr = await gList(`'${root}' in parents and appProperties has { key='pbm' and value='shares' } and trashed=false`, 'files(id)');
+    if(!sr.length) return [];
+    const all = await gList(`'${sr[0].id}' in parents and appProperties has { key='pbm' and value='share' } and trashed=false`, 'files(id,name,appProperties)');
+    const hit = all.filter(x => (x.appProperties || {}).bf === f.id);
+    const rest = all.filter(x => !(x.appProperties || {}).bf && (x.appProperties || {}).book);
+    if(rest.length && (f.appProperties || {}).json){
+      try{ const id = (await gJson(`${GAPI}/drive/v3/files/${f.appProperties.json}?alt=media`)).id; if(id) hit.push(...rest.filter(x => x.appProperties.book === String(id))); }catch(e){}
+    }
+    return hit;
+  }
+  async function bookTrash(f, done){
+    let sh = []; try{ sh = await bookShares(f); }catch(e){ console.warn(e); }
+    askYesNo('Google ドライブから削除します', `<p><b>「${esc2(f.name)}」</b>を、写真ごと Google ドライブのゴミ箱に移します。<br>このツールからは開けなくなります。${sh.length ? '<br>BOOK共有のリンクも見られなくなります。' : ''}</p><p class="warnsub">ゴミ箱からは30日のあいだ戻せます。30日たつと、自動で完全に消えます。</p>`, async () => {
       try{ await gPatch(f.id, { trashed: true }); }catch(e){ status('削除できませんでした。もう一度お試しください。'); return; }
+      // この BOOK の共有リンクも一緒にゴミ箱へ（見る人は開けなくなる）
+      for(const x of sh){ try{ await gPatch(x.id, { trashed: true }); if((x.appProperties || {}).pw === '1') sharePwSave(x.id, ''); }catch(e){ console.warn(e); } }
+      if(sh.length) shCache = null;
       if(fileHandle && fileHandle.drive && fileHandle.folderId === f.id){ fileHandle = null; autoOn = false; syncAutoUI(); }
       status(`「${f.name}」を Google ドライブのゴミ箱に移しました。30日のあいだは、ドライブのゴミ箱から戻せます。`); done();
     }, '削除する', 'キャンセル');
