@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-09D4mfV9VPw+gldG0PMoQ6hzhE9RN8XwvHhdrvYxMY8=' 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-W3dYxVg2VkTinvJ/ZLPjRD5iaY8tIRSiWPBd8Wvl+j4=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-09D4mfV9VPw+gldG0PMoQ6hzhE9RN8XwvHhdrvYxMY8=' 'sha256-CvbkuNeU93OIqR0zX+8p0mcE8OipuWPyPcgqCwG5lZ4=' 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -7582,6 +7582,16 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const GDL = '<img class="glogo gdl" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="">Google ドライブ';
   function gpLogo(html){ return String(html).split('Google フォト').join(GPL).split('Google ドライブ').join(GDL); }
   function gpTxt(el, t){ const v = String(t == null ? '' : t); if(v.includes('Google フォト') || v.includes('Google ドライブ')) el.innerHTML = gpLogo(esc2(v)); else el.textContent = v; }
+  // 窓の外（暗いところ）を押したら閉じる：見るだけ・選ぶだけの窓とお知らせだけ（文字を入れる窓・確認の窓・進み具合の窓では閉じない）
+  // 窓の中で押して外で離したときは閉じない
+  function bgClose(m, fn){
+    let downOut = false;
+    m.addEventListener('pointerdown', e => { downOut = e.target === m; });
+    m.addEventListener('click', e => { const ok = downOut && e.target === m; downOut = false; if(ok) fn(); });
+  }
+  bgClose($('pagesModal'), () => { const m = $('pagesModal'); if(m._bg) m._bg(); });
+  bgClose($('savedModal'), () => closeSaved());
+  bgClose($('bookDelModal'), () => $('bookDelCancel').click());
   function askYesNo(title, html, onYes, yesLabel, noLabel, onNo){
     // ボタンはどの窓も同じ形：戻る側はベージュ、進む側は緑。取り消せない操作（削除など）だけ赤
     $('pagesNo').className = 'qbtn keep'; $('pagesYes').className = 'qbtn ' + (/削除|ゴミ箱|取り除|消す|上書き|解除/.test(yesLabel || '') ? 'drop' : /^(閉じる|キャンセル|やめる|戻る)$/.test(yesLabel || '') ? 'keep' : 'save');
@@ -7591,8 +7601,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const notice = noLabel === '';   // お知らせだけ（ボタン1つ）
     $('pagesNo').hidden = notice;
     const m = $('pagesModal'); m.classList.remove('warn'); m.hidden = false; (notice ? $('pagesYes') : $('pagesNo')).focus();
+    // お知らせ（ボタンが［閉じる］だけ）は、外を押しても閉じる。確認の窓は閉じない
+    m._bg = notice && /^(閉じる|OK|ok)$/.test(yesLabel || '') ? () => close(false) : null;
     const close = (ok, no) => {
-      m.hidden = true; m.classList.remove('warn'); $('pagesNo').hidden = false; $('pagesYes').onclick = $('pagesNo').onclick = null; document.removeEventListener('keydown', esc);
+      m.hidden = true; m.classList.remove('warn'); m._bg = null; $('pagesNo').hidden = false; $('pagesYes').onclick = $('pagesNo').onclick = null; document.removeEventListener('keydown', esc);
       if(ok) onYes(); else if(no && onNo) onNo();
     };
     const esc = e => { if(e.key === 'Escape') close(false); };
@@ -7604,7 +7616,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // 選択肢つきの確認（保存の画面と同じカードの形）。選んだもののキーを返す（キャンセル・閉じたら 'cancel'）
   function askPick(title, html, opts, cancelLabel){
     return new Promise(res => {
-      const m = $('pagesModal'), sh = m.querySelector('.sheet'), mw = sh.style.maxWidth, yes = $('pagesYes'), no = $('pagesNo'), nl = no.textContent;
+      const m = $('pagesModal'), sh = m.querySelector('.sheet'), mw = sh.style.maxWidth, yes = $('pagesYes'), no = $('pagesNo'), nl = no.textContent; m._bg = null;   // 選択肢つきの確認は、外を押しても閉じない
       sh.style.maxWidth = '460px'; $('pagesTitle').textContent = title;
       $('pagesMsg').innerHTML = html + '<div class="apick"></div>';
       const box = $('pagesMsg').querySelector('.apick');
@@ -9112,6 +9124,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     askYesNo('写真集が公開されました', `<p>リンクを知っている人なら、本のようにめくって見られます。</p>${notes.map(n => `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${n}</p>`).join('')}${row('', 'shareLink', url, true)}${pw ? row('パスワード', 'sharePw', pw) : ''}`,
       () => {}, label, '閉じる');
     // コピーのボタンは下の1つだけ。押しても窓は閉じず、「コピー済み」に変わる（URL の横の［開く］で、自分でも見て確かめられる）
+    { const m = $('pagesModal'), no = $('pagesNo'); m._bg = () => no.click(); }   // 公開できた知らせは、外を押しても閉じる（［閉じる］と同じ）
     const yes = $('pagesYes'); yes.classList.add('shcpall');
     yes.onclick = async () => { if(await shareCopy(shareText(url, pw, opt && opt.exp), 'URL・パスワード・有効期限をコピーしました。')){ yes.textContent = '✓ コピー済み'; yes.classList.add('copied'); } };
     ['shareLink', 'sharePw'].forEach(id => { const el = $(id); if(el) el.addEventListener('focus', () => el.select()); });
@@ -9156,6 +9169,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       m.innerHTML = `<div class="sheet gpsheet"><h3>共有中のリンク</h3><div class="shlist" id="shList"></div><div class="actions"><button type="button" class="qbtn keep" id="shMgrClose">閉じる</button></div></div>`;
       document.body.append(m);
       $('shMgrClose').onclick = () => { m.hidden = true; };
+      bgClose(m, () => $('shMgrClose').click());
       m.addEventListener('keydown', e => { if(e.key === 'Escape') m.hidden = true; });
     }
     const box = $('shList'); if(!(cached && shCache)) box.innerHTML = '<p class="shnote">読み込んでいます…</p>'; m.hidden = false;
