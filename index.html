@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-KzU0P3gzv4+/OS4cjju6HKu9ehLcd18XOhqLeyPj0BY=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-gRqdaayRkHr1Q+/rAXFyFikGnN52t0OBYSX6hcATSsQ=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-KzU0P3gzv4+/OS4cjju6HKu9ehLcd18XOhqLeyPj0BY=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM=' 'sha256-zY45hX8TeGDO4zwhUafbGRZeRseu1iPx8iRA1MjbhSE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -826,7 +826,7 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt .shgrid input:disabled{background:#f6f5f2;color:#b3aea6;border-color:#ece9e3}
 #shareOpt .shck{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;white-space:nowrap}
 /* 共有リンクの設定：見出しの右に公開の切り替え、その下にリンクと印だけのボタン、左下に削除 */
-#shareOpt .shhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}#shareOpt .shhead h3{margin:0}
+#shareOpt .shhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}#shareOpt .shhead + .shsec{margin-top:0}#shareOpt .shhead h3{margin:0}
 #shareOpt .shlink{display:flex;gap:6px;align-items:center;margin:0 0 4px}#shareOpt .shlink .shbox{flex:1;min-width:0;color:var(--muted);font-size:12.5px}
 #shareOpt .icb{flex:0 0 34px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:8px;background:#F1EFEB;color:#5a554e;cursor:pointer;padding:0;text-decoration:none}
 #shareOpt .icb:hover{background:#E7E3DD}#shareOpt .icb svg{width:18px;height:18px}#shareOpt .icb.done{color:#2A8C7F}
@@ -2486,7 +2486,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     <p>右の <span class="btn">Photo Bookリンク</span> で、本のようにめくって見られる写真集のリンクを作れます。リンクを受け取った人は、ログインせずにスマホやパソコンで見られます。</p>
     <ul>
       <li><b>作る</b>：BOOKを Google ドライブに保存していないときは、先に保存の画面が出ます。保存できたら作成画面に進み、共有名・パスワード（6文字以上）・有効期限・一覧を含めるかを決めて <span class="btn">保存</span> を押します。</li>
-      <li><b>送る</b>：できあがると「共有リンクの設定」が開きます。コピーのボタンで、URL・パスワード・有効期限がまとめてコピーされます。パスワードは、リンクとは別に伝えるのがおすすめです。</li>
+      <li><b>送る</b>：できあがると「共有リンクの設定」が開きます。コピーのボタンで、共有名・URL・パスワード・有効期限がまとめてコピーされます。パスワードは、リンクとは別に伝えるのがおすすめです。</li>
       <li><b>あとから変える</b>：もう一度 <span class="btn">Photo Bookリンク</span> を押すと「共有リンクの設定」が開き、共有名・パスワード・有効期限・一覧を変えられます。右上のスイッチで、公開中／非公開をすぐに切り替えられます。URL は変わりません。</li>
       <li><b>中身を直す</b>：BOOKを直して Google ドライブに保存すると、リンクの中身も自動で新しくなります（URL はそのまま）。</li>
       <li><b>終わる</b>：<span class="btn">共有リンク削除</span> で削除できます。有効期限が過ぎたときや、元のBOOKを Google ドライブから削除したときも、自動で見られなくなります。</li>
@@ -9035,8 +9035,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(!m){
         m = document.createElement('div'); m.className = 'modal'; m.id = 'shareOpt'; m.hidden = true; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
         m.innerHTML = `<div class="sheet gpsheet"><div class="shhead"><h3 id="shTitle">写真集の共有リンクを作成</h3><button class="toggle tg" type="button" role="switch" id="shTg" hidden><span class="knob"></span><span class="tl">公開中</span></button></div>
-          <div class="shlink" id="shLinkRow" hidden><input class="shbox" id="shUrl" readonly><a class="icb" id="shOpen" target="_blank" rel="noopener" title="新しいタブで開く" aria-label="新しいタブで開く"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></a><button type="button" class="icb" id="shCopy" title="URL・パスワード・有効期限をコピー" aria-label="URL・パスワード・有効期限をコピー"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
           <div class="shsec"><b>共有名</b><input type="text" id="shName" maxlength="60" autocomplete="off" spellcheck="false" placeholder="PHOTO BOOK"></div>
+          <div class="shsec" id="shLinkRow" hidden><b>URL</b><div class="shlink"><input class="shbox" id="shUrl" readonly><a class="icb" id="shOpen" target="_blank" rel="noopener" title="新しいタブで開く" aria-label="新しいタブで開く"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></a><button type="button" class="icb" id="shCopy" title="共有名・URL・パスワード・有効期限をコピー" aria-label="共有名・URL・パスワード・有効期限をコピー"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div></div>
           <div class="shsec"><b>リンク保護</b>
             <div class="shgrid">
               <label class="shck"><input type="checkbox" id="shPwOn"><span>パスワードが必要</span></label><input type="text" id="shPw" disabled placeholder="6文字以上（半角英数字・記号）" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore>
@@ -9066,9 +9066,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(ed.exp){ $('shExpOn').checked = true; $('shExpD').disabled = false; $('shExpD').value = dt(ed.exp); }
         $('shSheet').checked = !!ed.sheet;
         $('shUrl').value = ed.url; $('shOpen').href = ed.url;
-        // コピー：保存してある内容（URL・パスワード・有効期限）。押したら印が ✓ に
-        const cp = $('shCopy'); cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>'; cp.classList.remove('done'); cp.setAttribute('data-gtip', 'URL・パスワード・有効期限をコピー');
-        cp.onclick = async () => { if(await shareCopy(shareText(ed.url, ed.pw, ed.exp), 'URL・パスワード・有効期限をコピーしました。')){ cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'; cp.classList.add('done'); cp.setAttribute('data-gtip', 'コピーしました'); } };
+        // コピー：保存してある内容（共有名・URL・パスワード・有効期限）。押したら印が ✓ に
+        const cp = $('shCopy'); cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>'; cp.classList.remove('done'); cp.setAttribute('data-gtip', '共有名・URL・パスワード・有効期限をコピー');
+        cp.onclick = async () => { if(await shareCopy(shareText(ed.title, ed.url, ed.pw, ed.exp), '共有名・URL・パスワード・有効期限をコピーしました。')){ cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'; cp.classList.add('done'); cp.setAttribute('data-gtip', 'コピーしました'); } };
         // 公開の切り替え：押した瞬間に反映（［保存］は待たない）
         const tg = $('shTg'), look = v => { tg.setAttribute('aria-checked', v ? 'true' : 'false'); tg.querySelector('.tl').textContent = v ? '公開中' : '非公開'; };
         let on = shareOn(ed.f), busy = false; look(on);
@@ -9395,8 +9395,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   const fmtDay = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
   async function shareCopy(url, msg, quiet){ let ok = false; try{ await navigator.clipboard.writeText(url); ok = true; }catch(e){ const t = document.createElement('textarea'); t.value = url; document.body.append(t); t.select(); try{ ok = document.execCommand('copy'); }catch(_){} t.remove(); } if(ok || !quiet) status(ok ? (msg || '共有リンクをコピーしました。') : 'コピーできませんでした。リンクを選んでコピーしてください。'); return ok; }
   // コピーする中身：パスワード付きなら「URL：…」「パスワード：…」の2行、なしなら URL だけ
-  // コピーする中身：URL・パスワード・有効期限の3行（ないものは「なし」）
-  const shareText = (url, pw, exp) => `URL：${url}\nパスワード：${pw || 'なし'}\n有効期限：${exp ? fmtUntil(exp) + ' まで' : 'なし'}`;
+  // コピーする中身：共有名／URL／PASS：…／yyyy/mm/dd hh:mmまで（ないものの行は出さない）
+  const shareText = (name, url, pw, exp) => { const two = n => String(n).padStart(2, '0'), d = exp ? new Date(exp) : null;
+    return [(name || '').trim(), url, pw ? `PASS：${pw}` : '', d ? `${d.getFullYear()}/${two(d.getMonth() + 1)}/${two(d.getDate())} ${two(d.getHours())}:${two(d.getMinutes())}まで` : ''].filter(Boolean).join('\n'); };
   // ---------- 共有中のリンク（一覧・オン／オフ・コピー・削除） ----------
   // 共有フォルダの場所は、この画面を開いているあいだ覚えておく（探すだけのときは確かめ直さない。作るときは shareRoot で確かめ直す）
   let shRootC = '';
@@ -9465,11 +9466,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           const url = shareUrl(ap.m), ex = +(ap.exp || 0); let pw = '';
           if(ap.pw === '1'){ try{ pw = (await sharePwRead()).map[f.id] || ''; }catch(e){} }
           // パスワード付きで控えがないもの（以前に作ったリンク）は、パスワードの行を「（控えなし）」にする
-          const ok = await shareCopy(ap.pw === '1' && !pw ? shareText(url, '（控えなし）', ex) : shareText(url, pw, ex), 'URL・パスワード・有効期限をコピーしました。');
+          const ok = await shareCopy(ap.pw === '1' && !pw ? shareText(nm, url, '（控えなし）', ex) : shareText(nm, url, pw, ex), '共有名・URL・パスワード・有効期限をコピーしました。');
           // コピーできたら「✓ コピー済み」に（ほかの行は元に戻す）
           if(ok) box.querySelectorAll('.cp').forEach(b => { const on = b === cp; b.classList.toggle('copied', on); b.textContent = on ? '✓ コピー済み' : 'リンクをコピー'; });
         };
-        if(cp) cp.title = 'URL・パスワード・有効期限をまとめてコピーします';
+        if(cp) cp.title = '共有名・URL・パスワード・有効期限をまとめてコピーします';
         // 押したらすぐ見た目を切り替え、ドライブ側はうしろで反映（失敗したら元に戻す）
         const tg = row.querySelector('.tg'), small = row.querySelector('.shmeta small');
         const look = v => { tg.setAttribute('aria-checked', v ? 'true' : 'false'); tg.querySelector('.tl').textContent = v ? '公開中' : '非公開'; row.classList.toggle('off', !v); };
