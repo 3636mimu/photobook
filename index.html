@@ -9380,7 +9380,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       const got = (uid, b) => {
         blobs[uid] = b;
         status(`Google ドライブから写真を読み込んでいます…（${++done}/${total}）`); gBusy('', `写真 ${done} / ${total} 枚`, done / (total + 1));
-        if(b && /^image\//.test(b.type || 'image/')) gBusyImg(b);   // 受け取った写真をそのつど見せる
+        if(b && !b.pbmPv && /^image\//.test(b.type || 'image/')) gBusyImg(b);   // 本物を受け取ったときだけ、その写真を見せる（プレビュー画像は一瞬なので出さない）
       };
       // プレビュー画像は軽いので、全部を同時に
       const rest = uids.filter(uid => !pvOk(pvs[uid]));
