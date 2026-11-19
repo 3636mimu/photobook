@@ -775,6 +775,8 @@ body.stydragging, body.stydragging *{cursor:grabbing!important;user-select:none}
 #shareOpt input[type=password],#shareOpt input[type=text],#shareOpt input[type=date],#shareOpt input[type=datetime-local],#shareOpt select{height:34px;box-sizing:border-box;font:inherit;font-size:13.5px;padding:6px 10px;border:1px solid #dcd9d3;border-radius:6px;background:#fff;color:#222;min-width:0;outline:none;transition:border-color .15s,box-shadow .15s}
 #shareOpt input:not([type=checkbox]):focus{border-color:#2A8C7F;box-shadow:0 0 0 3px rgba(42,140,127,.14)}
 #shareOpt #shPw{width:100%}
+#shareOpt .sherr{margin:8px 0 0;font-size:12px;color:#B23A3A}
+#shareOpt #shPw::placeholder{color:#aaa49c;font-size:12.5px}
 #shareOpt #shName{width:100%}
 /* Synology の共有画面に合わせた並び：見出しを上に、入力欄は横いっぱい。区切り線なしで、間隔で分ける */
 #shareOpt .shsec{margin-top:20px}
@@ -8689,7 +8691,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
 
   // ---------- 共有リンク：見開きを自分の Google ドライブに置いて、リンクを知っている人が本のようにめくって見られる ----------
   // 置き場所：「PHOTO BOOK MAKER / 共有 / （BOOK名）_日時」。見る側はログイン不要（API キーで読むだけ）。ツール側には何も残さない
-  const SHARE_LONG = 2400, SHARE_Q = .85;
+  const SHARE_LONG = 2400, SHARE_Q = .85, SH_PW_MIN = 6;   // パスワードは6文字以上
   const shareKey = () => (window.PBM_WEB && PBM_WEB.apiKey) || '';
   const shareUrl = m => `${location.origin}${location.pathname.replace(/index\.html$/, '')}?v=${encodeURIComponent(m)}`;   // 見る人に、作った人のドライブの場所は渡さない
   async function shareRoot(){
@@ -8796,9 +8798,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           <div class="shsec"><b>共有名</b><input type="text" id="shName" maxlength="60" autocomplete="off" spellcheck="false" placeholder="PHOTO BOOK"></div>
           <div class="shsec"><b>リンク保護</b>
             <div class="shgrid">
-              <label class="shck"><input type="checkbox" id="shPwOn"><span>パスワードが必要</span></label><input type="text" id="shPw" disabled autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore>
+              <label class="shck"><input type="checkbox" id="shPwOn"><span>パスワードが必要</span></label><input type="text" id="shPw" disabled placeholder="6文字以上（半角英数字・記号）" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore>
               <label class="shck"><input type="checkbox" id="shExpOn"><span>有効期限</span></label><input type="datetime-local" id="shExpD" step="60" disabled>
-            </div></div>
+            </div><p class="sherr" id="shPwErr" hidden>パスワードは6文字以上にしてください。</p></div>
           <div class="shsec"><b>オプション</b><label class="shck"><input type="checkbox" id="shSheet"><span>一覧を含める</span></label></div>
           <div class="actions"><button type="button" class="qbtn keep" id="shNo">キャンセル</button><button type="button" class="qbtn save" id="shGo">保存</button></div></div>`;
         document.body.append(m);
@@ -8806,18 +8808,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         pwAsciiOnly($('shPw'));
         // 最後のページに、全部の見開きを並べた一覧を入れるか
         // リンク保護：チェックを入れた項目だけ、右の欄に入力できる
-        $('shPwOn').onchange = () => { const on = $('shPwOn').checked, i = $('shPw'); i.disabled = !on; if(on) i.focus(); else i.value = ''; };
+        $('shPwOn').onchange = () => { const on = $('shPwOn').checked, i = $('shPw'); i.disabled = !on; $('shPwErr').hidden = true; if(on) i.focus(); else i.value = ''; };
+        $('shPw').addEventListener('input', () => { if($('shPw').value.length >= SH_PW_MIN) $('shPwErr').hidden = true; });
         $('shExpOn').onchange = () => { const on = $('shExpOn').checked, d = $('shExpD'); d.disabled = !on;
           if(on && !d.value){ const t = new Date(Date.now() + 30 * 864e5); d.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}T23:59`; }
           if(on) d.focus(); };
       }
-      $('shPw').value = ''; $('shPw').disabled = true; $('shPwOn').checked = false; $('shExpOn').checked = false; $('shExpD').value = ''; $('shExpD').disabled = true;
+      $('shPw').value = ''; $('shPw').disabled = true; $('shPwErr').hidden = true; $('shPwOn').checked = false; $('shExpOn').checked = false; $('shExpD').value = ''; $('shExpD').disabled = true;
       $('shName').value = [workTitle(), (bookFile || '').replace(/\.pbmk?$/i, '')].map(x => (x || '').trim()).filter(Boolean).join(' ');   // 名前の初期値：表紙などの文字＋BOOK名（自由に変えられる）
       const fin = r => { $('shPw').value = ''; m.hidden = true; m.onkeydown = null; done(r); };
       $('shNo').onclick = () => fin(null);
       $('shGo').onclick = () => {
         let exp = 0, pw = '';
-        if($('shPwOn').checked){ pw = $('shPw').value; if(!pw){ $('shPw').focus(); return; } }
+        if($('shPwOn').checked){ pw = $('shPw').value; if(pw.length < SH_PW_MIN){ $('shPwErr').hidden = false; $('shPw').focus(); return; } }   // 短いパスワードは総当たりで破られやすい
         if($('shExpOn').checked){ const d = $('shExpD').value; if(!d){ $('shExpD').focus(); return; } exp = new Date(d.length <= 10 ? d + 'T23:59:59' : d).getTime(); if(!(exp > Date.now())){ $('shExpD').focus(); return; } }
         fin({ pw, exp, sheet: $('shSheet').checked, name: $('shName').value.trim() });
       };
