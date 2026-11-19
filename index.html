@@ -9,6 +9,24 @@
 <meta name="copyright" content="© 2026 YUJI MIMURA">
 <title>PHOTO BOOK MAKER</title>
 <script>/* 表示はいつも明るく。詳細設定の「暗い表示」を ON にした端末だけ暗くする */try{document.documentElement.dataset.theme=localStorage.getItem("pbm-dark")==="1"?"dark":"light"}catch(e){document.documentElement.dataset.theme="light"}</script>
+<script>/* マウスオーバーの説明を、システム内すべて同じ吹き出しで出す（ブラウザ標準の title 表示は使わない） */
+(function(){var tip,cur,tm;
+function el(){if(!tip){tip=document.createElement('div');tip.id='gTip';tip.setAttribute('role','tooltip');document.body.appendChild(tip);}return tip;}
+function find(t){while(t&&t.nodeType===1){if((t.getAttribute('title')||'').trim()||t.hasAttribute('data-tip'))return t;t=t.parentElement;}return null;}
+function hide(){clearTimeout(tm);if(tip)tip.classList.remove('on');if(cur&&cur.hasAttribute('data-gtip')){if(!cur.hasAttribute('title'))cur.setAttribute('title',cur.getAttribute('data-gtip'));cur.removeAttribute('data-gtip');}cur=null;}
+function show(){if(!cur||!cur.isConnected)return;var txt=cur.getAttribute('data-gtip')||cur.getAttribute('data-tip')||'';if(!txt.trim())return;var t=el();t.textContent=txt;t.className='';
+var r=cur.getBoundingClientRect(),w=t.offsetWidth,h=t.offsetHeight,vw=innerWidth,vh=innerHeight,cx=r.left+r.width/2,x=Math.max(8,Math.min(vw-w-8,cx-w/2)),y=r.bottom+8,up=false;
+if(y+h>vh-8&&r.top-8-h>8){y=r.top-8-h;up=true;}
+t.style.left=x+'px';t.style.top=y+'px';t.style.setProperty('--ax',Math.max(12,Math.min(w-12,cx-x))+'px');if(up)t.classList.add('up');void t.offsetWidth;t.classList.add('on');}
+function enter(n){if(n===cur)return;hide();if(!n)return;cur=n;var tt=n.getAttribute('title');if(tt&&tt.trim()){n.setAttribute('data-gtip',tt);n.removeAttribute('title');}tm=setTimeout(show,250);}
+document.addEventListener('pointerover',function(e){if(e.pointerType==='touch')return;enter(find(e.target));},true);
+document.addEventListener('pointerout',function(e){if(cur&&(!e.relatedTarget||!cur.contains(e.relatedTarget)))hide();},true);
+document.addEventListener('focusin',function(e){var n=e.target;if(n&&n.matches&&n.matches(':focus-visible'))enter(find(n));},true);
+document.addEventListener('focusout',function(){hide();},true);
+['pointerdown','keydown','wheel'].forEach(function(k){document.addEventListener(k,function(){hide();},true);});
+addEventListener('scroll',function(){hide();},true);addEventListener('blur',hide);
+try{new MutationObserver(function(ms){ms.forEach(function(m){var n=m.target;if(n!==cur)return;var tt=n.getAttribute('title');if(tt===null)return;n.removeAttribute('title');if(tt.trim()){n.setAttribute('data-gtip',tt);if(tip&&tip.classList.contains('on')){tip.textContent=tt;}}else{n.setAttribute('data-gtip','');hide();}});}).observe(document.documentElement,{attributes:true,attributeFilter:['title'],subtree:true});}catch(e){}
+})();</script>
 <!-- iPhone・iPad：メールアドレスや電話番号を勝手にリンクにしない（押すとメール作成が開いてしまうため） -->
 <meta name="format-detection" content="telephone=no,email=no,address=no,date=no">
 <!-- スマホ・iPad：ホーム画面に追加すると、ブラウザの枠なしの全画面で開く -->
@@ -79,12 +97,7 @@ main{display:flex;flex-direction:column;gap:14px}
 /* 写真を選ぶ / すべての写真を削除: at the top of the side column, above プレビュー */
 .picks{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
 .picks .picknote{text-align:center;margin-top:-3px}
-/* 写真を選ぶ: a small pop-up on hover saying that dropping works too */
 .picks #pickMany{position:relative}
-.picks #pickMany::after{content:attr(data-tip);position:absolute;z-index:50;top:calc(100% + 8px);left:-4px;right:-4px;padding:8px 6px;border-radius:8px;background:#2a2b2e;color:#fff;font-size:12px;font-weight:500;line-height:1.5;letter-spacing:.02em;white-space:pre-line;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .15s,transform .15s}
-.picks #pickMany::before{content:"";position:absolute;z-index:51;top:calc(100% + 3px);left:calc(50% - 5px);border:5px solid transparent;border-bottom-color:#2a2b2e;border-top:0;opacity:0;transition:opacity .15s}
-.picks #pickMany:hover::after,.picks #pickMany:focus-visible::after{opacity:1;transform:none;transition-delay:.25s}
-.picks #pickMany:hover::before,.picks #pickMany:focus-visible::before{opacity:1;transition-delay:.25s}
 .picks .picknote:empty{display:none}
 /* 使い方: a small pop-over next to the title */
 .howto{position:relative;flex:none;align-self:center}
@@ -1965,6 +1978,15 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
 #saveName:focus,#tStyName:focus,#gpTitle:focus,#gpDupName:focus,#gpDup textarea:focus,#shareOpt input:not([type=checkbox]):focus,#shareOpt select:focus,.setsh-body select:focus,.tpanel textarea#tText:focus,.ios .titxt textarea#tText:focus{border-color:#2A8C7F !important;box-shadow:0 0 0 3px rgba(42,140,127,.14) !important}
 .shbox,#shareOpt input:disabled,#saveName:disabled{background:var(--fld-dis) !important}
 #shareOpt input:disabled{color:#b3aea6 !important}
+
+/* マウスオーバーの説明：システム内すべて同じ黒い吹き出し（title / data-tip から自動で作る） */
+#gTip{position:fixed;z-index:2147483000;max-width:280px;padding:8px 12px;border-radius:8px;background:#2a2b2e;color:#fff;font-size:12px;font-weight:500;line-height:1.5;letter-spacing:.02em;white-space:pre-line;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.18);pointer-events:none;opacity:0;transform:translateY(-4px);transition:opacity .15s,transform .15s;font-family:inherit}
+#gTip.up{transform:translateY(4px)}
+#gTip.on{opacity:1;transform:none}
+#gTip::before{content:"";position:absolute;left:var(--ax,50%);margin-left:-5px;top:-5px;border:5px solid transparent;border-bottom-color:#2a2b2e;border-top:0}
+#gTip.up::before{top:auto;bottom:-5px;border-bottom:0;border-top:5px solid #2a2b2e}
+/* 書き出しボタン：マウスオーバーで動かさない */
+#saveAll:hover,#saveSheet:hover,#saveSingles:hover{transform:none}
 </style>
 </head>
 <body>
@@ -4207,10 +4229,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     { const nm = booklet ? '写真集書き出し' : '見開一括書き出し';
       $('saveAll').innerHTML = mbtn('book', nm, n ? (isPdf() ? (booklet ? `PDF・${bookTotal()}ページ` : `PDF・${n}ページ`) : `JPG・${n}ファイル`) : (isPdf() ? 'PDF' : 'JPG')); }
     $('saveSheet').disabled = sample || !slots.some(Boolean);   // the overview needs at least one real photo
+    $('saveAll').title = isPdf() ? (booklet && bookTotal() ? 'ページを順番に並べた\n1つのPDFで保存します' : '見開きを順番に並べた\n1つのPDFで保存します') : '見開きを1枚ずつ\nJPGで保存します';
     $('saveSheet').innerHTML = mbtn('grid', '一覧書き出し', 'JPG');
+    $('saveSheet').title = 'すべての見開きを1枚に並べた\n一覧のJPGで保存します';
     { const ns = singleList().length, pb = booklet && backOff(), nm = pb ? 'Photoback 入稿用' : '1枚ずつ書き出し';
       $('saveSingles').disabled = !ns; $('saveSingles').innerHTML = mbtn('photo', nm, ns ? `JPG・${ns}ファイル` : 'JPG');
-      $('saveSingles').title = pb ? '各ページを Photoback のページ番号つきの JPG で保存します。そのまま Photoback の各ページに取り込めます' : '調整した写真を1枚ずつ JPG で保存';
+      $('saveSingles').title = pb ? '各ページを Photoback の\nページ番号つきのJPGで保存します' : '調整した写真を1枚ずつ\nJPGで保存します';
       // Photoback: the files that go into Photoback come first
       const host = $('saveAll').parentNode;
       if(pb && $('saveSingles').nextElementSibling !== $('saveAll')) host.insertBefore($('saveSingles'), $('saveAll'));
