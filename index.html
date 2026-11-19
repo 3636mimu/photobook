@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-09D4mfV9VPw+gldG0PMoQ6hzhE9RN8XwvHhdrvYxMY8=' 'sha256-CvbkuNeU93OIqR0zX+8p0mcE8OipuWPyPcgqCwG5lZ4=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-CvbkuNeU93OIqR0zX+8p0mcE8OipuWPyPcgqCwG5lZ4=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-WJLnHwpvLbBkte8IBH868dC/F6oBxMSkkgkuDivs+mA=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -2884,6 +2884,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     '#shv .ms a,#shv .ms button{display:inline-block;margin:10px 6px 0;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:none;color:#fff;font:inherit;font-size:14px;text-decoration:none;cursor:pointer}',
     '#shv .ht{position:absolute;left:50%;bottom:calc(44px + env(safe-area-inset-bottom,0px));-webkit-transform:translateX(-50%);transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.12);font-size:12px;white-space:nowrap;-webkit-transition:opacity .6s;transition:opacity .6s}',
     '@media (pointer:coarse){#shv .nv{background:rgba(255,255,255,.08)}}',
+    '#shv{-webkit-transition:background-color .9s ease;transition:background-color .9s ease}#shv.pw{background:#F4F0EA}#shv.pw .nv,#shv.pw .ft{display:none}',
+    '#shv .pwc{width:min(86vw,340px);box-sizing:border-box;background:#fff;border:1px solid #E6DFD5;border-radius:20px;padding:30px 26px 22px;color:#3b3631;box-shadow:0 10px 30px rgba(120,100,80,.10);opacity:0;-webkit-transform:translate(-50%,-46%);transform:translate(-50%,-46%);-webkit-transition:opacity 1s ease,-webkit-transform 1s cubic-bezier(.2,.7,.2,1);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.7,.2,1)}',
+    '#shv .pwc.in{opacity:1;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}#shv .pwc.out{opacity:0;-webkit-transition-duration:.5s;transition-duration:.5s}',
+    '#shv .pwc .ic{width:48px;height:48px;margin:0 auto 14px;border-radius:50%;background:#F5EDE3;color:#B89A7C;display:flex;align-items:center;justify-content:center}#shv .pwc .ic svg{width:22px;height:22px}',
+    '#shv .pwc .t1{font-size:14px;font-weight:500;letter-spacing:.03em;margin-bottom:4px}#shv .pwc .t1 span{display:inline-block}#shv .pwc .t2{font-size:12.5px;color:#8a8279;margin-bottom:20px}',
+    '#shv .pwc form{display:flex;gap:8px;align-items:center;margin:0}#shv .pwc input{flex:1;min-width:0;font:inherit;font-size:16px;height:44px;box-sizing:border-box;padding:0 16px;border-radius:999px;border:1px solid #DCD5CA;background:#FBF9F6;color:#3b3631;outline:none}#shv .pwc input:focus{border-color:#C4A88C;box-shadow:0 0 0 3px rgba(196,168,140,.2)}#shv .pwc input::placeholder{color:#b0a89d;-webkit-text-security:none}',
+    '#shv .pwc button{font:inherit;font-size:13px;font-weight:500;height:44px;margin:0;padding:0 20px;border:0;line-height:44px;border-radius:999px;background:#C4A88C;color:#fff;cursor:pointer;white-space:nowrap}#shv .pwc button:hover{background:#B89A7C}#shv .pwc button[disabled]{opacity:.7;cursor:progress}',
+    '#shv .pwc .er{margin-top:10px;font-size:12.5px;color:#C0705F;min-height:1.4em}',
     '#shv.ns,#shv.ns *{-webkit-touch-callout:none}'
   ].join('\n');
   document.head.appendChild(css);
@@ -3075,20 +3083,22 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // パスワードを聞く
   function askPw(){
     if(!(window.crypto && crypto.subtle)){ msg('この写真集はパスワード付きです。<br>このブラウザでは開けないため、別のブラウザ（Safari・Chrome など）で開いてください。', false); return; }
-    stage.innerHTML = ''; var m = el('div', 'ms', stage);
-    m.innerHTML = '<div style="margin-bottom:12px">パスワードを入れてください</div>';
-    var f = el('form', '', m), inp = el('input', '', f), bt = el('button', '', f), er = el('div', '', m);
+    // やわらかい明るい画面で、カードをふわっと出す（開いたら暗い背景へゆっくり切り替えて、写真集を出す）
+    root.classList.add('pw'); stage.innerHTML = ''; var m = el('div', 'ms pwc', stage);
+    m.innerHTML = '<div class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><path d="M12 15v2"/></svg></div><div class="t1"><span>この写真集は</span><span>パスワードで守られています</span></div><div class="t2">受け取ったパスワードを入れてください</div>';
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ m.classList.add('in'); }); });
+    var f = el('form', '', m), inp = el('input', '', f), bt = el('button', '', f), er = el('div', 'er', m); inp.placeholder = 'パスワード';
     // 「パスワードを保存しますか？」を出させない：ふつうの文字欄を ● で隠す（隠せないブラウザだけ password 欄）
     var mask = !!(window.CSS && CSS.supports && CSS.supports('-webkit-text-security', 'disc')); inp.type = mask ? 'text' : 'password';
-    inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.setAttribute('data-lpignore', 'true'); inp.setAttribute('data-1p-ignore', ''); inp.style.cssText = 'font:inherit;font-size:16px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.08);color:#fff;width:70%;max-width:240px;text-align:center';
+    inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.setAttribute('data-lpignore', 'true'); inp.setAttribute('data-1p-ignore', '');
     if(mask) inp.style.webkitTextSecurity = 'disc';
     // 半角英数字・記号だけ（日本語入力は受け付けない。全角英数は半角に直す）
     inp.setAttribute('inputmode', 'email'); inp.setAttribute('lang', 'en');
     (function(){ var comp = false; function fix(){ var v = inp.value, w = v.replace(/[\uFF01-\uFF5E]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/[^\x21-\x7E]/g, ''); if(v !== w) inp.value = w; }
       inp.addEventListener('compositionstart', function(){ comp = true; }); inp.addEventListener('compositionend', function(){ comp = false; fix(); }); inp.addEventListener('input', function(){ if(!comp) fix(); }); })();
-    bt.type = 'submit'; bt.textContent = 'ひらく'; er.style.cssText = 'margin-top:10px;font-size:13px;color:#F2A29E;min-height:1.4em';
+    bt.type = 'submit'; bt.textContent = 'ひらく';
     f.onsubmit = function(e){
-      e.preventDefault(); if(!inp.value) return; bt.disabled = true; bt.textContent = '確かめています…'; er.textContent = '';
+      e.preventDefault(); if(!inp.value) return; bt.disabled = true; bt.textContent = '確かめています'; er.textContent = '';
       var E = man.enc;
       crypto.subtle.importKey('raw', new TextEncoder().encode(inp.value), 'PBKDF2', false, ['deriveKey']).then(function(base){
         return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: u8(E.salt), iterations: E.iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
@@ -3097,8 +3107,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
           CK = k; var o = {}; try{ o = JSON.parse(new TextDecoder().decode(buf)) || {}; }catch(_){}
           // 新しい形：写真の並びも暗号化の中（パスワードがないと、どの写真がどこにあるか分からない）
           if(o.p) setPages(o.p.map(function(a){ return { id: a[0], w: a[1], h: a[2], seam: a[3], flat: !!a[4] }; })); else if(o.pages) setPages(o.pages);
-          if(!pages.length){ msg('この写真集は、見られなくなっています。', false); return; }
-          open1(o.title);
+          if(!pages.length){ root.classList.remove('pw'); msg('この写真集は、見られなくなっています。', false); return; }
+          m.classList.add('out'); root.classList.remove('pw');   // 明るい画面から、暗い背景へゆっくり
+          setTimeout(function(){ open1(o.title); }, 650);
         });
       }).catch(function(){ bt.disabled = false; bt.textContent = 'ひらく'; er.textContent = 'パスワードがちがいます'; inp.select(); });
     };
