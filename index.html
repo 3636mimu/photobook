@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-NbLsHZgsRzvf4tf3qfRrUThUmDgCN7rvl+OCWUA4ojE=' 'sha256-Nj7KJEAgTRUWVGMCqTW0duezOXIsVC4sto70EA/oxLs=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-XKDBqj2MggkhZHhDaajeNqav7bk7PtMxVlgod9fRiJo=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -25,6 +26,8 @@ document.addEventListener('focusin',function(e){var n=e.target;if(n&&n.matches&&
 document.addEventListener('focusout',function(){hide();},true);
 ['pointerdown','keydown','wheel'].forEach(function(k){document.addEventListener(k,function(){hide();},true);});
 addEventListener('scroll',function(){hide();},true);addEventListener('blur',hide);
+/* Google のロゴ画像が読めなかったら消す（画面の決まりで onerror="" は使わない） */
+document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('glogo'))t.remove();},true);
 try{new MutationObserver(function(ms){ms.forEach(function(m){var n=m.target;if(n!==cur)return;var tt=n.getAttribute('title');if(tt===null)return;n.removeAttribute('title');if(tt.trim()){n.setAttribute('data-gtip',tt);if(tip&&tip.classList.contains('on')){tip.textContent=tt;}}else{n.setAttribute('data-gtip','');hide();}});}).observe(document.documentElement,{attributes:true,attributeFilter:['title'],subtree:true});}catch(e){}
 })();</script>
 <!-- iPhone・iPad：メールアドレスや電話番号を勝手にリンクにしない（押すとメール作成が開いてしまうため） -->
@@ -7531,8 +7534,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       () => { $('pages').value = String(n); applyPages(true); afterPages(); status(`${n}ページにしました（写真 ${lost}枚を削除）。`); });
   });
   // 「Google フォト」の文字にロゴを添える（この一連の画面で使う）
-  const GPL = '<img class="glogo gpl" src="https://www.gstatic.com/images/branding/product/2x/photos_48dp.png" alt="" onerror="this.remove()">Google フォト';
-  const GDL = '<img class="glogo gdl" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="" onerror="this.remove()">Google ドライブ';
+  const GPL = '<img class="glogo gpl" src="https://www.gstatic.com/images/branding/product/2x/photos_48dp.png" alt="">Google フォト';
+  const GDL = '<img class="glogo gdl" src="https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png" alt="">Google ドライブ';
   function gpLogo(html){ return String(html).split('Google フォト').join(GPL).split('Google ドライブ').join(GDL); }
   function gpTxt(el, t){ const v = String(t == null ? '' : t); if(v.includes('Google フォト') || v.includes('Google ドライブ')) el.innerHTML = gpLogo(esc2(v)); else el.textContent = v; }
   function askYesNo(title, html, onYes, yesLabel, noLabel, onNo){
