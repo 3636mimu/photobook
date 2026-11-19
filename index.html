@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-HEQUCBhbKjzaZTJJPdOe3H7sHhIugZ4XADe4gSXiOus=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com 'sha256-N4NiqQBKCcFE7CmGqHTgVZeVQURBkVWOTJ5LFCh1OCk=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-seUW2rKNAfbpxuiF0XZc45HfRtifN1kk36AoBb4N7dI=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>window.PBM_WEB={"clientId": "787538750404-4pffva8re0c7g2aiknr1lthre6i2fkaa.apps.googleusercontent.com", "apiKey": "AIzaSyBjXSVcAwlFb1ZTZA0Wl42g4EAnnlxkSoM"};</script>
 <!-- PHOTO BOOK MAKER  © 2026 YUJI MIMURA. All rights reserved.  無断での複製・再配布・改変を禁じます。 -->
 <meta name="author" content="YUJI MIMURA">
@@ -8298,19 +8298,24 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const stem = (bookFile || fileName()).replace(/\.pbmk$/i, '');
     $('saveName').value = cur === 'drive' ? stem + 'のコピー' : stem;
     $('saveLead').hidden = !cur; $('saveLead').textContent = cur ? `元の「${bookFile}」は、そのまま残ります。` : '';
-    $('saveToDrive').hidden = !WEB; $('saveToPc').hidden = MOBILE;
+    $('saveToDrive').hidden = !WEB; $('saveToPc').hidden = MOBILE || shareAfterSave;   // Photo Bookリンクの前の保存は、ドライブだけ
     $('saveToDrive').querySelector('.sdnow').hidden = cur !== 'drive'; $('saveToPc').querySelector('.sdnow').hidden = cur !== 'pc';
     syncSaveMeta();
     $('saveModal').hidden = false;
     (cur === 'pc' || !WEB ? $('saveToPc') : (MOBILE || WD() ? $('saveToDrive') : $('saveToPc'))).focus();
   });
   const closeSave = () => { $('saveModal').hidden = true; };
-  const cancelSave = () => { closeAfterSave = false; closeSave(); };
+  const cancelSave = () => { closeAfterSave = false; shareAfterSave = false; closeSave(); };
   $('saveNo').addEventListener('click', cancelSave);
   $('saveModal').addEventListener('keydown', e => { if(e.key === 'Escape') cancelSave(); });
   let saveAsMode = false;
   $('saveYes').addEventListener('click', () => doSave(saveAsMode));
-  $('saveToDrive').addEventListener('click', () => doSave(saveAsMode, false, true));
+  // Photo Bookリンクを作る前の保存：ドライブに保存できたら、そのまま作成画面へ
+  let shareAfterSave = false;
+  $('saveToDrive').addEventListener('click', async () => {
+    await doSave(saveAsMode, false, true);
+    if(shareAfterSave && $('saveModal').hidden){ shareAfterSave = false; if(fileHandle && fileHandle.drive && fileHandle.folderId) shareBook(); }   // 名前の付け直しで窓が開き直したときは、次の保存まで待つ
+  });
   $('saveToPc').addEventListener('click', () => doSave(saveAsMode, true));
   // 上書き保存：ポップアップなしで、すぐBOOKファイルへ
   $('workOver').addEventListener('click', () => { if(!hasWork() || !fileHandle) return; doSave(false); });
@@ -9172,6 +9177,11 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!list.length) return;
     if(!shareKey()){ askYesNo('共有リンクを作れません', '<p>共有リンクの準備（API キー）が、まだ設定されていません。</p>', () => {}, '閉じる', ''); return; }
     if(!(await gEnsure(true))) return;
+    // ドライブに保存していない BOOK は、先にドライブに保存してから作る（あとの編集が共有リンクに反映され、設定・削除もツールからできるように）
+    if(!(fileHandle && fileHandle.drive && fileHandle.folderId)){
+      askYesNo('先にドライブに保存します', '<p>Photo Bookリンクは、Google ドライブに保存したBOOKから作ります。<br>保存が終わると、そのまま作成画面に進みます。</p>', () => { shareAfterSave = true; $('workSave').click(); }, '保存する', 'キャンセル');
+      return;
+    }
     // 1つの BOOK に共有リンクは1つ：すでにあれば、作らずに「共有リンクの設定」を開く
     { let ex = null; try{ ex = await shareOfBook(); }catch(e){} if(ex){ await shareEdit(ex); return; } }
     const opt = await shareAskOpt(); if(!opt) return;
