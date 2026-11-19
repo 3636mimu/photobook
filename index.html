@@ -9343,7 +9343,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       catch(e){ if(!canceled) status('このBOOKを開けませんでした。'); return; }
       if(canceled) return;
       const ids = (P.drive && P.drive.photos) || {};
-      const pvs = (P.drive && P.drive.pv) || {};
+      const pvs = Object.assign({}, (P.drive && P.drive.pv) || {});
+      // preview フォルダやプレビュー画像がドライブ側で消されていたら（ゴミ箱も含む）、それは使わず、写真がそろったあとに作り直す
+      if(Object.keys(pvs).length){
+        try{
+          const dir = P.drive.pvDir, live = dir ? new Set((await gList(`'${dir}' in parents and trashed=false`, 'files(id)')).map(x => x.id)) : null;
+          for(const uid of Object.keys(pvs)) if(!live || !live.has(pvs[uid][0])) delete pvs[uid];
+        }catch(e){}
+        if(canceled) return;
+      }
       const h = { drive: true, name: f.name, folderId: f.id, jsonId: f.appProperties.json, thumbId: f.appProperties.thumb || '', photoIds: Object.assign({}, ids), photoNames: {}, fontIds: {}, assetIds: Object.assign({}, (P.drive && P.drive.assets) || {}), pvIds: Object.assign({}, pvs), pvDir: (P.drive && P.drive.pvDir) || '' };
       // 装飾の画像を、別のファイルから元のまま戻す
       const A = (P.drive && P.drive.assets) || {};
