@@ -9138,7 +9138,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(h.folderId){
       let r = null, gone = false;
       try{ r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(h.folderId)}?fields=name,trashed`); gone = !r || r.trashed; }catch(e){ gone = /404/.test(String(e && e.message)) || (e && e.status === 404); }
-      if(gone){ h.folderId = ''; h.jsonId = ''; h.thumbId = ''; h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.assetIds = {}; h.pvIds = {}; h.recreated = true; from = null; }
+      if(gone){ h.folderId = ''; h.jsonId = ''; h.thumbId = ''; h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.assetIds = {}; h.pvIds = {}; h.pvDir = ''; h.recreated = true; from = null; }
       else if(r && r.name && !h.renamed && r.name !== h.name){ h.name = r.name; if(fileHandle === h){ bookFile = r.name; syncAutoUI(); } }
     }
     await ensurePhotosReadable();
@@ -9146,10 +9146,24 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!h.folderId){
       const root = await gRoot();
       h.folderId = (await gCreate({ name: h.name, mimeType: 'application/vnd.google-apps.folder', parents: [root], appProperties: { pbm: 'book' } })).id;
-      h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.pvIds = {};
+      h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.pvIds = {}; h.pvDir = '';
     } else if(h.name && h.renamed){ await gPatch(h.folderId, { name: h.name }); h.renamed = false; }
     h.photoIds = h.photoIds || {}; h.photoNames = h.photoNames || {}; h.fontIds = h.fontIds || {}; h.pvIds = h.pvIds || {}; P.drive.pv = {};
     const srcPv = from && from.pvIds ? from.pvIds : {};
+    // プレビュー画像は、BOOKのフォルダの中の「preview」フォルダに、写真と同じ名前（.jpg）で置く
+    let pvDirP = null;
+    const pvDir = () => pvDirP || (pvDirP = (async () => {
+      if(h.pvDir){ try{ const r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(h.pvDir)}?fields=trashed,parents`); if(r && !r.trashed && (r.parents || []).includes(h.folderId)) return h.pvDir; }catch(e){} }
+      const f = await gList(`'${h.folderId}' in parents and appProperties has { key='pbm' and value='pvdir' } and trashed=false`, 'files(id)');
+      h.pvDir = f.length ? f[0].id : (await gCreate({ name: 'preview', parents: [h.folderId], mimeType: 'application/vnd.google-apps.folder', appProperties: { pbm: 'pvdir' } })).id;
+      return h.pvDir;
+    })());
+    const pvUsed = new Set(Object.values(h.pvIds).map(v => String(v[3] || '').toLowerCase()).filter(Boolean));
+    const pvName = it => {
+      const nm = String(it.name || (it.file && it.file.name) || 'photo').replace(/[\\/:*?"<>|]/g, '_'), dot = nm.lastIndexOf('.'), stem = dot > 0 ? nm.slice(0, dot) : nm;
+      let name = stem + '.jpg', k = 2; while(pvUsed.has(name.toLowerCase())) name = `${stem} (${k++}).jpg`;
+      pvUsed.add(name.toLowerCase()); return name;
+    };
     // 別名で保存：元のBOOKの写真は、ドライブの中でコピーするだけ（上げ直さない）
     const src = from && from.photoIds ? from.photoIds : {};
     const used = new Set(Object.values(h.photoNames).map(n => n.toLowerCase()));
@@ -9169,15 +9183,26 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       }
       P.drive.photos[uid] = h.photoIds[uid];
       // 下見の画像（開くときに先に見せる小さな画像）。作れなくても保存は止めない
+      // 前の版で、BOOKのフォルダに直接置いたもの：preview フォルダへ移して、名前を写真に合わせる
+      if(h.pvIds[uid] && !h.pvIds[uid][3]){
+        try{
+          const v = h.pvIds[uid], d = await pvDir(), name = pvName(it);
+          await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(v[0])}?addParents=${encodeURIComponent(d)}&removeParents=${encodeURIComponent(h.folderId)}&fields=id`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+          h.pvIds[uid] = [v[0], v[1], v[2], name];
+        }catch(e){}
+      }
       if(!h.pvIds[uid]){
         try{
-          const meta = { name: '下見_' + (h.photoNames[uid] || (it.name || 'photo') + '.jpg').replace(/\.[^.]+$/, '') + '.jpg', parents: [h.folderId], appProperties: { pbm: 'preview', uid } };
-          if(srcPv[uid]) h.pvIds[uid] = [(await gCopy(srcPv[uid][0], meta)).id, srcPv[uid][1], srcPv[uid][2]];
-          else if(!it.pv){ const [w, hh] = it.pw ? [it.pw, it.ph] : dims(it.src); h.pvIds[uid] = [(await gUpload(meta, await pvMake(it.src))).id, w, hh]; }
+          if(srcPv[uid] || !it.pv){
+            const name = pvName(it), meta = { name, parents: [await pvDir()], appProperties: { pbm: 'preview', uid } };
+            if(srcPv[uid]) h.pvIds[uid] = [(await gCopy(srcPv[uid][0], meta)).id, srcPv[uid][1], srcPv[uid][2], name];
+            else { const [w, hh] = it.pw ? [it.pw, it.ph] : dims(it.src); h.pvIds[uid] = [(await gUpload(meta, await pvMake(it.src))).id, w, hh, name]; }
+          }
         }catch(e){}
       }
       if(h.pvIds[uid]) P.drive.pv[uid] = h.pvIds[uid];
     }
+    if(h.pvDir) P.drive.pvDir = h.pvDir;
     // このBOOKで使わなくなった写真はゴミ箱へ（ドライブの容量を空ける）
     for(const uid of Object.keys(h.photoIds)) if(!want.some(x => x.uid === uid)){ try{ await gPatch(h.photoIds[uid], { trashed: true }); }catch(e){} delete h.photoIds[uid]; delete h.photoNames[uid]; }
     for(const uid of Object.keys(h.pvIds)) if(!want.some(x => x.uid === uid)){ try{ await gPatch(h.pvIds[uid][0], { trashed: true }); }catch(e){} delete h.pvIds[uid]; }
@@ -9286,7 +9311,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       if(canceled) return;
       const ids = (P.drive && P.drive.photos) || {};
       const pvs = (P.drive && P.drive.pv) || {};
-      const h = { drive: true, name: f.name, folderId: f.id, jsonId: f.appProperties.json, thumbId: f.appProperties.thumb || '', photoIds: Object.assign({}, ids), photoNames: {}, fontIds: {}, assetIds: Object.assign({}, (P.drive && P.drive.assets) || {}), pvIds: Object.assign({}, pvs) };
+      const h = { drive: true, name: f.name, folderId: f.id, jsonId: f.appProperties.json, thumbId: f.appProperties.thumb || '', photoIds: Object.assign({}, ids), photoNames: {}, fontIds: {}, assetIds: Object.assign({}, (P.drive && P.drive.assets) || {}), pvIds: Object.assign({}, pvs), pvDir: (P.drive && P.drive.pvDir) || '' };
       // 装飾の画像を、別のファイルから元のまま戻す
       const A = (P.drive && P.drive.assets) || {};
       for(const arr of Object.values(P.decos || {})) for(const t of (Array.isArray(arr) ? arr : [])){
