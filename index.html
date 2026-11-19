@@ -2835,7 +2835,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
 
   var root, stage, book, hd, ft, prevB, nextB, pages = [], man = null, pos = 0, busy = false, imgs = [];
   function el(t, c, p){ var e = document.createElement(t); if(c) e.className = c; if(p) p.appendChild(e); return e; }
-  function urls(id){ return [API + encodeURIComponent(id) + '?alt=media&key=' + encodeURIComponent(KEY), 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w2400', 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=w2400']; }
+  // 写真集が更新されたら（man.at）、古い画像を使い回さないよう、版の番号を付けて読む
+  function ver(){ return man && man.at ? '&v=' + man.at : ''; }
+  function urls(id){ return [API + encodeURIComponent(id) + '?alt=media&key=' + encodeURIComponent(KEY) + ver(), 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w2400', 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=w2400']; }
   // 画像を読む：だめなら別の取り出し口へ、ひと回りしてもだめならもう一度
   var CK = null;   // パスワードから作った鍵（パスワード付きのとき）
   function u8(b64s){ var s = atob(b64s), a = new Uint8Array(s.length); for(var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
@@ -2843,7 +2845,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function loadEnc(k){
     var P = pages[k], tries = 0;
     (function get(){
-      var x = new XMLHttpRequest(); x.open('GET', API + encodeURIComponent(P.id) + '?alt=media&key=' + encodeURIComponent(KEY)); x.responseType = 'arraybuffer'; x.timeout = 30000;
+      var x = new XMLHttpRequest(); x.open('GET', API + encodeURIComponent(P.id) + '?alt=media&key=' + encodeURIComponent(KEY) + ver()); x.responseType = 'arraybuffer'; x.timeout = 30000;
       var bad = function(){ if(++tries < 3) return setTimeout(get, 3000 * tries); P.loading = false; var c = P.cbs; P.cbs = []; c.forEach(function(f){ f(false); }); };
       x.onload = function(){
         if(x.status !== 200) return bad();
@@ -2961,7 +2963,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     var tries = 0;
     (function get(){
       if(!KEY){ msg('このリンクは、いま開けません。<br>少し時間をおいて、再読み込みしてください。', true); return; }
-      var x = new XMLHttpRequest(); x.open('GET', API + encodeURIComponent(q.v) + '?alt=media&key=' + encodeURIComponent(KEY)); x.timeout = 20000;
+      var x = new XMLHttpRequest(); x.open('GET', API + encodeURIComponent(q.v) + '?alt=media&key=' + encodeURIComponent(KEY) + '&t=' + Date.now()); x.timeout = 20000;   // 設定ファイルはいつも最新を
       x.onload = function(){
         if(x.status === 200){ try{ man = JSON.parse(x.responseText); }catch(e){ man = null; } }
         if(!man || !man.pages || !man.pages.length){
@@ -8789,11 +8791,93 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const nm = (f.name || '').replace(/_\d{8}-\d{4,6}$/, '');
     return !!book && (nm.endsWith('_' + book) || nm.endsWith(' ' + book) || nm === book);
   }
+  // ---------- 共有リンクの中身を、BOOK の保存に合わせて新しくする ----------
+  // 見開きごとの目印：見た目を決めるもの（設定・写真と調整・文字やロゴ・空白の指定など）から作る。変わった見開きだけ作り直すため
+  const shareSigBase = () => JSON.stringify([currentSettings(), pagesValue(), booklet, tobiraLayout]);
+  function pairSig(p, base){
+    const slot = i => { const it = slots[i]; if(!it) return null; const o = { u: uidOf(it) }; ADJ.forEach(k => { if(it[k] != null) o[k] = it[k]; }); return o; };
+    return strHash(JSON.stringify([base || shareSigBase(), slot(p*2), slot(p*2+1), decoOf(p), wide.has(p), blankSet.has(p*2), blankSet.has(p*2+1), isLocked(p*2), isLocked(p*2+1), isCover(p), +pageSeam(p).toFixed(4)]));
+  }
+  const unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+  // 見開き1つを共有用の画像に（パスワード付きなら暗号化）
+  async function shareRenderPair(p, key, k){
+    const c = document.createElement('canvas');
+    exporting = true; try{ compose(p, c, SHARE_LONG); } finally { exporting = false; }
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', SHARE_Q));
+    if(!blob) throw new Error('render');
+    const pg = { w: c.width, h: c.height, seam: +(((pairUI[p] || {}).seam) || .5).toFixed(4), k };
+    let up = blob;
+    if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); }
+    return { pg, up, blob };
+  }
+  // 一覧の1枚（めくらずに見せるページ）
+  async function shareRenderSheet(key, k){
+    const sh = buildSheet(); if(!sh) return null;
+    const LONG = 3600, f = Math.min(1, LONG / Math.max(sh.width, sh.height));
+    let c = sh; if(f < 1){ c = document.createElement('canvas'); c.width = Math.round(sh.width * f); c.height = Math.round(sh.height * f); const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(sh, 0, 0, c.width, c.height); }
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', SHARE_Q)); if(!blob) return null;
+    const pg = { w: c.width, h: c.height, seam: 1, flat: 1, k };
+    let up = blob;
+    if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); }
+    return { pg, up, blob };
+  }
+  // この BOOK の共有（1つの BOOK に1つ）。2つ以上あれば、いちばん新しいもの以外はゴミ箱へ
+  async function shareOfBook(items){
+    const mine = (items || await shareItems()).filter(shareMine).sort((a, b) => String(b.createdTime).localeCompare(String(a.createdTime)));
+    for(const f of mine.slice(1)){ try{ await gPatch(f.id, { trashed: true }); if((f.appProperties || {}).pw === '1') sharePwSave(f.id, ''); }catch(e){} }
+    return mine[0] || null;
+  }
+  // BOOK をドライブに保存したあと（上書き・3分毎の自動保存）：共有リンクの中身を、変わった見開きだけ差し替える。URL はそのまま、公開の許可も増やさない
+  let shRefreshing = false, shRefreshAgain = false;
+  async function shareRefresh(){
+    if(!WEB || !gValid() || sample) return;
+    if(shRefreshing){ shRefreshAgain = true; return; }
+    shRefreshing = true;
+    try{
+      const f = await shareOfBook(); if(!f) return;
+      const ap = f.appProperties || {}; if(!ap.m) return;
+      const exp = +(ap.exp || 0); if(exp && exp < Date.now()) return;
+      const man = await gJson(`${GAPI}/drive/v3/files/${ap.m}?alt=media`); if(!man || man.app !== 'pbm-share') return;
+      let key = null;
+      if(man.enc){ const pw = (await sharePwRead()).map[f.id]; if(!pw) return; key = await shareDeriveKey(pw, unb64(man.enc.salt), man.enc.iter); }
+      const list = allPairs().filter(pairReady); if(!list.length) return;
+      const base = shareSigBase(), sigs = list.map(p => pairSig(p, base));
+      const old = (man.pages || []).filter(x => !x.flat), oldSheet = (man.pages || []).find(x => x.flat);
+      const byK = new Map(); old.forEach(x => { if(x.k && !byK.has(x.k)) byK.set(x.k, x); });
+      const used = new Set(), pages = new Array(list.length), todo = [];
+      sigs.forEach((k, i) => { const o = byK.get(k); if(o && !used.has(o.id)){ used.add(o.id); pages[i] = o; } else todo.push(i); });
+      const spare = old.filter(x => !used.has(x.id)).map(x => x.id);
+      let changed = todo.length > 0 || old.length !== list.length || old.some((x, i) => !pages[i] || pages[i].id !== x.id);
+      for(const i of todo){
+        const r = await shareRenderPair(list[i], key, sigs[i]);
+        let id = spare.shift();
+        if(id) await gUpload({}, r.up, id); else id = (await gUpload({ name: `${String(i + 1).padStart(2, '0')}${key ? '.bin' : '.jpg'}`, parents: [f.id] }, r.up)).id;
+        pages[i] = Object.assign(r.pg, { id });
+      }
+      // 一覧を含める共有なら、一覧も（見開きか設定が変わったときだけ）作り直す
+      let sheet = null;
+      if(ap.sh === '1' || oldSheet){
+        const sk = strHash(sigs.join(',') + base);
+        if(oldSheet && oldSheet.k === sk) sheet = oldSheet;
+        else {
+          const r = await shareRenderSheet(key, sk);
+          if(r){ let id = oldSheet && oldSheet.id; if(id) await gUpload({}, r.up, id); else id = (await gUpload({ name: `${String(list.length + 1).padStart(2, '0')}${key ? '.bin' : '.jpg'}`, parents: [f.id] }, r.up)).id; sheet = Object.assign(r.pg, { id }); changed = true; }
+        }
+      }
+      for(const id of spare){ try{ await gPatch(id, { trashed: true }); }catch(e){} }   // 減った見開きの画像
+      if(!changed) return;
+      man.pages = sheet ? [...pages, sheet] : pages; man.at = Date.now();
+      await gUpload({}, new Blob([JSON.stringify(man)], { type: 'application/json' }), ap.m);
+    }catch(e){ console.warn('share refresh', e); }
+    finally{ shRefreshing = false; if(shRefreshAgain){ shRefreshAgain = false; setTimeout(shareRefresh, 1000); } }
+  }
   async function shareBook(){
     const list = allPairs().filter(pairReady);
     if(!list.length) return;
     if(!shareKey()){ askYesNo('共有リンクを作れません', '<p>共有リンクの準備（API キー）が、まだ設定されていません。</p>', () => {}, '閉じる', ''); return; }
     if(!(await gEnsure(true))) return;
+    // 1つの BOOK に共有リンクは1つ：すでにあれば、作らずに「共有中のリンク」を開く
+    try{ if(await shareOfBook()){ shareManager(); return; } }catch(e){}
     const opt = await shareAskOpt(); if(!opt) return;
     if(opt.pw && !(window.crypto && crypto.subtle)){ askYesNo('パスワードを使えません', '<p>このブラウザでは、パスワード付きの共有を作れません。</p>', () => {}, '閉じる', ''); return; }
     const title = (opt.name || workTitle() || 'PHOTO BOOK').trim();
@@ -8809,37 +8893,20 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       let key = null, enc = null;
       if(opt.pw){ const salt = crypto.getRandomValues(new Uint8Array(16)), iter = 210000; key = await shareDeriveKey(opt.pw, salt, iter); enc = { salt: b64(salt), iter }; }
       await coverFontsReady();
-      // 1) 見開きを作る（作り直しのときに使い回せるよう、手元に持っておく）
-      const made = [];
+      // 1) 見開きを作る（作り直しのときに使い回せるよう、手元に持っておく）。見開きごとの目印も付けておく（保存のたびに、変わったところだけ差し替えるため）
+      const made = [], base = shareSigBase(), sigs = list.map(p => pairSig(p, base));
       for(let i = 0; i < list.length; i++){
-        const p = list[i]; chk();
+        chk();
         gBusy('', `見開きを準備しています ${i + 1} / ${list.length}`, i / list.length * .45);
-        const c = document.createElement('canvas');
-        exporting = true; try{ compose(p, c, SHARE_LONG); } finally { exporting = false; }
-        const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', SHARE_Q));
-        if(!blob) throw new Error('render');
-        gBusyImg(blob);
-        const pg = { w: c.width, h: c.height, seam: +(((pairUI[p] || {}).seam) || .5).toFixed(4) };
-        let up = blob, nm = `${String(i + 1).padStart(2, '0')}.jpg`;
-        if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); nm = `${String(i + 1).padStart(2, '0')}.bin`; }
-        made.push({ pg, up, nm });
+        const r = await shareRenderPair(list[i], key, sigs[i]);
+        gBusyImg(r.blob);
+        made.push({ pg: r.pg, up: r.up, nm: `${String(i + 1).padStart(2, '0')}${key ? '.bin' : '.jpg'}` });
       }
       // 最後に一覧（全部の見開きを並べた1枚）。めくらずに1枚で見せるページ
       if(opt.sheet){
         chk(); gBusy('', '一覧を作っています', .45);
-        const sh = buildSheet();
-        if(sh){
-          const LONG = 3600, k = Math.min(1, LONG / Math.max(sh.width, sh.height));
-          let c = sh; if(k < 1){ c = document.createElement('canvas'); c.width = Math.round(sh.width * k); c.height = Math.round(sh.height * k); const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(sh, 0, 0, c.width, c.height); }
-          const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', SHARE_Q));
-          if(blob){
-            gBusyImg(blob);
-            const n = String(made.length + 1).padStart(2, '0'), pg = { w: c.width, h: c.height, seam: 1, flat: 1 };
-            let up = blob, nm = `${n}.jpg`;
-            if(key){ const e = await shareEnc(key, new Uint8Array(await blob.arrayBuffer())); pg.iv = e.iv; up = new Blob([e.c], { type: 'application/octet-stream' }); nm = `${n}.bin`; }
-            made.push({ pg, up, nm });
-          }
-        }
+        const r = await shareRenderSheet(key, strHash(sigs.join(',') + base));
+        if(r){ gBusyImg(r.blob); made.push({ pg: r.pg, up: r.up, nm: `${String(made.length + 1).padStart(2, '0')}${key ? '.bin' : '.jpg'}` }); }
       }
       let tblob = null;
       if(key){ const t = await shareEnc(key, new TextEncoder().encode(JSON.stringify({ title }))); tblob = { tiv: t.iv, t: b64(t.c) }; }
@@ -8855,7 +8922,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(!workId) workId = newId();
         const ap = { pbm: 'share', book: String(workId), nm: fitBytes(title, 100) };
         if(fileHandle && fileHandle.drive && fileHandle.folderId) ap.bf = String(fileHandle.folderId);   // ドライブに保存した BOOK なら、その BOOK のフォルダも印にする（開き直しても変わらない）
-        if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1';   // 有効期限・パスワードの有無（共有中のリンクの表示と、期限切れの片付けに使う）
+        if(opt.exp) ap.exp = String(opt.exp); if(opt.pw) ap.pw = '1'; if(opt.sheet) ap.sh = '1';   // 有効期限・パスワードの有無（共有中のリンクの表示と、期限切れの片付けに使う）
         folder = (await gCreate({ name: shareFolderName(title), parents: [sroot], mimeType: 'application/vnd.google-apps.folder', appProperties: ap })).id;
         await sharePubRetry(folder);
         const pages = [];
@@ -8964,7 +9031,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       let items;
       if(cached && shCache){ items = shCache.slice(); cached = false; }
       else {
-        try{ const all = await shareItems(); sharePwTidy(all); items = all.filter(shareMine); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
+        try{ const all = await shareItems(); sharePwTidy(all); const one = await shareOfBook(all); items = one ? [one] : []; }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
         { const old = items.filter(sharePast); if(old.length){ await Promise.all(old.map(shareExpire)); items = items.filter(f => !sharePast(f)); } }
         shCache = items.slice();
       }
@@ -9026,7 +9093,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // 文字列から短い目印（同じ画像を2回上げないため）
   function strHash(str){ let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for(let i = 0; i < str.length; i++){ const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0') + '-' + str.length.toString(36); }
   async function driveSave(h, from, show){
-    try{ return await driveSave0(h, from, show); } finally { if(show) gBusyOff(); }
+    try{ const r = await driveSave0(h, from, show); setTimeout(shareRefresh, 800); return r; } finally { if(show) gBusyOff(); }   // 保存できたら、共有リンクの中身も新しく
   }
   async function driveSave0(h, from, show){
     if(!(await gEnsure(true))){ const e = new Error('auth'); e.auth = true; throw e; }
