@@ -3901,13 +3901,15 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     const it = slots[i]; if(!it || sample) return 0;
     if(isLocked(i) || (i % 2 === 1 && wide.has(i >> 1))) return 0;
     const outH = params().outH; if(!outH) return 0;
-    const r = cropRect(it), k = outH / r[3];
+    const r = cropRect(it), k = outH / (r[3] * pxK(it));
     return k >= LOW_K ? k : 0;
   }
-  const lowText = (i, k) => `${Math.round(cropRect(slots[i])[3])}px → ${params().outH}px（${k.toFixed(1)}倍に拡大）`;
+  const pxK = it => it && it.pv ? it.pv.s : 1;   // 下見の画像のときは、本物の画素数に直す
+  const lowText = (i, k) => `${Math.round(cropRect(slots[i])[3] * pxK(slots[i]))}px → ${params().outH}px（${k.toFixed(1)}倍に拡大）`;
   function lowOf(pairs){ const out = []; pairs.forEach(p => [p*2, p*2+1].forEach(i => { const k = lowK(i); if(k) out.push({ i, k }); })); return out; }
   // before saving: list the photos that will come out soft, and go on only after a YES
   function confirmLow(pairs, go){
+    if(pvBlock()) return;   // 本物の写真が届くまでは書き出さない
     const L = lowOf(pairs);
     if(!L.length){ go(); return; }
     const rows = L.slice(0, 12).map(({ i, k }) => `<li>${slotLabel(i)}（${(slots[i].name || '').replace(/[<>&]/g, '')}）：${lowText(i, k)}</li>`).join('');
@@ -4969,7 +4971,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     { const k = lowK(cropIdx), gap = hasGap(it), cut = cutOf(it), w = $('cropWarn'), msg = [];
       if(gap) msg.push(['', '⚠ 枠の中に写真のない部分があります（余白の色になります）']);
       if(cut) msg.push(['cutnote', `✂ ${cut}`]);
-      if(k){ const r = cropRect(it); msg.push(['', `低解像度（${Math.round(r[2])}×${Math.round(r[3])}px）：粗くなるおそれ。大きい画像への差し替えをおすすめします`]); }
+      if(k){ const r = cropRect(it), kk = pxK(it); msg.push(['', `低解像度（${Math.round(r[2] * kk)}×${Math.round(r[3] * kk)}px）：粗くなるおそれ。大きい画像への差し替えをおすすめします`]); }
       w.style.visibility = msg.length ? 'visible' : 'hidden';
       if(msg.length){ w.replaceChildren(...msg.flatMap(([c, t], i) => { const sp = document.createElement('span'); sp.className = c; sp.textContent = t; return i ? ['　', sp] : [sp]; })); w.title = msg.map(m => m[1]).join('\n'); } else { w.innerHTML = '&nbsp;'; w.title = ''; } }
     const src = srcOf(it), [w,h] = dims(src);
@@ -6875,6 +6877,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     return out;
   }
   $('saveSheet').addEventListener('click', async () => {
+    if(pvBlock()) return;
     if(sample || !slots.some(Boolean)){ status('写真を入れると一覧を作れます。'); return; }
     // the same folder choice as 見開一括書き出し / 1枚ずつ書き出し (asked straight from the click)
     let toDir = false;
@@ -7904,7 +7907,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function buildProject(){
     return { app: 'PHOTO BOOK MAKER', v: 1, id: workId, savedAt: Date.now(), kind: workKind(), title: workTitle(), pages: pagesValue(),
       settings: currentSettings(), tobiraLayout, ...(gpAlbumCur ? { gpAlbum: gpAlbumCur } : {}), slotsLen: slots.length, wide: [...wide], ...(blankSet.size ? { blank: [...blankSet].sort((a, b) => a - b) } : {}), decos: JSON.parse(JSON.stringify(decos)),
-      slots: slots.map(it => { if(!it) return null; const o = { uid: uidOf(it), name: it.name || '', type: (it.file && it.file.type) || 'image/jpeg', bytes: it.bytes || 0 }; ADJ.forEach(k => { if(it[k] != null) o[k] = it[k]; }); return o; }) };
+      slots: slots.map(it => { if(!it) return null; const o = { uid: uidOf(it), name: it.name || '', type: (it.pv && it.pv.type) || (it.file && it.file.type) || 'image/jpeg', bytes: it.bytes || 0 }; ADJ.forEach(k => { if(it[k] != null) o[k] = it[k]; }); return o; }) };
   }
   const usedMyFonts = () => [...new Set(Object.values(decos).flat().map(t => t && t.font).filter(f => f && myFonts.includes(f)))];
   // BOOKファイルに入っているフォントを、このブラウザの「自分のフォント」に足す（同じ名前があればそれを使う）
@@ -7929,6 +7932,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }
     // 写真は元のファイル名のまま入れる（同じ名前が重なったときだけ「名前 (2).jpg」）
     if(withPhotos){
+      if(pvBusy()){ const e = new Error('preview'); e.preview = true; throw e; }   // 下見の画像をBOOKファイルに入れない
       P.photos = {}; const used = new Set();
       await ensurePhotosReadable();
       slots.forEach(it => {
@@ -7985,6 +7989,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // 保存した作業を、そのときの形（写真集モード・仕上がりサイズ・ページ数・扉奥付）ごと元に戻す
   async function restoreProject(P, getBlob){
     gpAlbumCur = typeof P.gpAlbum === 'string' ? P.gpAlbum : '';
+    pvGen++;   // 前に開いたBOOKの、裏での写真の受け取りは打ち切る
     for(let i = 0; i < slots.length; i++){ release(i); slots[i] = null; }
     sample = false; wide.clear(); lost = []; blankSet.clear();
     applySettings(Object.assign({}, P.settings || {}));
@@ -8000,6 +8005,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       try{
         const f = b instanceof File ? b : new File([b], s.name || 'photo.jpg', { type: b.type || s.type || 'image/jpeg' });
         const it = await loadFile(f); it.uid = s.uid;
+        // 下見（小さな画像）で開いたとき：本物が届くまでの目印。大きさ・容量・形式は本物のものを使う
+        if(b.pbmPv){ it.pv = { id: b.pbmPv.id, s: b.pbmPv.w / (it.pw || b.pbmPv.w), type: s.type || 'image/jpeg' }; it.pw = b.pbmPv.w; it.ph = b.pbmPv.h; it.bytes = s.bytes || it.bytes; }
         ADJ.forEach(k => { if(s[k] != null) it[k] = s[k]; });
         if(it.rot || it.tilt || it.flipH || it.flipV) makeView(it);
         return it;
@@ -8069,7 +8076,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       // 写真は中身ごとコピーして保存する（元の写真を書き出し直したり動かしたりしても、このブラウザの中の写真は読めるように）
       const fresh = [];
       for(const it of slots){
-        if(!it || !it.file || savedUids.has(it.uid) || fresh.some(x => x.uid === it.uid)) continue;
+        if(!it || !it.file || it.pv || savedUids.has(it.uid) || fresh.some(x => x.uid === it.uid)) continue;   // 下見の画像は保存しない（本物が届いてから）
         try{ const f = it.file; fresh.push({ uid: it.uid, copy: new File([await f.arrayBuffer()], f.name || it.name || 'photo.jpg', { type: f.type || 'image/jpeg', lastModified: f.lastModified || Date.now() }) }); }catch(e){}
       }
       const tx = d.transaction(['works', 'photos'], 'readwrite'), ps = tx.objectStore('photos');
@@ -8079,7 +8086,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       try{ tx.objectStore('works').put(Object.assign({ handle: fileHandle || null }, rec)); }catch(err){ tx.objectStore('works').put(rec); }
       await txDone(tx); baseSavedAt = P.savedAt;
       // 以後は、そのコピーを使う（BOOKを保存するときも、元の写真が変わっていても大丈夫）
-      fresh.forEach(x => slots.forEach(it => { if(it && it.uid === x.uid) it.file = x.copy; }));
+      fresh.forEach(x => slots.forEach(it => { if(it && it.uid === x.uid && !it.pv) it.file = x.copy; }));
       pruneWorks();
     }catch(e){ savedUids.clear(); }
   }
@@ -8174,6 +8181,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     // 保存の画面から：入力したBOOKの名前を、どちらの保存先でも使う
     const typed = (local || toDrive) && !$('saveModal').hidden ? ($('saveName').value || '').trim().replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) : '';
     closeSave();
+    if(pvBusy() && (local || !WD())){ closeAfterSave = false; pvBlock(); return; }   // パソコンのBOOKファイルには、本物の写真がそろってから
     const name = typed && local ? typed + '.pbmk' : bookFile && !(WEB && fileHandle && fileHandle.drive && local) ? bookFile.replace(/\.pbmk?$/i, '') + '.pbmk' : fileName();   // 同じBOOKは同じファイル名で（上書き保存）
     let handle = null;
     // BOOKファイル（Web版はGoogle ドライブのBOOK）があるときは、そこにそのまま上書き
@@ -8234,7 +8242,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     }catch(e){
       closeAfterSave = false; if(saveAs){ workId = prevId; }
       console.error('BOOK save failed', e);
-      const why = e && e.auth ? 'Google ドライブとの接続が切れていました。<br>右上の「Google ドライブ」からつなぎ直して、もう一度保存してください。' : e && e.status ? `Google ドライブに保存できませんでした（${e.status}）。<br>通信の状態と、ドライブの空き容量を確かめて、もう一度お試しください。` : e && e.photos ? `元の写真が読めなくなっています（${e.photos.slice(0, 3).join('、')}${e.photos.length > 3 ? ` ほか${e.photos.length - 3}枚` : ''}）。<br>写真を書き出し直したり、動かしたり、名前を変えたりすると、読めなくなります。<br>その写真を入れ直してから、もう一度保存してください。`
+      const why = e && e.preview ? '写真の読み込みが終わってから、もう一度保存してください。' : e && e.auth ? 'Google ドライブとの接続が切れていました。<br>右上の「Google ドライブ」からつなぎ直して、もう一度保存してください。' : e && e.status ? `Google ドライブに保存できませんでした（${e.status}）。<br>通信の状態と、ドライブの空き容量を確かめて、もう一度お試しください。` : e && e.photos ? `元の写真が読めなくなっています（${e.photos.slice(0, 3).join('、')}${e.photos.length > 3 ? ` ほか${e.photos.length - 3}枚` : ''}）。<br>写真を書き出し直したり、動かしたり、名前を変えたりすると、読めなくなります。<br>その写真を入れ直してから、もう一度保存してください。`
         : `保存の途中で止まってしまいました（${String(e && (e.name || e.message) || '').replace(/[<>&]/g, '')}）。<br>保存先の空き容量を確かめて、もう一度お試しください。`;
       status('BOOKを保存できませんでした。');
       askYesNo('BOOKを保存できませんでした', `<p>${why}</p><p style="font-size:12px;color:var(--muted)">いまの作業は「続きから作る」に一時保存されています。${handle ? '<br>途中まで作られたファイル（中身が空）は、消してしまってかまいません。' : ''}</p>`, () => {}, 'OK', '');
@@ -8853,6 +8861,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // BOOK をドライブに保存したあと（上書き・3分毎の自動保存）：共有リンクの中身を、変わった見開きだけ差し替える。URL はそのまま、公開の許可も増やさない
   let shRefreshing = false, shRefreshAgain = false;
   async function shareRefresh(){
+    if(pvBusy()){ pvShareDue = true; return; }   // 本物の写真がそろってから差し替える
     if(!WEB || !gValid() || sample) return;
     if(shRefreshing){ shRefreshAgain = true; return; }
     shRefreshing = true;
@@ -8895,6 +8904,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     finally{ shRefreshing = false; if(shRefreshAgain){ shRefreshAgain = false; setTimeout(shareRefresh, 1000); } }
   }
   async function shareBook(){
+    if(pvBlock()) return;
     const list = allPairs().filter(pairReady);
     if(!list.length) return;
     if(!shareKey()){ askYesNo('共有リンクを作れません', '<p>共有リンクの準備（API キー）が、まだ設定されていません。</p>', () => {}, '閉じる', ''); return; }
@@ -9128,7 +9138,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(h.folderId){
       let r = null, gone = false;
       try{ r = await gJson(`${GAPI}/drive/v3/files/${encodeURIComponent(h.folderId)}?fields=name,trashed`); gone = !r || r.trashed; }catch(e){ gone = /404/.test(String(e && e.message)) || (e && e.status === 404); }
-      if(gone){ h.folderId = ''; h.jsonId = ''; h.thumbId = ''; h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.assetIds = {}; h.recreated = true; from = null; }
+      if(gone){ h.folderId = ''; h.jsonId = ''; h.thumbId = ''; h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.assetIds = {}; h.pvIds = {}; h.recreated = true; from = null; }
       else if(r && r.name && !h.renamed && r.name !== h.name){ h.name = r.name; if(fileHandle === h){ bookFile = r.name; syncAutoUI(); } }
     }
     await ensurePhotosReadable();
@@ -9136,9 +9146,10 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!h.folderId){
       const root = await gRoot();
       h.folderId = (await gCreate({ name: h.name, mimeType: 'application/vnd.google-apps.folder', parents: [root], appProperties: { pbm: 'book' } })).id;
-      h.photoIds = {}; h.photoNames = {}; h.fontIds = {};
+      h.photoIds = {}; h.photoNames = {}; h.fontIds = {}; h.pvIds = {};
     } else if(h.name && h.renamed){ await gPatch(h.folderId, { name: h.name }); h.renamed = false; }
-    h.photoIds = h.photoIds || {}; h.photoNames = h.photoNames || {}; h.fontIds = h.fontIds || {};
+    h.photoIds = h.photoIds || {}; h.photoNames = h.photoNames || {}; h.fontIds = h.fontIds || {}; h.pvIds = h.pvIds || {}; P.drive.pv = {};
+    const srcPv = from && from.pvIds ? from.pvIds : {};
     // 別名で保存：元のBOOKの写真は、ドライブの中でコピーするだけ（上げ直さない）
     const src = from && from.photoIds ? from.photoIds : {};
     const used = new Set(Object.values(h.photoNames).map(n => n.toLowerCase()));
@@ -9147,6 +9158,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     step();
     for(const { uid, it } of want){
       if(!h.photoIds[uid]){
+        if(it.pv && !src[uid]){ const e = new Error('preview'); e.preview = true; throw e; }   // 下見の画像を、写真としてドライブに上げない
         const nm = (it.name || it.file.name || 'photo.jpg').replace(/[\\/:*?"<>|]/g, '_'), dot = nm.lastIndexOf('.'), stem = dot > 0 ? nm.slice(0, dot) : nm, ext = dot > 0 ? nm.slice(dot) : '.jpg';
         let name = stem + ext, k = 2; while(used.has(name.toLowerCase())) name = `${stem} (${k++})${ext}`;
         used.add(name.toLowerCase());
@@ -9156,9 +9168,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         h.photoNames[uid] = name; step();
       }
       P.drive.photos[uid] = h.photoIds[uid];
+      // 下見の画像（開くときに先に見せる小さな画像）。作れなくても保存は止めない
+      if(!h.pvIds[uid]){
+        try{
+          const meta = { name: '下見_' + (h.photoNames[uid] || (it.name || 'photo') + '.jpg').replace(/\.[^.]+$/, '') + '.jpg', parents: [h.folderId], appProperties: { pbm: 'preview', uid } };
+          if(srcPv[uid]) h.pvIds[uid] = [(await gCopy(srcPv[uid][0], meta)).id, srcPv[uid][1], srcPv[uid][2]];
+          else if(!it.pv){ const [w, hh] = it.pw ? [it.pw, it.ph] : dims(it.src); h.pvIds[uid] = [(await gUpload(meta, await pvMake(it.src))).id, w, hh]; }
+        }catch(e){}
+      }
+      if(h.pvIds[uid]) P.drive.pv[uid] = h.pvIds[uid];
     }
     // このBOOKで使わなくなった写真はゴミ箱へ（ドライブの容量を空ける）
     for(const uid of Object.keys(h.photoIds)) if(!want.some(x => x.uid === uid)){ try{ await gPatch(h.photoIds[uid], { trashed: true }); }catch(e){} delete h.photoIds[uid]; delete h.photoNames[uid]; }
+    for(const uid of Object.keys(h.pvIds)) if(!want.some(x => x.uid === uid)){ try{ await gPatch(h.pvIds[uid][0], { trashed: true }); }catch(e){} delete h.pvIds[uid]; }
     for(const name of usedMyFonts()){
       if(!h.fontIds[name]){ const r = await fontDbDo('readonly', st => st.get(name)); if(r && r.data) h.fontIds[name] = (await gUpload({ name: 'font-' + name, parents: [h.folderId], appProperties: { pbm: 'font' } }, new Blob([r.data], { type: 'application/octet-stream' }))).id; }
       if(h.fontIds[name]) P.drive.fonts.push({ name, id: h.fontIds[name] });
@@ -9186,6 +9208,66 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     h.drive = true; delete h.isNew;
     return h;
   }
+  // ---------- 下見で先に開く：ドライブのBOOKは、小さな下見の画像で先に開き、本物の写真は裏で受け取って差し替える ----------
+  // 本物が全部届くまでは、書き出し・共有リンク・パソコンへのBOOK保存はしない（下見の粗い画像が出ていかないように）
+  var pvGen = 0, pvFail = 0, pvShareDue = false;
+  const PV_MAX = 1000;   // 下見の画像の長い辺（px）
+  function pvBusy(){ return slots.some(it => it && it.pv); }
+  function pvBlock(){
+    if(!pvBusy()) return false;
+    const n = new Set(slots.filter(it => it && it.pv).map(it => it.uid)).size;
+    askYesNo('写真を読み込んでいます', pvFail ? `<p>読み込めなかった写真が${n}枚あります。<br>BOOKを開き直してください。</p>` : `<p>読み込みが終わるまで、少しお待ちください。<br>（あと${n}枚）</p>`, () => {}, '閉じる', '');
+    return true;
+  }
+  // 同時に n 件ずつ進める
+  async function pool(list, n, fn){
+    let k = 0;
+    await Promise.all(Array.from({ length: Math.min(n, list.length) }, async () => { while(k < list.length){ const j = k++; await fn(list[j], j); } }));
+  }
+  // 下見の画像を作る（JPG・長い辺 PV_MAX px）
+  async function pvMake(src){
+    const [w, h] = dims(src), k = Math.min(1, PV_MAX / Math.max(w, h)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, c.width, c.height);
+    const b = await new Promise(r => c.toBlob(r, 'image/jpeg', .82)); c.width = c.height = 0;
+    if(!b) throw new Error('preview');
+    return b;
+  }
+  // 本物の写真が届いたら、同じ写真の場所を差し替える（調整はそのまま）
+  async function pvSwap(uid, b, gen){
+    for(const it of slots.filter(x => x && x.uid === uid && x.pv)){
+      const f = new File([b], it.name || 'photo.jpg', { type: it.pv.type || b.type || 'image/jpeg' });
+      const n = await loadFile(f);
+      if(gen !== pvGen || !it.pv || it.uid !== uid || !slots.includes(it)){ if(n.url) URL.revokeObjectURL(n.url); continue; }
+      if(it.url) URL.revokeObjectURL(it.url);
+      it.src = n.src; it.url = n.url; it.file = n.file; it.pw = n.pw; it.ph = n.ph; it.bytes = n.bytes; it.baseThumb = n.baseThumb;
+      delete it.pv;
+      if(it.rot || it.tilt || it.flipH || it.flipV) makeView(it); else { it.view = null; it.thumb = null; it.base = null; }
+    }
+  }
+  // 裏で本物の写真を受け取る（4枚ずつ同時・届かなければ少し待って2回までやり直す）
+  async function pvFetchAll(ids){
+    const gen = pvGen; pvFail = 0;
+    const uids = [...new Set(slots.filter(it => it && it.pv).map(it => it.uid))];
+    if(!uids.length) return;
+    await pool(uids, 4, async uid => {
+      if(gen !== pvGen || !ids[uid]) return;
+      let b = null;
+      for(let t = 0; t < 3 && !b; t++){
+        if(t) await new Promise(r => setTimeout(r, 1500 * t));
+        if(gen !== pvGen) return;
+        try{ b = await gGet(ids[uid]); }catch(e){ b = null; }
+      }
+      if(gen !== pvGen) return;
+      if(!b){ pvFail++; return; }
+      try{ await pvSwap(uid, b, gen); }catch(e){ pvFail++; }
+    });
+    if(gen !== pvGen) return;
+    flipCache.clear(); renderAll(); if(!cm.hidden) drawCrop();
+    if(pvBusy()){ status('Google ドライブから読み込めなかった写真があります。BOOKを開き直してください。'); return; }
+    dirty = true; clearTimeout(autoT); autoT = setTimeout(autoSave, 500);   // 本物の写真を、このブラウザにも一時保存
+    if(pvShareDue){ pvShareDue = false; shareRefresh(); }
+  }
   // ドライブのBOOKを開く
   async function openDriveBook(f){
     let canceled = false;
@@ -9203,7 +9285,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       catch(e){ if(!canceled) status('このBOOKを開けませんでした。'); return; }
       if(canceled) return;
       const ids = (P.drive && P.drive.photos) || {};
-      const h = { drive: true, name: f.name, folderId: f.id, jsonId: f.appProperties.json, thumbId: f.appProperties.thumb || '', photoIds: Object.assign({}, ids), photoNames: {}, fontIds: {}, assetIds: Object.assign({}, (P.drive && P.drive.assets) || {}) };
+      const pvs = (P.drive && P.drive.pv) || {};
+      const h = { drive: true, name: f.name, folderId: f.id, jsonId: f.appProperties.json, thumbId: f.appProperties.thumb || '', photoIds: Object.assign({}, ids), photoNames: {}, fontIds: {}, assetIds: Object.assign({}, (P.drive && P.drive.assets) || {}), pvIds: Object.assign({}, pvs) };
       // 装飾の画像を、別のファイルから元のまま戻す
       const A = (P.drive && P.drive.assets) || {};
       for(const arr of Object.values(P.decos || {})) for(const t of (Array.isArray(arr) ? arr : [])){
@@ -9212,21 +9295,26 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         const id = A[t.img.slice(6)]; t.img = '';
         if(id){ try{ const b = await gGet(id); t.img = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(b); }); }catch(e){} }
       }
-      // 写真を先に全部受け取る（ここまでなら中止できる）
-      const uids = Object.keys(ids), total = uids.length, blobs = {}; let done = 0;
-      for(const uid of uids){
+      // 写真を先に全部受け取る（ここまでなら中止できる）。下見の画像があれば下見を、なければ本物を。4枚ずつ同時に
+      const uids = Object.keys(ids), total = uids.length, blobs = {}; let done = 0, usePv = false;
+      const pvOk = v => Array.isArray(v) && v[0] && v[1] > 0 && v[2] > 0;
+      await pool(uids, 4, async uid => {
         if(canceled) return;
-        try{ blobs[uid] = await gGet(ids[uid]); }catch(e){ blobs[uid] = null; }
+        let b = null;
+        if(pvOk(pvs[uid])){ try{ b = await gGet(pvs[uid][0]); if(!/^image\//.test(b.type || 'image/')) b = null; }catch(e){ b = null; } if(b){ b.pbmPv = { id: ids[uid], w: pvs[uid][1], h: pvs[uid][2] }; usePv = true; } }
+        if(!b && !canceled){ try{ b = await gGet(ids[uid]); }catch(e){ b = null; } }
         if(canceled) return;
+        blobs[uid] = b;
         status(`Google ドライブから写真を読み込んでいます…（${++done}/${total}）`); gBusy('', `写真 ${done} / ${total} 枚`, done / (total + 1));
-        if(blobs[uid] && /^image\//.test(blobs[uid].type || 'image/')) gBusyImg(blobs[uid]);   // 受け取った写真をそのつど見せる
-      }
+        if(b && /^image\//.test(b.type || 'image/')) gBusyImg(b);   // 受け取った写真をそのつど見せる
+      });
       if(canceled) return;
       // ここからは編集画面に入れるので、中止はできない
       $('gBusyCancel').hidden = true; gBusy('', 'ページを広げています…', total ? total / (total + 1) : null);
       const r = await finishOpen(P, async uid => ids[uid] ? blobs[uid] || null : null, {
         name: f.name, handle: h, fileAt: Date.parse(f.modifiedTime) || P.savedAt || 0,
         fonts: async () => { let n = 0; for(const x of (P.drive && P.drive.fonts) || []){ h.fontIds[x.name] = x.id; if(myFonts.includes(x.name)) continue; try{ const data = await (await gGet(x.id)).arrayBuffer(); await registerFont(x.name, data); await fontDbDo('readwrite', st => st.put({ name: x.name, data })); n++; }catch(e){} } if(n) renderMyFonts(); return n; } });
+      if(usePv) pvFetchAll(ids);   // 本物の写真は、開いたあとに裏で受け取る
       status(`Google ドライブの「${f.name}」を開きました。続きから編集できます。` + (r.missing ? `読み込めなかった写真が${r.missing}枚あります。` : '') + (r.forked ? 'このブラウザに残っていた、より新しい版は「続きから作る」にそのまま残しています。' : ''));
     };
     if(hasWork()) askYesNo('このBOOKを開きますか？', '<p>編集中のBOOKは、この画面から消えます。<br>（自動保存されているので、最初の画面の「続きから作る」から戻せます）</p>', go);
@@ -9422,7 +9510,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     if(!el || !gValid()) return;
     try{
       let mine = 0;
-      (await gList(`trashed=false and (appProperties has { key='pbm' and value='photo' } or appProperties has { key='pbm' and value='json' } or appProperties has { key='pbm' and value='thumb' } or appProperties has { key='pbm' and value='font' } or appProperties has { key='pbm' and value='asset' })`, 'files(quotaBytesUsed)')).forEach(f => { mine += Number(f.quotaBytesUsed) || 0; });
+      (await gList(`trashed=false and (appProperties has { key='pbm' and value='photo' } or appProperties has { key='pbm' and value='json' } or appProperties has { key='pbm' and value='thumb' } or appProperties has { key='pbm' and value='font' } or appProperties has { key='pbm' and value='asset' } or appProperties has { key='pbm' and value='preview' })`, 'files(quotaBytesUsed)')).forEach(f => { mine += Number(f.quotaBytesUsed) || 0; });
       if(!el.isConnected) return;
       el.textContent = `${gSize(mine).replace(' ', '')}使用中`; el.title = `このツールで保存した写真・設定などが使っている容量：${gSize(mine)}`; el.hidden = false;
     }catch(e){}
