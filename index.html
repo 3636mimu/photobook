@@ -8455,7 +8455,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // ---------- Web版：Google ドライブ連携（ローカル版では何もしない） ----------
   // データはブラウザと本人のGoogle ドライブの間だけ。権限は drive.file（このツールで作ったファイルだけ）
   const GD = { tok: '', exp: 0, email: '', client: null, wait: null, root: '' };
-  const GSCOPE = 'https://www.googleapis.com/auth/drive.file';
+  // drive.file：このアプリで作った・開いたファイルだけ／drive.appdata：ドライブの画面に出ない、このアプリ専用の隠し場所（共有パスワードの控え）
+  const GSCOPE = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
   const GAPI = 'https://www.googleapis.com';
   try{ GD.email = localStorage.getItem('pbm-gacct') || ''; const t = JSON.parse(sessionStorage.getItem('pbm-gtok') || 'null'); if(t && t.exp > Date.now() + 60000){ GD.tok = t.tok; GD.exp = t.exp; } }catch(e){}
   const gValid = () => !!GD.tok && GD.exp > Date.now() + 30000;
@@ -8652,26 +8653,58 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       x.send();
     });
   }
-  // 共有のパスワードの控え：公開していない「共有」フォルダの中の1つのファイルにまとめて置く（見る人からは読めない）。
-  // 画面には出さず、「共有中のリンク」の［リンクをコピー］で、リンクと一緒にコピーするためだけに使う
-  async function sharePwFile(){
-    const sroot = await shareRoot();
-    const f = await gList(`'${sroot}' in parents and appProperties has { key='pbm' and value='sharepw' } and trashed=false`, 'files(id)');
-    return { sroot, id: f.length ? f[0].id : '' };
+  // 共有のパスワードの控え：ドライブの「アプリ専用の隠し場所」（appDataFolder）に、暗号化して1つだけ置く。
+  // ドライブの画面には出ず、このアプリ以外からは読めない。画面にも出さず、［リンクをコピー］で一緒にコピーするためだけに使う
+  const PWSTORE = 'k.bin';
+  async function pwKey(){ return shareDeriveKey('pbm-keep|' + (GD.email || ''), new TextEncoder().encode('pbm-share-keep-v1'), 100000); }
+  async function appData(fn, quiet){
+    try{ return await fn(); }
+    catch(e){
+      // 隠し場所の許可がまだない（前にもらった鍵）：Google の窓で許可をもらって、もう一度
+      if(!quiet && e && (e.status === 403 || e.status === 401) && /insufficient|scope|auth/i.test(e.message || '')){ if(await gEnsure(true, false, true)) return await fn(); }
+      throw e;
+    }
   }
   async function sharePwRead(){
-    const { sroot, id } = await sharePwFile(); let map = {};
-    if(id){ try{ map = await gJson(`${GAPI}/drive/v3/files/${id}?alt=media`) || {}; }catch(e){ map = {}; } }
-    return { sroot, id, map };
+    return appData(async () => {
+      const r = await gJson(`${GAPI}/drive/v3/files?spaces=appDataFolder&q=${encodeURIComponent(`name='${PWSTORE}' and trashed=false`)}&fields=files(id)&pageSize=5`);
+      const id = (r.files && r.files[0] && r.files[0].id) || ''; let map = {};
+      if(id){
+        try{
+          const j = await gJson(`${GAPI}/drive/v3/files/${id}?alt=media`);
+          const iv = Uint8Array.from(atob(j.iv), c => c.charCodeAt(0)), c = Uint8Array.from(atob(j.c), ch => ch.charCodeAt(0));
+          map = JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, await pwKey(), c))) || {};
+        }catch(e){ console.warn(e); map = {}; }
+      }
+      return { id, map };
+    });
+  }
+  async function sharePwWrite(id, map){
+    const e = await shareEnc(await pwKey(), new TextEncoder().encode(JSON.stringify(map)));
+    const blob = new Blob([JSON.stringify({ v: 1, iv: e.iv, c: b64(e.c) })], { type: 'application/octet-stream' });
+    if(id) await gUpload({}, blob, id); else await gUpload({ name: PWSTORE, parents: ['appDataFolder'] }, blob);
   }
   async function sharePwSave(folderId, pw){
+    try{ await appData(async () => { const { id, map } = await sharePwRead(); if(pw) map[folderId] = pw; else delete map[folderId]; await sharePwWrite(id, map); }); }
+    catch(e){ console.warn(e); }
+  }
+  // 片付け：もう無い共有の控えを消す。以前の「_パスワードの控え.json」（共有フォルダの中）があれば、中身を移してゴミ箱へ
+  let pwTidied = false;
+  async function sharePwTidy(items){
+    if(pwTidied || !gValid()) return; pwTidied = true;
     try{
-      const { sroot, id, map } = await sharePwRead();
-      if(pw) map[folderId] = pw; else delete map[folderId];
-      const blob = new Blob([JSON.stringify(map)], { type: 'application/json' });
-      if(id) await gUpload({}, blob, id);
-      else if(pw) await gUpload({ name: '_パスワードの控え.json', parents: [sroot], appProperties: { pbm: 'sharepw' } }, blob);
-    }catch(e){ console.warn(e); }
+      await appData(async () => {
+        const { id, map } = await sharePwRead(); let changed = false;
+        try{
+          const sroot = await shareRoot();
+          const old = await gList(`'${sroot}' in parents and appProperties has { key='pbm' and value='sharepw' } and trashed=false`, 'files(id)');
+          for(const f of old){ try{ Object.assign(map, Object.assign(await gJson(`${GAPI}/drive/v3/files/${f.id}?alt=media`) || {}, map)); changed = true; }catch(e){} await gPatch(f.id, { trashed: true }).catch(() => {}); }
+        }catch(e){}
+        const live = new Set((items || []).map(f => f.id));
+        Object.keys(map).forEach(k => { if(!live.has(k)){ delete map[k]; changed = true; } });
+        if(changed) await sharePwWrite(id, map);
+      }, true);   // 片付けでは Google の窓を出さない
+    }catch(e){ console.warn(e); pwTidied = false; }
   }
   // ボタンの下の小さな文字：つながっていないときは、押す前に分かるように
   function shareSub(){ const b = $('shareBook'), sub = b && b.querySelector('.sub'); if(!sub) return;
@@ -8928,7 +8961,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       let items;
       if(cached && shCache){ items = shCache.slice(); cached = false; }
       else {
-        try{ items = (await shareItems()).filter(shareMine); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
+        try{ const all = await shareItems(); sharePwTidy(all); items = all.filter(shareMine); }catch(e){ box.innerHTML = '<p class="shnote">読み込めませんでした。</p>'; return; }
         { const old = items.filter(sharePast); if(old.length){ await Promise.all(old.map(shareExpire)); items = items.filter(f => !sharePast(f)); } }
         shCache = items.slice();
       }
