@@ -2052,8 +2052,7 @@ a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !importa
         <button class="primary" id="saveAll" disabled>見開一括書き出し</button>
         <button class="primary" id="saveSheet" disabled>一覧書き出し</button>
         <button class="primary" id="saveSingles" disabled title="調整した写真を1枚ずつ JPG で保存">1枚ずつ書き出し</button>
-        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled><i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg></i><span class="mt"><b>共有リンクを作る</b><span class="sub">めくって見られるリンク</span></span></button>
-        <button class="sharemgr" id="shareMgrBtn" type="button" hidden>共有中のリンク</button>
+        <button class="outline sharebtn" id="shareBook" type="button" hidden disabled><i class="mi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg></i><span class="mt"><b>共有リンク</b><span class="sub">めくって見られるリンク</span></span></button>
         <input type="file" id="workFile" class="vh" accept=".pbmk">
         <div id="pgTip" class="pgtip" aria-hidden="true">配置写真を調整</div><div id="dTapTip" class="pgtip" aria-hidden="true"></div>
         <input type="file" id="fileRelink" class="vh" accept="image/*" multiple>
@@ -4225,7 +4224,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   function updateGlobal(){
     const n = allPairs().filter(pairReady).length;
     $('saveAll').disabled = n === 0;
-    if(WEB){ $('shareBook').hidden = false; $('shareBook').disabled = n === 0; $('shareMgrBtn').hidden = false; try{ shareSub(); }catch(e){} }
+    if(WEB){ $('shareBook').hidden = false; $('shareBook').disabled = n === 0; try{ shareSub(); }catch(e){} }
     { const nm = booklet ? '写真集書き出し' : '見開一括書き出し';
       $('saveAll').innerHTML = mbtn('book', nm, n ? (isPdf() ? (booklet ? `PDF・${bookTotal()}ページ` : `PDF・${n}ページ`) : `JPG・${n}ファイル`) : (isPdf() ? 'PDF' : 'JPG')); }
     $('saveSheet').disabled = sample || !slots.some(Boolean);   // the overview needs at least one real photo
@@ -9260,7 +9259,6 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   }
   if(WEB){
     $('shareBook').addEventListener('click', () => shareBook());
-    $('shareMgrBtn').addEventListener('click', () => shareManager());
     $('workName').addEventListener('click', () => { if($('workName').classList.contains('wclick')) $('gConn').click(); });
     $('workName').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && $('workName').classList.contains('wclick')){ e.preventDefault(); $('gConn').click(); } });
     $('gConn').addEventListener('click', async () => {
