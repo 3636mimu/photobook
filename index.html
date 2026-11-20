@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com https://www.googletagmanager.com 'sha256-+ub7V5GCkodM101X71PX3Xk5UwXQL2LWm+7WIUnmi8k=' 'sha256-KzU0P3gzv4+/OS4cjju6HKu9ehLcd18XOhqLeyPj0BY=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-nA4J//qlwIdvhP51qq5aTbkOsTJRv7q3CaFDAntdsts=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.g.doubleclick.net https://www.google.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.g.doubleclick.net https://www.google.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com https://www.googletagmanager.com 'sha256-7ucE9W0zMTdLA2Pj5cSHQJyL551Wk/coPcP9XW5usC0=' 'sha256-KzU0P3gzv4+/OS4cjju6HKu9ehLcd18XOhqLeyPj0BY=' 'sha256-SIYH3FdhmVgBdnhkhlhEjRUMkXVnzxkwoUxK74McsC4=' 'sha256-n97AXMqyW4j/+EThJcWzcFZhhTVlIyGp/14eO847SzY=' 'sha256-nA4J//qlwIdvhP51qq5aTbkOsTJRv7q3CaFDAntdsts=' 'sha256-oYf8lkSkjaktsY5gH7uoblcquHSZSsRW8azINGKx8zE=' 'sha256-twLGyQ+Hn93i8OkKl3+uN1YY3gWH+VSuMKLgqKzm9TM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://www.gstatic.com https://www.googleapis.com https://drive.google.com https://*.googleusercontent.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.g.doubleclick.net https://www.google.com; connect-src 'self' data: blob: https://www.googleapis.com https://photoslibrary.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.g.doubleclick.net https://www.google.com; frame-src 'self' https://accounts.google.com; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <script>
 (function(){
   if(/(^|[?&])v=[^&]/.test(location.search.slice(1))) return;
@@ -8561,7 +8561,14 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
     } else { autoOn = false; status('自動で保存するのをやめました。'); }
     dirty = true; clearTimeout(autoT); autoT = setTimeout(autoSave, 300); syncAutoUI();
   });
-  setInterval(async () => {
+  // 3分毎の自動保存。Googleとつなぎ直したときにも、待っていた分をすぐ保存する
+  let autoTicking = false;
+  async function autoTick(){
+    if(autoTicking) return; autoTicking = true;
+    try{ await autoTickBody(); } finally { autoTicking = false; }
+  }
+  setInterval(autoTick, 180000);
+  async function autoTickBody(){
     if(!autoOn || !fileHandle || !hasWork() || (fileSig && sigOf(buildProject()) === fileSig)) return;
     // Web版：Googleとの接続が切れていたら、つなぎ直すまで待つ（自動保存はONのまま）
     if(fileHandle.drive && !gValid()){ gSync(); status('Google ドライブとの接続が切れたので、自動保存を待っています。右上の「つなぐ」を押すと再開します。'); return; }
@@ -8574,7 +8581,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       syncedToFile();
       fileAt = Date.now(); fileAtAuto = true; syncAutoUI();
     }catch(e){ autoOn = false; syncAutoUI(); status('BOOKファイルへの自動保存が止まりました。「上書き保存」を押して、もう一度「3分毎に自動で保存する」にチェックを入れてください。'); }
-  }, 180000);
+  }
 
   // ---------- BOOKファイル（.pbmk）を開く ----------
   const isProjectFile = f => f && /\.pbmk$/i.test(f.name || '');
@@ -8772,7 +8779,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // drive.file：このアプリで作った・開いたファイルだけ／drive.appdata：ドライブの画面に出ない、このアプリ専用の隠し場所（共有パスワードの控え）
   const GSCOPE = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
   const GAPI = 'https://www.googleapis.com';
-  try{ GD.email = localStorage.getItem('pbm-gacct') || ''; const t = JSON.parse(sessionStorage.getItem('pbm-gtok') || 'null'); if(t && t.exp > Date.now() + 60000){ GD.tok = t.tok; GD.exp = t.exp; } }catch(e){}
+  // 接続の通行証（最長1時間）は、タブの間で共有する（新しいタブ・開き直しでも、期限内ならつながったまま）
+  const gTokSave = () => { try{ if(GD.tok) localStorage.setItem('pbm-gtok', JSON.stringify({ tok: GD.tok, exp: GD.exp, email: GD.email })); else localStorage.removeItem('pbm-gtok'); sessionStorage.removeItem('pbm-gtok'); }catch(e){} };
+  try{ GD.email = localStorage.getItem('pbm-gacct') || ''; const t = JSON.parse(localStorage.getItem('pbm-gtok') || sessionStorage.getItem('pbm-gtok') || 'null'); if(t && t.exp > Date.now() + 60000 && (!t.email || t.email === GD.email)){ GD.tok = t.tok; GD.exp = t.exp; } }catch(e){}
   const gValid = () => !!GD.tok && GD.exp > Date.now() + 30000;
   // 「つながずに使う」を選んだ人は、ローカル版と同じ動き（このブラウザ＋BOOKファイル）
   try{ localStorage.removeItem('pbm-gskip'); }catch(e){}   // 「つながずに使う」はやめた（前に選んだ人の記録も消す）
@@ -8787,8 +8796,8 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
         if(!r || !r.access_token){ done && done(false); return; }
         try{ localStorage.removeItem('pbm-gskip'); }catch(e){}
         GD.tok = r.access_token; GD.exp = Date.now() + (Number(r.expires_in) || 3600) * 1000 - 60000; gExpTimer();
-        try{ sessionStorage.setItem('pbm-gtok', JSON.stringify({ tok: GD.tok, exp: GD.exp })); }catch(e){}
-        try{ const a = await gJson(`${GAPI}/drive/v3/about?fields=user(emailAddress)`); if(a && a.user && a.user.emailAddress){ GD.email = a.user.emailAddress; try{ localStorage.setItem('pbm-gacct', GD.email); }catch(e){} } }catch(e){}
+        try{ localStorage.removeItem('pbm-gtok'); }catch(e){}   // どのアカウントか確かめるまでは、ほかのタブに渡さない
+        try{ const a = await gJson(`${GAPI}/drive/v3/about?fields=user(emailAddress)`); if(a && a.user && a.user.emailAddress){ GD.email = a.user.emailAddress; try{ localStorage.setItem('pbm-gacct', GD.email); }catch(e){} gTokSave(); } }catch(e){}
         gSync(); done && done(true); gStylesPull();
       },
       error_callback: () => { const done = GD.wait; GD.wait = null; done && done(false); } });
@@ -8810,11 +8819,19 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       // ここで Google の窓を開くと、ブラウザが「1回の操作で開ける窓は1つ」として、押したものの動きを止めてしまうため
       if(e.target && e.target.closest && e.target.closest('button, a, input, select, label, summary, textarea, canvas, img, [role="button"], [tabindex], .strcard, .spread')) return;
       const left = GD.exp - Date.now();
-      if(left > 10 * 60000) return;                       // まだ10分以上ある
+      if(left > 30 * 60000) return;                       // まだ30分以上ある
       if(!(fileHandle && fileHandle.drive) && $('startModal').hidden) return;   // ドライブのBOOKを編集中か、最初の画面のときだけ
       gRenewing = true;
-      gEnsure(true, false, true).finally(() => { gRenewing = false; });
+      gEnsure(true, false, true).then(ok => { if(ok) autoTick(); }).finally(() => { gRenewing = false; });
     }, true);
+    // ほかのタブで接続し直したら、このタブもその通行証を使う（同じアカウントのときだけ）
+    window.addEventListener('storage', e => {
+      if(e.key !== 'pbm-gtok') return;
+      let t = null; try{ t = JSON.parse(e.newValue || 'null'); }catch(_){}
+      if(!t || !t.tok || t.exp <= Date.now() + 30000 || (GD.email && t.email && t.email !== GD.email) || t.tok === GD.tok) return;
+      const was = gValid(); GD.tok = t.tok; GD.exp = t.exp; gExpTimer(); gSync();
+      if(!was) autoTick();
+    });
     gExpTimer();
   }
   function gEnsure(interactive, pick, force){
@@ -8831,7 +8848,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
   // アカウントの切り替え（いまの連携は解除しない。戻すときも、選び直すだけ）
   async function gSwitch(){
     const keep = { tok: GD.tok, exp: GD.exp, email: GD.email };
-    GD.tok = ''; GD.exp = 0; GD.root = ''; styFileId = ''; try{ sessionStorage.removeItem('pbm-gtok'); }catch(e){}
+    GD.tok = ''; GD.exp = 0; GD.root = ''; styFileId = ''; try{ localStorage.removeItem('pbm-gtok'); sessionStorage.removeItem('pbm-gtok'); }catch(e){}
     if(await gEnsure(true, true)){
       // 前のアカウントのBOOKを編集中なら、次の保存は新しいアカウントに新しいBOOKとして
       const moved = GD.email !== keep.email && fileHandle && fileHandle.drive;
@@ -8839,13 +8856,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
       status(`「${GD.email}」のGoogle ドライブに切り替えました。` + (moved ? '編集中のBOOKは、次に保存するとき、このアカウントに新しいBOOKとして保存されます。' : ''));
       return true;
     }
-    Object.assign(GD, keep); if(GD.tok) try{ sessionStorage.setItem('pbm-gtok', JSON.stringify({ tok: GD.tok, exp: GD.exp })); }catch(e){}
+    Object.assign(GD, keep); if(GD.tok) gTokSave();
     gSync(); return false;
   }
   function gForget(){
     try{ if(GD.tok && google.accounts.oauth2.revoke) google.accounts.oauth2.revoke(GD.tok, () => {}); }catch(e){}
     GD.tok = ''; GD.exp = 0; GD.email = ''; GD.root = '';
-    try{ localStorage.removeItem('pbm-gacct'); localStorage.removeItem('pbm-gav'); sessionStorage.removeItem('pbm-gtok'); }catch(e){}
+    try{ localStorage.removeItem('pbm-gacct'); localStorage.removeItem('pbm-gav'); localStorage.removeItem('pbm-gtok'); sessionStorage.removeItem('pbm-gtok'); }catch(e){}
     gSync();
   }
   async function gFetch(url, opt = {}){
